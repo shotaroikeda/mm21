@@ -7,15 +7,13 @@
 #   and send a message back to the player to take their next turn.
 #   If a connection is dropped, that player automatically 'forfeits'
 #   When the game ends, the server should send a final status to all players and then shut down gracefully.
-import config.handle_constants
 import sys
 import select
 import socket
 import time
 import json
-import game
-
-constants = config.handle_constants.retrieveConstants("serverDefaults")
+#import game
+import server_constants
 
 
 class _logger(object):
@@ -46,13 +44,13 @@ class MMServer( object ):
     #   @param maxDataSize
     #      The length in bytes of data received in one call to recv
     def __init__(self, numPlayers, game, logger=_logger(),
-                 timeLimit=constants["time"], maxDataSize=constants["maxDataSize"]):
+                 timeLimit=server_constants.time, maxDataSize=server_constants.maxDataSize):
         self.maxPlayers = numPlayers
         self.game = game
         self.logger = logger
         self.timeLimit = timeLimit
         self.maxDataSize = maxDataSize
-        self.initialTimeLimit = constants["initialConnectTime"]
+        self.initialTimeLimit = server_constants.initialConnectTime
 
     ##
     #   Runs the game
@@ -74,10 +72,12 @@ class MMServer( object ):
         forfeit = [False for i in range(0, self.maxPlayers)]
         validTurns = 0
         print 'connecting ...'
+        # Gamerunner: Server is ready, start clients
         if run_when_ready:
             run_when_ready()
         #Accept connections from correct number of players
         for i in range(0, self.maxPlayers):
+            # Keep track of which client is in which array pos to determine winner
             if run_for_each:
                 run_for_each()
             (clientsocket, address) = serversocket.accept()
@@ -226,6 +226,6 @@ class MMServer( object ):
             conn.close()
         serversocket.close()
 
-if __name__ == "__main__":
-    serv = MMServer(constants["players"], game.Game(constants["map"]))
-    serv.run(constants["port"])
+#if __name__ == "__main__":
+    #serv = MMServer(constants["players"], game.Game(constants["map"]))
+    #serv.run(constants["port"])
