@@ -1,4 +1,4 @@
-import game_constants.py
+import game_constants
 
 class MapNode( object ):
     def __init__(self, id, adjacent, nodetype):
@@ -9,7 +9,7 @@ class MapNode( object ):
         self.ownerid = None
         self.softwareLevel = 0
         #int[]
-        self.adjacentIds = adjacent[]
+        self.adjacentIds = adjacent[:]
         self.rootkits = []
         #bool
         self.isDdosed = False
