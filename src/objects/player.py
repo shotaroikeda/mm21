@@ -7,3 +7,5 @@ class Player(object):
 		#string
 		self.name = name;
 
+    def portScan(self, start):
+        #start is the node to start port scan
