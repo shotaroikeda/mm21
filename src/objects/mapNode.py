@@ -1,36 +1,71 @@
 import game_constants
 
-class MapNode( object ):
+
+class MapNode(object):
     def __init__(self, id, adjacent, nodetype):
-        #int
+        # int
         self.id = id
         self.processingPower = game_constants.processing[nodeType]
         self.networkingPower = game_constants.networking[nodeType]
-        self.ownerid = None
+        self.ownerId = None
         self.softwareLevel = 0
-        #int[]
-        self.adjacentIds = adjacent[:]
-        self.rootkits = []
-        #bool
-        self.isDdosed = False
+        # int[]
+        self.adjacentIds = adjacent
+        self.rootkitIds = []
+        # bool
+        self.isDDOSed = False
         self.isIPSed = False
-        #dict<int, int>
+        # dict<int, int>
         self.infiltration = dict()
+
     def connect(self, other):
-        #other is a mapNode
-        return
-    def doIPS(self):
-        return
-    def doDDOS(self):
-        return
-    def upgrade(self):
-        return
-    def clean(self):
-        return
-    def scan(self):
-        return
-    def rootkit(self, player):
-        return
-    def portScan(self):
+        # other is a mapNode
+        if other.id in self.adjacentIds:
+            raise Exception("Nodes are already connected.")
+        self.adjacentIds.append(other.id)
+        other.adjacentIds.append(self.id)
         return
 
+    def doControl(self, playerId):
+        if playerId == self.ownerId:
+            for k in self.infiltration.iterkeys():
+                self.infiltration[k] = max(self.infiltration[k] - 1, 0)
+        else:
+            self.infiltration[playerId] = self.infiltration.get(playerId, 0) + 1
+            if self.infiltration[playerId] > 50:  # TODO change this number
+                self.own(playerId)
+        return
+
+    def doDDOS(self):
+        self.isDDOSed = True
+        return
+
+    def upgrade(self):
+        self.softwareLevel += 1
+        return
+
+    def clean(self):
+        self.rootkitIds = []
+        return
+
+    def scan(self):
+        return self.rootkitIds
+
+    def rootkit(self, playerId):
+        if playerId in self.rootkitIds:
+            raise Exception("This player has a rootkit here already.")
+        self.rootkitIds.append(playerId)
+        return
+
+    def canMoveThrough(self, playerId):
+        if playerId in self.rootkitIds:
+            return True
+        return self.ownerId == playerId
+
+    def own(self, playerId):
+        if playerId == self.ownerId:
+            raise Exception("This player owns this node already.")
+        self.ownerId = playerId
+        self.rootkitIds = []
+        self.infiltration = []
+        return
