@@ -7,6 +7,7 @@ p = pprint.PrettyPrinter()
 
 
 class CityCluster(object):
+
         def __init__(self, city_density, connection_density):
                 self.nodes = []
                 for i in range(city_density):
@@ -17,8 +18,8 @@ class CityCluster(object):
                         self.nodes.append(city)
 
 
-
 class ISPCluster(object):
+
         def __init__(self, city_density, isp_density, data_center_density, connection_density):
                 self.node_list = []
                 self.isp_list = []
@@ -70,9 +71,9 @@ class ISPCluster(object):
                 return str(self)
 
 
-
 class Node(object):
-        def __init__(self, nodeType= "undefind"):
+
+        def __init__(self, nodeType="undefined"):
                 self.uid = uuid.uuid4()
                 self.nodeType = nodeType
                 self.connected_nodes = []
@@ -106,10 +107,9 @@ def generate_graph(num_players, city_density, isp_density, connection_density):
                         inst_b = rand_isp_cluster_not_in(isp_cluster_list,
                                                          isp_c)
                         inst_a.connect(inst_b)
-
-
         # TODO: links between cities, datacenter
         return isp_cluster_list
+
 
 def rand_isp_cluster_not_in(ispCluster, exclude_isp_cluster=None):
         isp_cluster = exclude_isp_cluster
