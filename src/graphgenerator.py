@@ -1,6 +1,7 @@
 import uuid
 import pprint
 import random
+from objects import game_constants
 
 p = pprint.PrettyPrinter()
 
@@ -9,7 +10,7 @@ class CityCluster(object):
         def __init__(self, city_density, connection_density):
                 self.nodes = []
                 for i in range(city_density):
-                        city = Node('city')
+                        city = Node(game_constants.NodeType.Small)
                         # Rule 1: connect city to all cities in cluster.
                         for c in self.nodes:
                                 city.join_node(c)
@@ -26,7 +27,7 @@ class ISPCluster(object):
                 self.city_cluster_list = []
 
                 for _ in range(isp_density):
-                        isp = Node("isp")
+                        isp = Node(game_constants.NodeType.ISP)
                         self.isp_list.append(isp)
                         city_cluster = CityCluster(
                                 city_density,
@@ -40,7 +41,7 @@ class ISPCluster(object):
                         self.city_cluster_list.append(city_cluster)
 
                 for _ in range(data_center_density):
-                        data_center = Node("data_center")
+                        data_center = Node(game_constants.NodeType.Datacenter)
                         self.data_center_list.append(data_center)
                         # Rule 3: Data center connects to up to two ISPs
                         random.choice(self.isp_list).connect(data_center)
@@ -107,7 +108,7 @@ def generate_graph(num_players, city_density, isp_density, connection_density):
                         inst_a.connect(inst_b)
 
 
-        # ToDo: links betwean cities, datacenter
+        # TODO: links between cities, datacenter
         return isp_cluster_list
 
 def rand_isp_cluster_not_in(ispCluster, exclude_isp_cluster=None):
