@@ -33,7 +33,7 @@ class ISPCluster(object):
                         city_cluster = CityCluster(
                                 city_density,
                                 connection_density)
-                        # Rule 2: IPS connects to all citys in it's city cluster
+                        # Rule 2: ISP connects to all cities in its city cluster
                         for city in city_cluster.nodes:
                                 city.connect(isp)
 
@@ -48,7 +48,7 @@ class ISPCluster(object):
                         random.choice(self.isp_list).connect(data_center)
                         random.choice(self.isp_list).connect(data_center)
 
-                # Rule 4: Each city cluster has atlest 2 link form it's citis to other cities
+                # Rule 4: Each city cluster has at least 2 links from its cities to other cities
                 for cityCluster in self.city_cluster_list:
                         random.choice(cityCluster.nodes).connect(
                                 self.rand_city_cluster_not_in(cityCluster))
