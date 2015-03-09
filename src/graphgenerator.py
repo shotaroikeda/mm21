@@ -84,9 +84,11 @@ class Node(object):
                         node.connected_nodes.append(self.uid)
 
         def connect(self, node):
+                #NIT: this should probably go both ways, instead of being called twice for each separate node
                 self.join_node(node)
 
         def is_connected(self, node):
+                #NIT: Can't we do this one-way - or otherwise use an assert to make sure the nodes are doubly connected?
                 if self in node.connected_nodes:
                         return node in self.connected_nodes
 
@@ -110,7 +112,7 @@ def generate_graph(num_players, city_density, isp_density, connection_density):
         # TODO: links between cities, datacenter
         return isp_cluster_list
 
-
+#NIT: Is ispCluster a list of ISP clusters? If so, it should be "ispClusters"
 def rand_isp_cluster_not_in(ispCluster, exclude_isp_cluster=None):
         isp_cluster = exclude_isp_cluster
         while (isp_cluster is exclude_isp_cluster):
