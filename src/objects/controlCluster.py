@@ -6,7 +6,7 @@ class MapCluster( object ):
         self.id = id
         self.processingPower = 0
         self.networkingPower = 0
-  	self.ownerId = ownerId
+        self.ownerId = ownerId
         self.nodeList = []
     def add(self, node):
         #node is a MapNode

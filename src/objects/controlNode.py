@@ -1,6 +1,10 @@
 import game_constants
 
 
+
+
+
+
 class MapNode(object):
     def __init__(self, id, adjacent, nodetype):
         # int
