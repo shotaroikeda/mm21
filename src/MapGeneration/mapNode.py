@@ -22,3 +22,23 @@ class mapNode(object):
         st = str(self.uid) + " | "
         st += self.nodeType + " | " + str(self.isplcID) + " | " + repr(self.continent) + " | "
         return st
+
+    @staticmethod
+    def get_ISP_node():
+        return mapNode("ISP")
+
+    @staticmethod
+    def get_DC_node():
+        return mapNode("Data Center")
+
+    @staticmethod
+    def get_small_city_node():
+        return mapNode("Small City")
+
+    @staticmethod
+    def get_medium_city_node():
+        return mapNode("Medium City")
+
+    @staticmethod
+    def get_large_city_node():
+        return mapNode("Large City")
