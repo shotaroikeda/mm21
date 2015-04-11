@@ -39,27 +39,25 @@ class Map(object):
 	def decrementPower(self, startingNode, processing, networking):
 		connectedNodes = set()
 		getConnectedNodes(startingNode, connectedNodes, startingNode.ownerId)
+
 		totalProcessing = 0
 		totalNetworking = 0
 		for node in connectedNodes:
 			totalProcessing += node.remainingProcessing
 			totalNetworking += node.remainingNetworking
+
 		if totalProcessing < processing or totalNetworking < networking:
-			raise InsufficientPowerException("networking = " + totalNetworking + ", processing = " + 
-				totalProcessing + "\nNeeded networking = " + networking + ", processing = " + processing)
+			raise InsufficientPowerException("networking = %d, processing = %d\nNeeded networking = %d, processing = %d" % \
+				(totalNetworking, totalProcessing, networking, processing))
+
 		for node in connectedNodes:
-			if processing > node.remainingProcessing:
-				processing -= node.remainingProcessing
-				node.remainingProcessing = 0
-			else:
-				node.remainingProcessing -= processing
-				processing = 0
-			if networking > node.remainingNetworking:
-				networking -= node.remainingNetworking
-				node.remainingNetworking = 0
-			else:
-				node.remainingNetworking -= networking
-				networking = 0
+			difference = min(processing, remainingProcessing)
+			node.remainingProcessing -= difference
+			processing -= difference
+
+			difference = min(networking, remainingNetworking)
+			node.remainingNetworking -= difference
+			networking -= difference
 
 	# recursive function to add all connected nodes to the connectedNodes set
 	def getConnectedNodes(self, startingNode, connectedNodes, ownerId):
