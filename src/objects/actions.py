@@ -1,3 +1,7 @@
+"""
+Data-mutators for actions players can do (to the map, other players, and/or nodes)
+"""
+
 def doControl(self, playerId):
         if playerId == self.ownerId:
             for k in self.infiltration.iterkeys():
@@ -12,32 +16,19 @@ def doDDOS(self):
 	self.isDDOSed = True
 	return
 
-def upgrade(self):
+def doUpgrade(self):
 	self.softwareLevel += 1
 	return
 
-def clean(self):
+def doClean(self):
 	self.rootkitIds = []
 	return
 
-def scan(self):
+def doScan(self):
 	return self.rootkitIds
 
-def rootkit(self, playerId):
+def doRootkit(self, playerId):
 	if playerId in self.rootkitIds:
 		raise Exception("This player has a rootkit here already.")
 	self.rootkitIds.append(playerId)
-	return
-
-def canMoveThrough(self, playerId):
-	if playerId in self.rootkitIds:
-		return True
-	return self.ownerId == playerId
-
-def own(self, playerId):
-	if playerId == self.ownerId:
-		raise Exception("This player owns this node already.")
-	self.ownerId = playerId
-	self.rootkitIds = []
-	self.infiltration = []
 	return
