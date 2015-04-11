@@ -173,8 +173,9 @@ class MMServer( object ):
                         errors[i] = ["Timeout. Make sure that your message ends with '\n'"]
                         validTurns = validTurns + 1
             else:
+
+                # Receive data
                 for connection in ready[0]:
-                    #Receive data
                     player = lookupPlayer[connection]
                     try:
                         recval[player] += connection.recv(self.maxDataSize)
