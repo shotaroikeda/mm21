@@ -4,6 +4,9 @@ Holds data about the map
 
 import game_constants
 
+class DuplicateTeamException(Exception):
+	pass
+
 class Map(object):
 	def __init__(self):
 		self.teams = []
@@ -13,7 +16,7 @@ class Map(object):
 	# Add a team and assign them a starting node
 	def addTeam(self, teamId):
 		if teamId in self.teams:
-			raise Exception("teamId is already in teams.")
+			raise DuplicateTeamException("teamId is already in teams.")
 		self.teams.append(teamId)
 
 	# Get all nodes of a given type (e.g. all ISPs)
@@ -22,6 +25,7 @@ class Map(object):
 
 	# Decrement the power of connected nodes
 	# Will raise an exception if the required amount of power is not available
+<<<<<<< HEAD
 	def decrementPower(self, startingNode, processing, networking):
 		connectedNodes = set()
 		getConnectedNodes(startingNode, connectedNodes, startingNode.ownerId)
@@ -55,3 +59,11 @@ class Map(object):
 		connectedNodes.append(startingNode)
 		for adjacent in startingNode.adjacentIds:
 			getConnectedNodes(adjacent, connectedNodes, ownderId)
+=======
+	def decrementPower(self, processing, networking):
+		pass
+
+	# decrementPower() recursive helper function
+	def decrementPowerRecursor(self, processing, networking):
+		pass
+>>>>>>> 32fbc84a726d7bcfb0aae372c89c10fa96ce2a38
