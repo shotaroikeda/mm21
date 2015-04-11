@@ -6,6 +6,3 @@ class Player(object):
 		self.IPSNode = IPSNode;
 		#string
 		self.name = name;
-
-    def portScan(self, start):
-        #start is the node to start port scan
