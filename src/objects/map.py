@@ -8,6 +8,7 @@ class Map(object):
 	def __init__(self):
 		self.teams = []
 		self.nodes = []
+		self.nodesByID = {}
 
 	# Add a team and assign them a starting node
 	def addTeam(self, teamId):
@@ -21,9 +22,36 @@ class Map(object):
 
 	# Decrement the power of connected nodes
 	# Will raise an exception if the required amount of power is not available
-	def decrementPower(self, processing, networking):
+	def decrementPower(self, startingNode, processing, networking):
+		connectedNodes = set()
+		getConnectedNodes(startingNode, connectedNodes, startingNode.ownerId)
+		totalProcessing = 0
+		totalNetworking = 0
+		for node in connectedNodes:
+			totalProcessing += node.remainingProcessing
+			totalNetworking += node.remainingNetworking
+		if totalProcessing < processing:
+			raise Exception("Not enough processing power.")
+		if totalNetworking < networking:
+			raise Exception("Not enough networking power.")
+		for node in connectedNodes:
+			if processing > node.remainingProcessing:
+				processing -= node.remainingProcessing
+				node.remainingProcessing = 0
+			else:
+				node.remainingProcessing -= processing
+				processing = 0
+			if networking > node.remainingNetworking:
+				networking -= node.remainingNetworking
+				node.remainingNetworking = 0
+			else:
+				node.remainingNetworking -= networking
+				networking = 0
 
-
-	# decrementPower() recursive helper function
-	def decrementPowerRecursor(self, processing, networking):
-
+	# recursive function to add all connected nodes to the connectedNodes set
+	def getConnectedNodes(self, startingNode, connectedNodes, ownerId):
+		if startingNode.ownerId != ownerId or startingNode in connectedNodes:
+			return
+		connectedNodes.append(startingNode)
+		for adjacent in startingNode.adjacentIds:
+			getConnectedNodes(adjacent, connectedNodes, ownderId)
