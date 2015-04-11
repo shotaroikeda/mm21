@@ -7,8 +7,10 @@ class Node(object):
     def __init__(self, id, adjacent, nodetype):
         # int
         self.id = id
-        self.processingPower = game_constants.processing[nodeType]
-        self.networkingPower = game_constants.networking[nodeType]
+        self.processing = game_constants.processing[nodeType]
+        self.networking = game_constants.networking[nodeType]
+	self.remainingProcessing = game_constants.networking[nodeType]
+	self.remainingNetworking = game_constants.processing[nodeType]
         self.ownerId = None
         self.softwareLevel = 0
         # int[]
