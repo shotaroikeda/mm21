@@ -1,3 +1,7 @@
+"""
+Holds data about the map
+"""
+
 import game_constants
 
 class DuplicateTeamException(Exception):

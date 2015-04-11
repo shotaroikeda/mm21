@@ -1,3 +1,7 @@
+"""
+Holds data about a specific player
+"""
+
 import game_constants.py
 class Player(object):
 	def __init__(self, id, name, IPSNode):
@@ -6,6 +10,3 @@ class Player(object):
 		self.IPSNode = IPSNode;
 		#string
 		self.name = name;
-
-    def portScan(self, start):
-        #start is the node to start port scan
