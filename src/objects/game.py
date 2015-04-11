@@ -2,7 +2,8 @@
 This class translates between JSON and Python stuff
 """
 
-class Game(object)
+
+class Game(object):
     def __init__(self):
         self.queuedTurns = []
         return
@@ -11,7 +12,7 @@ class Game(object)
     def queueTurn(turnJson):
         self.queuedTurns.append(turnJson)
         pass
-    
+
     # Execute queued turns and return the resulting JSON
     def executeQueuedTurns():
         results = []
@@ -23,4 +24,3 @@ class Game(object)
     # Execute a turn and return the resulting JSON
     def executeTurn(turnJson):
         pass
-
