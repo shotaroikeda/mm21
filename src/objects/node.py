@@ -1,7 +1,7 @@
 import game_constants
 
 
-class MapNode(object):
+class Node(object):
     def __init__(self, id, adjacent, nodetype):
         # int
         self.id = id
