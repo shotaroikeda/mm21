@@ -21,6 +21,7 @@ class Node(object):
         self.isIPSed = False
         # dict<int, int>
         self.infiltration = dict()
+        self.nodetype = nodetype
 
     def connect(self, other):
         # other is a mapNode

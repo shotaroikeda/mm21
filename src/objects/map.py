@@ -32,7 +32,11 @@ class Map(object):
 
 	# Get all nodes of a given type (e.g. all ISPs)
 	def getNodesOfType(self, nodeType):
-		return [x for x in self.nodes if x.type == nodeType] # DOES NOT WORK PLZ FIX
+		nodesOfType = []
+		for node in self.nodes.itervalues():
+			if node.nodetype == nodeType:
+				nodesOfType.append(node)
+		return nodesOfType
 
 	# Decrement the power of connected nodes
 	# Will raise an exception if the required amount of power is not available
