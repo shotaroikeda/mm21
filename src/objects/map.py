@@ -7,6 +7,9 @@ import game_constants
 class DuplicateTeamException(Exception):
 	pass
 
+class InsufficientPowerException(Exception):
+	pass
+
 class Map(object):
 	def __init__(self):
 		self.teams = []
@@ -25,7 +28,6 @@ class Map(object):
 
 	# Decrement the power of connected nodes
 	# Will raise an exception if the required amount of power is not available
-<<<<<<< HEAD
 	def decrementPower(self, startingNode, processing, networking):
 		connectedNodes = set()
 		getConnectedNodes(startingNode, connectedNodes, startingNode.ownerId)
@@ -34,10 +36,9 @@ class Map(object):
 		for node in connectedNodes:
 			totalProcessing += node.remainingProcessing
 			totalNetworking += node.remainingNetworking
-		if totalProcessing < processing:
-			raise Exception("Not enough processing power.")
-		if totalNetworking < networking:
-			raise Exception("Not enough networking power.")
+		if totalProcessing < processing or totalNetworking < networking:
+			raise InsufficientPowerException("networking = " + totalNetworking + ", processing = " + 
+				totalProcessing + "\nNeeded networking = " + networking + ", processing = " + processing)
 		for node in connectedNodes:
 			if processing > node.remainingProcessing:
 				processing -= node.remainingProcessing
@@ -59,11 +60,3 @@ class Map(object):
 		connectedNodes.append(startingNode)
 		for adjacent in startingNode.adjacentIds:
 			getConnectedNodes(adjacent, connectedNodes, ownderId)
-=======
-	def decrementPower(self, processing, networking):
-		pass
-
-	# decrementPower() recursive helper function
-	def decrementPowerRecursor(self, processing, networking):
-		pass
->>>>>>> 32fbc84a726d7bcfb0aae372c89c10fa96ce2a38
