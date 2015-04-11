@@ -7,20 +7,28 @@ import game_constants
 class DuplicateTeamException(Exception):
 	pass
 
+class DuplicateNodeException(Exception):
+	pass
+
 class InsufficientPowerException(Exception):
 	pass
 
 class Map(object):
 	def __init__(self):
 		self.teams = []
-		self.nodes = []
-		self.nodesByID = {}
+		# key = id, value = node
+		self.nodes = {}
 
 	# Add a team and assign them a starting node
 	def addTeam(self, teamId):
 		if teamId in self.teams:
-			raise DuplicateTeamException("teamId is already in teams.")
+			raise DuplicateTeamException("teamId " + teamId + "is already in teams.")
 		self.teams.append(teamId)
+
+	def addNode(self, node):
+		if node.id in self.nodes:
+			raise DuplicateNodeException("nodeId " + node.id + "is already in nodes.")
+		self.nodes[node.id] = node
 
 	# Get all nodes of a given type (e.g. all ISPs)
 	def getNodesOfType(self, nodeType):
@@ -59,4 +67,4 @@ class Map(object):
 			return
 		connectedNodes.append(startingNode)
 		for adjacent in startingNode.adjacentIds:
-			getConnectedNodes(adjacent, connectedNodes, ownderId)
+			getConnectedNodes(self.nodes[adjacent], connectedNodes, ownderId)
