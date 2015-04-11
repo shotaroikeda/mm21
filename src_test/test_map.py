@@ -16,3 +16,9 @@ def test_addDupTeam():
 		_map.addTeam(1)
 		_map.addTeam(1)
 		assert _map.teams[0] == 1
+
+#add tests for getNodesOfType as soon as it works map.py:23 note says that the test doesn't work
+
+#add tests for decrementPower and decrementPowerRecursor once functions are written
+
+
