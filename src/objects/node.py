@@ -9,8 +9,8 @@ class Node(object):
         self.id = id
         self.processing = game_constants.processing[nodeType]
         self.networking = game_constants.networking[nodeType]
-	self.remainingProcessing = game_constants.networking[nodeType]
-	self.remainingNetworking = game_constants.processing[nodeType]
+        self.remainingProcessing = game_constants.networking[nodeType]
+        self.remainingNetworking = game_constants.processing[nodeType]
         self.ownerId = None
         self.softwareLevel = 0
         # int[]
@@ -21,6 +21,7 @@ class Node(object):
         self.isIPSed = False
         # dict<int, int>
         self.infiltration = dict()
+        self.nodetype = nodetype
 
     def connect(self, other):
         # other is a mapNode
