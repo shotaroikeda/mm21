@@ -56,26 +56,28 @@ class MMServer( object ):
     #   Runs the game
     #   @param port the port number to wait on
     def run(self, port, run_when_ready=None, run_for_each=None, time_out=None):
-        #create an INET, STREAMing socket
+
+        # Create an INET, STREAMing socket
         serversocket = socket.socket(
             socket.AF_INET, socket.SOCK_STREAM)
-        #Set reuse address so that we don't have to wait before running again
         serversocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        #bind the socket to localhost and the port
         serversocket.bind(('localhost', port))
         serversocket.settimeout(time_out)
-        #become a server socket
         serversocket.listen(self.maxPlayers)
+
+        # Initialize data
         playerConnections = [None for i in range(0, self.maxPlayers)]
         turnObjects = [None for i in range(0, self.maxPlayers)]
         recval = ["" for i in range(0, self.maxPlayers)]
         forfeit = [False for i in range(0, self.maxPlayers)]
         validTurns = 0
         print 'connecting ...'
+
         # Gamerunner: Server is ready, start clients
         if run_when_ready:
             run_when_ready()
-        #Accept connections from correct number of players
+
+        # Accept connections from correct number of players
         for i in range(0, self.maxPlayers):
             # Keep track of which client is in which array pos to determine winner
             if run_for_each:
@@ -84,17 +86,18 @@ class MMServer( object ):
             playerConnections[i] = clientsocket
         lookupPlayer = dict(zip(playerConnections, [i for i in range(0, self.maxPlayers)]))
         print 'sockets connected ...'
-        #Accept starting connection first
+
+        # Handle initial connections
         starting = True
         currTime = time.time()
         endTime = time.time() + self.initialTimeLimit
         while starting:
             ready = [[],[],[]]
-            #Receive info
             if endTime - currTime > 0:
                 ready = select.select(playerConnections, [], [], endTime - currTime)
             if ready[0] == [] :
-                #Forfeits when there is a timeout on initial connection
+
+                # Forfeits when there is a timeout on initial connection
                 for i in range(0, self.maxPlayers):
                     if turnObjects[i] is None:
                         turnObjects[i] = json.loads('{ "status": "Failure", "errors" : ["Timeout on initial connection, auto-forfeit. '+
@@ -103,8 +106,8 @@ class MMServer( object ):
                         forfeit[i] = True
                         validTurns = validTurns + 1
             else:
+                # Receive data
                 for connection in ready[0]:
-                    #Receive data
                     player = lookupPlayer[connection]
                     try:
                         recval[player] += connection.recv(self.maxDataSize)
@@ -138,7 +141,7 @@ class MMServer( object ):
 
                 starting = False
 
-                #Return turn info back to the clients
+                # Return turn info back to the clients
                 for i in range(0, self.maxPlayers):
                     try:
                         playerConnections[i].sendall(json.dumps(turnObjects[i], ensure_ascii=True)+"\n")
@@ -146,22 +149,24 @@ class MMServer( object ):
                         pass
             currTime = time.time()
         self.logger.print_stuff(json.dumps(turnObjects))
+
+        # Reset values
         validTurns = 0
         for i in range(0, self.maxPlayers):
             turnObjects[i]=None
-        for i in range(0, self.maxPlayers):
             recval[i]=""
         currTime = time.time()
         endTime = time.time() + self.timeLimit
         running = True
         errors = [[] for i in turnObjects]
+
+        # Receive info
         while running:
-            #Receive info
             ready = [[],[],[]]
             if endTime - currTime > 0:
                 ready = select.select(playerConnections, [], [], endTime - currTime)
             if ready[0] == []:
-                #Timeout
+                # Timeout
                 for i in range(0, self.maxPlayers):
                     if turnObjects[i] is None:
                         turnObjects[i] = {}
@@ -185,16 +190,15 @@ class MMServer( object ):
                             errors[player] = ["Invalid JSON"]
                             validTurns = validTurns+1
             if validTurns == self.maxPlayers:
-                #Send turns to engine
+                # Send turns to engine
                 for i in range(0, self.maxPlayers):
                     if not forfeit[i] and errors[i] == []:
                         errors[i] = self.game.queue_turn(turnObjects[i], i)
 
                 running = self.game.execute_turn()
 
-                # set up a buffer to hold what we need to send players
+                # Send turn results back to clients
                 player_data_for_turn = [None] * self.maxPlayers
-                #Return turn info back to the clients
                 for i in range(0, self.maxPlayers):
                     if not forfeit[i]:
                         try:
@@ -206,17 +210,18 @@ class MMServer( object ):
                                 json.dumps(player_data_for_turn[i], ensure_ascii = True) + "\n")
                         except IOError:
                             pass
-                #log what infomation is sent to the clients
+                # Log results
                 self.logger.print_stuff(json.dumps(player_data_for_turn))
 
-                #clear turn objects
+                # Clear turn objects
                 validTurns = 0
                 for i in range(0, self.maxPlayers):
                     turnObjects[i]=None
                 for i in range(0, self.maxPlayers):
                     recval[i]=""
                 errors = [[] for i in turnObjects]
-                #reset endtime
+
+                # Reset end-time
                 currTime = time.time()
                 endTime = time.time() + self.timeLimit
             else:
