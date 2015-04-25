@@ -47,13 +47,16 @@ class Game(object):
                 result["message"] = "Invalid node."
             except AttemptToMultipleDDosException:
                 result["status"] = "fail"
-                result["message"] = "Attempt to do " + turn["type"]
+                result["message"] = "Attempt to ddos ddosed node."
+            except AttemptToMultipleRootkitException:
+                result["status"] = "fail"
+                result["message"] = "Attempt to rootkit rootkitted node."
             except IndexError:
                 result["status"] = "fail"
-                result["message"] = "Invalid playerID"
+                result["message"] = "Invalid playerID."
             except:
                 result["status"] = "fail"
-                result["message"] = "Unknown exception"
+                result["message"] = "Unknown exception."
         # Done!
         self.queuedTurns = []
         return True

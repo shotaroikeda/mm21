@@ -4,10 +4,11 @@ Data-mutators for actions players can do (to the map, other players, and/or node
 class AttemptToMultipleDDosException(Exception)
     pass
 
-class 
+class AttemptToMultipleRootkitException(Exception)
+    pass
 
 def doControl(self, playerId):
-        if playerId == self.ownerId:
+    if playerId == self.ownerId:
         for k in self.infiltration.iterkeys():
             self.infiltration[k] = max(self.infiltration[k] - 1, 0)
     else:
@@ -40,10 +41,9 @@ def doScan(self):
 
 def doRootkit(self, playerId):
     if playerId in self.rootkitIds:
-        raise Exception("This player has a rootkit here already.")
+        raise AttemptToMultipleRootkitException("This player has a rootkit here already.")
     self.rootkitIds.append(playerId)
     return
 
-# action called upon the entire map
 def doPortScan(self):
 	return self
