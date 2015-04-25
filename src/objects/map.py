@@ -75,21 +75,23 @@ class Map(object):
             node.remainingNetworking -= difference
             networking -= difference
 
-    # Get all nodes of a particular team that are connected to another node
-    def getConnectedNodes(self, startingNode, connectedNodes, ownerId):
-        if startingNode.ownerId != ownerId or startingNode in connectedNodes:
+    # Get all nodes that are clustered with (connected to and of the same team as) another node
+    def getClusteredNodes(self, startNode, clusteredNodes, ownerId):
+        if startNode.ownerId != ownerId or startNode in clusteredNodes:
             return
-        connectedNodes.append(startingNode)
-        for adjacent in startingNode.adjacentIds:
-            getConnectedNodes(self.nodes[adjacent], connectedNodes, ownderId)
+        clusteredNodes.append(startNode)
+        for adjacent in startNode.adjacentIds:
+            getConnectedNodes(self.nodes[adjacent], clusteredNodes, ownerId)
 
     # Get all nodes visible to another node
-    def getVisibleNodes(self, startingNode, visibleNodes, ownerId):
-        visibleNodes.append(startingNode) 
-        if (startingNode.ownerId != ownerId and ownerId not in startingNode.rootkits) or startingNode in visibleNodes:
+    def getVisibleNodes(self, startNode, visibleNodes, ownerId):
+        if startNode in visibleNodes:
             return
-        for adjacent in startingNode.adjacentIds:
-            getVisibleNodes(self.nodes[adjacent], visibleNodes, ownderId)
+        visibleNodes.append(startNode) 
+        if startNode.ownerId != ownerId and ownerId not in startNode.rootkits:
+            return
+        for adjacent in startNode.adjacentIds:
+            getVisibleNodes(self.nodes[adjacent], visibleNodes, ownerId)
 
     # Reset the map after a turn has finished
     def resetAfterTurn(self):
@@ -99,4 +101,4 @@ class Map(object):
             node.remainingProcessing = node.processing
             node.remainingNetworking = node.networking
 
-
+        #
