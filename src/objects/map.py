@@ -101,4 +101,9 @@ class Map(object):
             node.remainingProcessing = node.processing
             node.remainingNetworking = node.networking
 
-        #
+        # Update DDoS status
+        for n in self.nodes:
+            if self.DDoSStatus == DDoSStatus.PENDING:
+                self.DDoSStatus = DDosStatus.DDOSED
+            elif self.DDoSStatus == DDoSStatus.DDOSED:
+                self.DDoSStatus = DDoSStatus.NONE

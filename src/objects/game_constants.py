@@ -19,3 +19,9 @@ class NodeType:
 
     processing = [processing0]
     networking = [networking0]
+
+#DDoSStatus enum
+class DDoSStatus:
+    PENDING = 1
+    DDOSED = 2
+    NONE = 3
