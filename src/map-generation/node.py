@@ -1,7 +1,7 @@
 class Node(object):
 
-    def __init__(self, graph, nodeType):
-        self.nodeType = nodeType  #
+    def __init__(self, graph, node_type):
+        self.node_type = node_type  #
         self.connected_nodes = []  # list of edges
         self.uid = graph.add_vertex(self)
 
@@ -10,12 +10,12 @@ class Node(object):
             self.connected_nodes.append(edge)
 
     def __str__(self):
-        s = str(self.uid) + "-" + self.nodeType
+        s = str(self.uid) + "-" + self.node_type
         # s += str(self.connected_nodes) + "\n"
         return s
 
     def __repr__(self):
-        s = str(self.uid) + "-" + self.nodeType
+        s = str(self.uid) + "-" + self.node_type
         # s += str(self.connected_nodes) + "\n"
         return s
 
