@@ -60,14 +60,14 @@ class Continent():
         if r_isp > s_isp:
             while len(used_isp_list_send) != s_isp:
                 isp1 = self.get_random_isp()
-                while isp1.uid not in used_isp_list_send:
+                while isp1.uid in used_isp_list_send:
                     isp1 = self.get_random_isp()
                 isp2 = continent.get_random_isp()
-                while isp2.uid not in used_isp_list_recv:
-                    isp2 = self.get_random_isp()
+                while isp2.uid in used_isp_list_recv:
+                    isp2 = continent.get_random_isp()
                 used_isp_list_send.append(isp1.uid)
                 used_isp_list_recv.append(isp2.uid)
-                self.connent_continent_isp(graph, isp1, isp2, s_per_isp, r_per_isp)
+                self.connent_continent_isp(graph, continent, isp1, isp2, s_per_isp, r_per_isp)
             for _ in range(r_isp - s_isp):
                 used_isp_list_send = random.shuffle(used_isp_list_send)
                 isp1 = used_isp_list_send[0]
@@ -75,18 +75,18 @@ class Continent():
                 while isp2.uid not in used_isp_list_recv:
                     isp2 = continent.get_random_isp()
                 used_isp_list_recv.append(isp2.uid)
-                self.connent_continent_isp(graph, isp1, isp2, s_per_isp, r_per_isp)
+                self.connent_continent_isp(graph, continent, isp1, isp2, s_per_isp, r_per_isp)
         else:
             while len(used_isp_list_recv) != r_isp:
                 isp1 = self.get_random_isp()
-                while isp1.uid not in used_isp_list_send:
+                while isp1.uid in used_isp_list_send:
                     isp1 = self.get_random_isp()
                 isp2 = continent.get_random_isp()
-                while isp2.uid not in used_isp_list_recv:
-                    isp2 = self.get_random_isp()
+                while isp2.uid in used_isp_list_recv:
+                    isp2 = continent.get_random_isp()
                 used_isp_list_send.append(isp1.uid)
                 used_isp_list_recv.append(isp2.uid)
-                self.connent_continent_isp(graph, isp1, isp2, s_per_isp, r_per_isp)
+                self.connent_continent_isp(graph, continent, isp1, isp2, s_per_isp, r_per_isp)
             for _ in range(s_isp - r_isp):
                 used_isp_list_recv = random.shuffle(used_isp_list_recv)
                 isp1 = used_isp_list_recv[0]
@@ -94,13 +94,13 @@ class Continent():
                 while isp2.uid not in used_isp_list_send:
                     isp2 = self.get_random_isp()
                 used_isp_list_send.append(isp2.uid)
-                self.connent_continent_isp(graph, isp1, isp2, s_per_isp, r_per_isp)
+                self.connent_continent_isp(graph, continent, isp2, isp1, s_per_isp, r_per_isp)
 
     # Connects two isps given a number of cities to connect for each isp
     def connent_continent_isp(self, graph, continent, isp1, isp2, unique_cities_isp1, unique_cities_isp2):
-        if unique_cities_isp1 > len(self.isps_city_list[isp1]):
+        if unique_cities_isp1 > len(self.isps_city_list[self.isp_list.index(isp1)]):
             raise Exception('Invalid number of edges for isp1')
-        if unique_cities_isp2 > len(self.isps_city_list[isp2]):
+        if unique_cities_isp2 > len(continent.isps_city_list[continent.isp_list.index(isp2)]):
             raise Exception('Invalid number of edges for isp2')
 
         used_city_list_isp1 = []
@@ -108,10 +108,10 @@ class Continent():
         if unique_cities_isp2 > unique_cities_isp1:
             while len(used_city_list_isp1) != unique_cities_isp1:
                 city1 = self.get_random_city(isp1)
-                while city1.uid not in used_city_list_isp1:
+                while city1.uid in used_city_list_isp1:
                     city1 = self.get_random_city(isp1)
                 city2 = continent.get_random_city(isp2)
-                while city2.uid not in used_city_list_isp2:
+                while city2.uid in used_city_list_isp2:
                     city2 = continent.get_random_city(isp2)
                 used_city_list_isp1.append(city1.uid)
                 used_city_list_isp2.append(city2.uid)
@@ -120,17 +120,17 @@ class Continent():
                 used_city_list_isp1 = random.shuffle(used_city_list_isp1)
                 city1 = used_city_list_isp1[0]
                 city2 = continent.get_random_city(isp2)
-                while city2.uid not in used_city_list_isp2:
+                while city2.uid in used_city_list_isp2:
                     city2 = continent.get_random_city(isp2)
                 used_city_list_isp2.append(city2.uid)
                 graph.add_edge(city1, city2)
         else:
             while len(used_city_list_isp2) != unique_cities_isp2:
                 city2 = continent.get_random_city(isp2)
-                while city2.uid not in used_city_list_isp2:
+                while city2.uid in used_city_list_isp2:
                     city2 = continent.get_random_city(isp2)
                 city1 = self.get_random_city(isp1)
-                while city1.uid not in used_city_list_isp1:
+                while city1.uid in used_city_list_isp1:
                     city1 = self.get_random_city(isp1)
                 used_city_list_isp2.append(city2.uid)
                 used_city_list_isp1.append(city1.uid)
@@ -139,7 +139,7 @@ class Continent():
                 used_city_list_isp2 = random.shuffle(used_city_list_isp2)
                 city2 = used_city_list_isp2[0]
                 city1 = self.get_random_city(isp1)
-                while city1.uid not in used_city_list_isp1:
+                while city1.uid in used_city_list_isp1:
                     city1 = self.get_random_city(isp1)
                 used_city_list_isp1.append(city1.uid)
                 graph.add_edge(city2, city1)
