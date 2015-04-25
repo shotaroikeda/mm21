@@ -1,5 +1,5 @@
 """
-Holds data about a specific player
+Holds data about a specific Player
 """
 
 import game_constants.py
