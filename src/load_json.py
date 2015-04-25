@@ -1,4 +1,3 @@
-from map import Map
 from json import dump, dumps, load, loads, JSONEncoder
 import pickle
 
@@ -17,15 +16,11 @@ def as_python_object(dct):
     return dct
 
 
-if __name__ == "__main__":
-    # Generate Map
-    m = Map(2, 2, 2)
+def save_map_to_file(filename, json):
+    with open(filename, "w") as outfile:
+        dump(dumps(json, cls=PythonObjectEncoder), outfile, indent=2)
 
-    # Convert to JSON
-    with open("json.txt", "w") as outfile:
-        dump(dumps(m.convert_to_json(), cls=PythonObjectEncoder), outfile, indent=2)
-    # Test load JSON
-    with open("json.txt", "r") as infile:
-        print loads(load(infile), object_hook=as_python_object)
-    # Print graph using networkx
-    # m.draw_graph()
+
+def load_map_from_file(filename):
+    with open(filename, "r") as infile:
+        return loads(load(infile), object_hook=as_python_object)
