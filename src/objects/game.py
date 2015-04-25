@@ -30,6 +30,9 @@ class Game(object):
                 except KeyError:
                     result["status"] = "fail"
                     result["message"] = "Invalid node."
+                except AttemptToMultipleDDosException:
+                    result["status"] = "fail"
+                    result["message"] = "Attempt to do DDos on a DDosed node."
                 except:
                     result["status"] = "fail"
                     result["message"] = "Unknown exception"
@@ -84,7 +87,7 @@ class Game(object):
                     map.nodes[turn["target"]].doScan()
                 except KeyError:
                     result["status"] = "fail"
-                    result["message"] = "Invalid node"
+                    result["message"] = "Invalid  node"
                 except:
                     result["status"] = "fail"
                     result["message"] = "Unknown exception"
@@ -99,7 +102,8 @@ class Game(object):
                     result["status"] = "fail"
                     result["message"] = "Invalid node"
                 except IndexError:
-                    result["status"]
+                    result["status"] = "fail"
+                    result["message"] = "Invalid playerID"
                 except:
                     result["status"] = "fail"
                     result["message"] = "Unknown exception"
@@ -109,10 +113,7 @@ class Game(object):
 
             elif turn["type"] == "portScan":
                 try:
-                    map.nodes[turn["target"]].doPortScan()
-                except KeyError:
-                    result["status"] = "fail"
-                    result["message"] = "Invalid node"
+                    map.doPortScan()
                 except:
                     result["status"] = "fail"
                     result["message"] = "Unknown exception"

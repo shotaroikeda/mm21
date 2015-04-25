@@ -1,10 +1,13 @@
 """
 Data-mutators for actions players can do (to the map, other players, and/or nodes)
 """
+class AttemptToMultipleDDosException(Exception)
+    pass
 
+class 
 
 def doControl(self, playerId):
-    if playerId == self.ownerId:
+        if playerId == self.ownerId:
         for k in self.infiltration.iterkeys():
             self.infiltration[k] = max(self.infiltration[k] - 1, 0)
     else:
@@ -15,6 +18,8 @@ def doControl(self, playerId):
 
 
 def doDDOS(self):
+    if self.isDDOSed is True:
+        raise AttemptToMultipleDDosException() # what should I put in here? 
     self.isDDOSed = True
     return
 
@@ -39,5 +44,6 @@ def doRootkit(self, playerId):
     self.rootkitIds.append(playerId)
     return
 
+# action called upon the entire map
 def doPortScan(self):
 	return self
