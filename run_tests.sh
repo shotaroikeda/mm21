@@ -28,13 +28,8 @@ export PYTHONPATH:=$DIR
 
 # turn on errors in bash
 set -e
-if hash py.test 2>/dev/null; then
-        py.test
-    else
-        echo "Error could not find pytest installed"
-        exit 1
-fi
 
+# check code quality and correctness
 if hash pep8 2>/dev/null; then
     pep8 src --ignore=E122,E241,W293,W291,W391,E501,E126
     pep8 src_test --ignore=E122,E241,W293,W291,W391,E501,E126
@@ -42,6 +37,16 @@ else
     echo "Error could not find pep8 installed"
     exit 1
 fi
+
+# run unit tests
+if hash py.test 2>/dev/null; then
+        py.test
+    else
+        echo "Error could not find pytest installed"
+        exit 1
+fi
+
+
 echo "All test run successful"
 
 FILE="$(basename "$(test -L "$0" && readlink "$0" || echo "$0")")"
