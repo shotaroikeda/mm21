@@ -26,12 +26,14 @@ class Map(object):
     # Add a team and assign them a starting node
     def addTeam(self, teamId):
         if teamId in self.teams:
-            raise DuplicateTeamException("teamId " + teamId + "is already in teams.")
+            raise DuplicateTeamException(
+                "teamId {} is already in teams".format(teamId))
         self.teams.append(teamId)
 
     def addNode(self, node):
         if node.id in self.nodes:
-            raise DuplicateNodeException("nodeId " + node.id + "is already in nodes.")
+            raise DuplicateNodeException(
+                "nodeId {} is already in nodes.".format(node.id))
         self.nodes[node.id] = node
 
     # Get all nodes of a given type (e.g. all ISPs)
