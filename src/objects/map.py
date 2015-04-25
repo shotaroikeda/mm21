@@ -45,32 +45,60 @@ class Map(object):
     # Decrement the power of connected nodes
     # Will raise an exception if the required amount of power is not available
     def decrementPower(self, startingNode, processing, networking):
+
+        # Get connected nodes
         connectedNodes = set()
         getConnectedNodes(startingNode, connectedNodes, startingNode.ownerId)
 
+        # Make sure connected nodes have required resource amounts
         totalProcessing = 0
         totalNetworking = 0
         for node in connectedNodes:
             totalProcessing += node.remainingProcessing
             totalNetworking += node.remainingNetworking
-
         if totalProcessing < processing or totalNetworking < networking:
             raise InsufficientPowerException("networking = %d, processing = %d\nNeeded networking = %d, processing = %d" %
                 (totalNetworking, totalProcessing, networking, processing))
 
+        # Subtract used resources from connected nodes
         for node in connectedNodes:
+            if processing == 0:
+                break
             difference = min(processing, remainingProcessing)
             node.remainingProcessing -= difference
             processing -= difference
 
+        for node in connectedNodes:
+            if networking == 0:
+                break
             difference = min(networking, remainingNetworking)
             node.remainingNetworking -= difference
             networking -= difference
 
-    # recursive function to add all connected nodes to the connectedNodes set
-    def getConnectedNodes(self, startingNode, connectedNodes, ownerId):
-        if startingNode.ownerId != ownerId or startingNode in connectedNodes:
+    # Get all nodes that are clustered with (connected to and of the same team as) another node
+    def getClusteredNodes(self, startNode, clusteredNodes, ownerId):
+        if startNode.ownerId != ownerId or startNode in clusteredNodes:
             return
-        connectedNodes.append(startingNode)
-        for adjacent in startingNode.adjacentIds:
-            getConnectedNodes(self.nodes[adjacent], connectedNodes, ownderId)
+        clusteredNodes.append(startNode)
+        for adjacent in startNode.adjacentIds:
+            getConnectedNodes(self.nodes[adjacent], clusteredNodes, ownerId)
+
+    # Get all nodes visible to another node
+    def getVisibleNodes(self, startNode, visibleNodes, ownerId):
+        if startNode in visibleNodes:
+            return
+        visibleNodes.append(startNode) 
+        if startNode.ownerId != ownerId and ownerId not in startNode.rootkits:
+            return
+        for adjacent in startNode.adjacentIds:
+            getVisibleNodes(self.nodes[adjacent], visibleNodes, ownerId)
+
+    # Reset the map after a turn has finished
+    def resetAfterTurn(self):
+
+        # Reset remaining resource counts
+        for n in self.nodes:
+            node.remainingProcessing = node.processing
+            node.remainingNetworking = node.networking
+
+        #
