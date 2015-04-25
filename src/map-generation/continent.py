@@ -8,21 +8,24 @@ class Continent():
     # ARGS - Graph Object, Number of ISPs per continent, Number of cities per ISP
 
     def __init__(self, graph, num_ISPs, cities_per_ISP):
-        # Init  
+        # Init object lists
         self.isp_list = []
         self.datacenter_list = []
         self.isps_city_list = []
+
+        # Generates num_ISPs ISPs and DCs
+        # It maintains a circular connection (For easy of visualization)
         for _ in range(num_ISPs):
-            isp = self.generate_ISP(graph, cities_per_ISP)
-            datacenter = self.generate_datacenter(graph)
+            isp = self.generate_ISP(graph, cities_per_ISP)  # Generate ISP
+            datacenter = self.generate_datacenter(graph)  # Generate DC
 
-            self.isp_list.append(isp)
-            self.datacenter_list.append(datacenter)
+            self.isp_list.append(isp)  # Add ISP to list
+            self.datacenter_list.append(datacenter)  # Add DC to list
 
-            graph.add_edge(isp, datacenter)
+            graph.add_edge(isp, datacenter)  # Connect the ISP and DC
             if len(self.isp_list) != 1:
-                graph.add_edge(isp, self.isp_list[-2])
-                graph.add_edge(datacenter, self.datacenter_list[-2])
+                graph.add_edge(isp, self.isp_list[-2])  # Connect ISP with previous ISP
+                graph.add_edge(datacenter, self.datacenter_list[-2])  # Connect DC with previous DC
         if len(self.isp_list) > 1:
             graph.add_edge(self.isp_list[0], self.isp_list[-1])
             graph.add_edge(self.datacenter_list[0], self.datacenter_list[-1])
@@ -31,8 +34,8 @@ class Continent():
     # ARGS - Graph Object, Number of cities per ISP
 
     def generate_ISP(self, graph, cities_per_ISP):
-        isp = Node.get_ISP_node(graph) #
-        isp_city_list = []
+        isp = Node.get_ISP_node(graph)  # Create a ISP
+        isp_city_list = []  # Init city list for ISPs
         for _ in range(cities_per_ISP):
             isp_city_list.append(Node.get_large_city_node(graph))
 
