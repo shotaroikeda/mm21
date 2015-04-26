@@ -6,6 +6,15 @@ CRED="\033[91m"
 CEND="\033[0m"
 FBOLD="\033[1m"
 
+if [[ $* == *--help* ]] || [ "$1" == "-h" ]; then
+    echo "Usage: $0 [--help, --cov, --edited]]"
+    echo "--help will print this message"
+    echo "--cov with print a coverage report"
+    echo "--edited will limmit test to the files changed but not yet commited"
+    exit 0
+fi
+
+
 # Initial message
 message(){
     echo ""
@@ -31,7 +40,8 @@ set -e
 
 # Run pep8 (Python linter) + unit tests
 if hash pep8 2>/dev/null; then
-    if [[ $* == *--me-only* ]]; then
+    if [[ $* == *--edited* ]]; then
+        cd $DIR
         for i in $( git diff --name-only HEAD ); do
             extension="${i##*.}"
             if [ "$extension" == "py" ]; then
@@ -39,20 +49,23 @@ if hash pep8 2>/dev/null; then
             fi
         done
     else
-        pep8 src --ignore=E122,E241,W293,W291,W391,E501,E126
-        pep8 src_test --ignore=E122,E241,W293,W291,W391,E501,E126
+        pep8 $DIR/src --ignore=E122,E241,W293,W291,W391,E501,E126
+        pep8 $DIR/src_test --ignore=E122,E241,W293,W291,W391,E501,E126
     fi
 else
     echo "$CRED $FBOLD Error: pep8 not found. $CEND"
     exit 1
 fi
 if hash py.test 2>/dev/null; then
-        py.test
+        py.test $DIR/src $DIR/src_test
     else
         echo "$CGRN $FBOLD Error: pytest not found. $CEND"
         exit 1
 fi
 echo "$CGRN All tests ran! $CEND"
+
+# Print report
+
 
 # Install pre-commit hook
 FILE="$(basename "$(test -L "$0" && readlink "$0" || echo "$0")")"
@@ -66,6 +79,17 @@ if [ ! -L $HOOKPATH ]; then
     # Symlink to new hook file
     ln -s $DIR/$FILE $HOOKPATH
     echo "Pre-commit hoook installed!"
+fi
+
+if [[ $* == *--cov* ]] ; then
+    if command -v py.test --cov src/server src_test >/dev/null 2>&1; then
+        py.test --cov $DIR/src/server $DIR/src_test
+        py.test --cov $DIR/src/vis $DIR/src_test
+        py.test --cov $DIR/src/mapgen $DIR/src_test
+        py.test --cov $DIR/src/objects $DIR/src_test
+    else
+        echo "Cant find pytest-cov plugin"
+    fi
 fi
 
 # Done!
