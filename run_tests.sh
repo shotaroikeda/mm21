@@ -23,11 +23,30 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 echo $DIR
 
 # Add it to the python path
-${PYTHONPATH:==""}
-export PYTHONPATH:=$DIR
+export PYTHONPATH=$DIR
 
 # turn on errors in bash
 set -e
+
+# check code quality and correctness
+if hash pep8 2>/dev/null; then
+    if [[ $* == *--me-only* ]]; then
+        for i in $( git diff --name-only HEAD ); do
+            extension="${i##*.}"
+            if [ "$extension" == "py" ]; then
+                pep8 $i --ignore=E122,E241,W293,W291,W391,E501,E126
+            fi
+        done
+    else
+        pep8 src --ignore=E122,E241,W293,W291,W391,E501,E126
+        pep8 src_test --ignore=E122,E241,W293,W291,W391,E501,E126
+    fi
+else
+    echo "Error could not find pep8 installed"
+    exit 1
+fi
+
+# run unit tests
 if hash py.test 2>/dev/null; then
         py.test
     else
@@ -35,19 +54,14 @@ if hash py.test 2>/dev/null; then
         exit 1
 fi
 
-if hash pep8 2>/dev/null; then
-    pep8 src --ignore=E122,E241,W293,W291,W391,E501,E126
-    pep8 src_test --ignore=E122,E241,W293,W291,W391,E501,E126
-else
-    echo "Error could not find pep8 installed"
-    exit 1
-fi
+
 echo "All test run successful"
 
 FILE="$(basename "$(test -L "$0" && readlink "$0" || echo "$0")")"
 HOOKPATH=$DIR/".git/hooks/pre-commit"
 # install pre-commit hook
 if [ ! -L $HOOKPATH ]; then
+    echo "installing precommit hook"
     # remove old hook
     if  [ -f $HOOKPATH ]; then
         rm $HOOKPATH
@@ -56,3 +70,6 @@ if [ ! -L $HOOKPATH ]; then
     ln -s $DIR/$FILE $HOOKPATH
     echo "pre-commit hoook installed"
 fi
+
+trap finish EXIT
+echo "done"
