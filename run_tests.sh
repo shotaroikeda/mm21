@@ -71,5 +71,5 @@ if [ ! -L $HOOKPATH ]; then
     echo "pre-commit hoook installed"
 fi
 
-trap finish EXIT
+trap - 0
 echo "done"
