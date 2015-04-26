@@ -18,8 +18,8 @@ fi
 # Initial message
 message(){
     echo ""
-    echo "$CREDAbove is a list of errors detected in your code. $FBOLD Please fix them before committing!$CEND"
-    echo "You can bypass this check (and incur Ace's wrath) with \'git commit --no-verify\'"
+    echo -e "${CRED}Above is a list of errors detected in your code. ${FBOLD}Please fix them before committing!${CEND}"
+    echo -e "You can bypass this check (and incur Ace's wrath) with \'git commit --no-verify\'"
 }
 
 trap message 0
@@ -53,17 +53,17 @@ if hash pep8 2>/dev/null; then
         pep8 $DIR/src_test --ignore=E122,E241,W293,W291,W391,E501,E126
     fi
 else
-    echo -e "$CRED $FBOLD Error: pep8 not found. $CEND"
+    echo -e "${CRED}${FBOLD}Error: pep8 not found.${CEND}"
     exit 1
 fi
 if hash py.test 2>/dev/null; then
         py.test $DIR/src $DIR/src_test
     else
-        echo -e "$CGRN $FBOLD Error: pytest not found. $CEND"
+        echo -e "${CGRN}${FBOLD}Error: pytest not found.${CEND}"
         exit 1
 fi
 trap - 0
-echo "${CGRN}All tests ran! $CEND"
+echo -e "${CGRN}All tests ran!${CEND}"
 
 # Run code coverage analysis
 if [[ $* == *--cov* ]] ; then
@@ -93,4 +93,4 @@ if [ ! -L $HOOKPATH ]; then
 fi
 
 # Done!
-echo "${CGRN}${FBOLD}Done! $CEND"
+echo -e "${CGRN}${FBOLD}Done!${CEND}"
