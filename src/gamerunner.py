@@ -1,21 +1,20 @@
 #!/usr/bin/env python2
 from server.server import MMServer
 from subprocess import Popen
-import config.handle_constants
 import argparse
-import game
+from objects import game
 import sys
 import os
 import pickle
-import vis.visualizer
+# import vis.visualizer
 from urllib2 import urlopen, URLError
 import time
 from functools import partial
 
-FNULL = open(os.devnull, 'w')
-constants = config.handle_constants.retrieveConstants("serverDefaults")
-vis_constants = config.handle_constants.retrieveConstants("visualizerDefaults")
+import misc_constants as miscConstants
+import game_constants as gameConstants
 
+FNULL = open(os.devnull, 'w')
 
 parameters = None
 client_list = list()
@@ -45,92 +44,91 @@ def launch_client_test_game(client, port):
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Launches the server with p clients which "
+        description="Launch the server with p clients which "
         + "connect to it.")
     parser.add_argument(
         "-u", "--port",
-        help="Specifies the port on which the server should run. " +
-        "Defaults to {0}".format(constants["port"]),
-        default=constants["port"],
+        help="Specify the port the server runs on. " +
+        "Default: {0}".format(miscConstants.port),
+        default=miscConstants.port,
         type=int)
     parser.add_argument(
         "-w", "--debug-view",
-        help="Runs the debug view to help you find your problem!",
+        help="Run the debug view.",
         const=True,
         default=False,
         action="store_const",
     )
     parser.add_argument(
         "-m", "--map",
-        help="Specifies the map file on which the game should run. " +
-        "Defaults to {0}".format(constants["map"]),
-        default=constants["map"])
+        help="Specify the map file the game should use. " +
+        "Default: {0}".format(miscConstants.mapFile),
+        default=miscConstants.mapFile)
+    """
     parser.add_argument(
-        "-o", "--mapOverlay",
-        help="Specifies the overlay map file on which the game should be shown. " +
-        "Defaults to {0}".format(vis_constants["map_overlay"]),
-        default=vis_constants["map_overlay"])
+        "-o", "--mapBackground",
+        help="Specify map image to show the game on. " +
+        "Default: {0}".format(miscConstants.mapBackground),
+        default=miscConstants.mapBackground)
+    """
     parser.add_argument(
         "-l", "--log",
-        help="Specifies a log file where the game log will be written. " +
-        "For example, ./gamerunner.py --log BUTT.out, Defaults to {0}".
-        format(constants["log"]),
-        default=constants["log"])
+        help="Specify where the game log will be written to. " +
+        "For example, ./gamerunner.py --log LOG.out. Default: {0}".
+        format(miscConstants.logFile),
+        default=miscConstants.logFile)
     parser.add_argument(
         "-t", "--teams",
-        help="Specifies the number of teams. Defaults to {0}."
-        .format(constants["players"]),
-        default=constants["players"],
+        help="Specifies the number of teams. Default: {0}."
+        .format(gameConstants.numPlayers),
+        default=gameConstants.numPlayers,
         type=int)
     parser.add_argument(
         "-c", "--client",
-        help="Signifies this client to be run. " +
-        "As an example ./gamerunner.py -p 3 -c myClient -c test_clients/python " +
-        "The gamerunner will run a number of test clients (which can be " +
+        help="Specifies one or more clients to run. " +
+        "Example: ./gamerunner.py -p 3 -c myClient -c test_clients/python " +
+        "The gamerunner will run a number of default clients (location optionally"
         "specified with -d) equal to players - specified clients",
         action="append")
     parser.add_argument(
         "-d", "--defaultClient",
-        help="The default client to launch when no specific clients " +
-        "are given. Defaults to {0}".format(constants["defaultClient"]),
-        default=os.path.join(*constants["defaultClient"].split("/")))
+        help="The default client to use when others aren't specified."
+        "Default: {0}".format(miscConstants.defaultClient),
+        default=os.path.join(miscConstants.defaultClient).split("/"))
 
     parser.add_argument(
         "-v", "--verbose",
-        help="When present prints player one's standard output.",
+        help="Print player 1's standard output.",
         const=None,
         default=FNULL,
         action="store_const")
     parser.add_argument(
         "-vv", "--veryVerbose",
-        help="When present prints all players standard output.",
+        help="Prints all players' standard output.",
         const=None,
         default=FNULL,
         action="store_const")
 
     parser.add_argument(
         "-b", "--scoreboard",
-        help="Set this to have the scoreboard pop up in a window. " +
-        "Fun to watch and helpful for debugging!",
+        help="Display the scoreboard in a window.",
         const=True,
         default=False,
         action="store_const")
     parser.add_argument(
         "--scoreboard-url",
-        help="Connect to a running scoreboard server",
+        help="Connect to a running scoreboard server.",
         default=None)
 
     parser.add_argument(
         "-s", "--show",
-        help="Set this to make the game be visualized in a window. " +
-        "Fun to watch and helpful for debugging!",
+        help="Display the visualizer in a window.",
         const=True,
         default=False,
         action="store_const")
     parser.add_argument(
         "-th", "--turnsinhour",
-        help="Use this to set the length of the game. " + 
-        "The game is 24 hours, total # of turns is turnsinhour * 24",
+        help="Set the game's length.", 
         default=0,
         type=int)
     
