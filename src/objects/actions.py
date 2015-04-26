@@ -1,49 +1,56 @@
 """
 Data-mutators for actions players can do (to the map, other players, and/or nodes)
 """
-class AttemptToMultipleDDosException(Exception)
+
+
+class AttemptToMultipleDDosException(Exception):
     pass
 
-class AttemptToMultipleRootkitException(Exception)
+
+class AttemptToMultipleRootkitException(Exception):
     pass
 
-def doControl(self, playerId):
+
+@costs(multiplier, multiplier)
+def doControl(self, playerId, multiplier):
     if playerId == self.ownerId:
         for k in self.infiltration.iterkeys():
-            self.infiltration[k] = max(self.infiltration[k] - 1, 0)
+            self.infiltration[k] = max(self.infiltration[k] - multiplier, 0)
     else:
-        self.infiltration[playerId] = self.infiltration.get(playerId, 0) + 1
+        self.infiltration[playerId] = self.infiltration.get(playerId, 0) + multiplier
         if self.infiltration[playerId] > 50:  # TODO change this number
             self.own(playerId)
     return
 
 
+@costs(self.totalPower / 5, self.totalPower / 5)
 def doDDOS(self):
-    if self.isDDOSed is True:
-        raise AttemptToMultipleDDosException() # what should I put in here? 
-    self.isDDOSed = True
-    return
+    if self.DDoSStatus == DDoSStatus.PENDING:
+        raise AttemptToMultipleDDosException()
+    self.DDoSStatus = DDoSStatus.PENDING
 
 
+@costs(self.processing, self.networking)
 def doUpgrade(self):
     self.softwareLevel += 1
-    return
 
 
+@costs(100, 0)
 def doClean(self):
     self.rootkitIds = []
-    return
 
 
+@costs(25, 0)
 def doScan(self):
     return self.rootkitIds
 
 
+@costs(self.totalPower / 5, self.totalPower / 5)
 def doRootkit(self, playerId):
     if playerId in self.rootkitIds:
         raise AttemptToMultipleRootkitException("This player has a rootkit here already.")
     self.rootkitIds.append(playerId)
-    return
+
 
 def doPortScan(self):
-	return self
+    return self

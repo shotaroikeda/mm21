@@ -1,7 +1,7 @@
 from continent import Continent
 from graph import Graph
-import networkx as nx
-import matplotlib.pyplot as plt
+# import networkx as nx
+# import matplotlib.pyplot as plt
 
 
 class Map():
@@ -12,7 +12,7 @@ class Map():
         for i in range(num_continents):
             self.continent_list.append(Continent(self.graph, isp_per_continents, cities_per_isp))
             if i != 0:
-                self.continent_list[i].connect_continent(self.graph, self.continent_list[i - 1], 2, 2, 2)
+                self.continent_list[i].connect_continent(self.graph, self.continent_list[i - 1], 2, 2, 2, 2)
 
     def convert_to_json(self):
         json = {}
