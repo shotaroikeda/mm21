@@ -2,11 +2,13 @@
 This class binds on to the MM20 server.py file
 """
 
-import Map, Node
+import Map
+import Node
 
 
-class InvalidPlayerException(Exception)
+class InvalidPlayerException(Exception):
     pass
+
 
 class Game(object):
 

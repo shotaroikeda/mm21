@@ -37,9 +37,11 @@ def launch_client(client, port=None):
         client_list.append(c)
         c.run()
 
+
 def launch_client_test_game(client, port):
     launch_client(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, client), port)
     launch_client(os.path.join(os.getcwd(), parameters.defaultClient), port)
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -126,13 +128,6 @@ def parse_args():
         default=False,
         action="store_const")
     parser.add_argument(
-        "-C", "--cached-map",
-        help="Speeds up the launch time of the server by using a cached map. " +
-        "If you are having any sort of problem try launching without this!",
-        const=True,
-        default=False,
-        action="store_const")
-    parser.add_argument(
         "-th", "--turnsinhour",
         help="Use this to set the length of the game. " + 
         "The game is 24 hours, total # of turns is turnsinhour * 24",
@@ -153,15 +148,14 @@ def parse_args():
     return args
 
 
-## A simple logger that writes things to a file and, if enabled, to the
-## visualizer
+# A simple logger that writes things to a file and, if enabled, to the visualizer
 class FileLogger(object):
     def __init__(self, fileName):
         self.file = fileName
         self.vis = False
         self.score = False
 
-    ## The function that logs will be sent to
+    # The function that logs will be sent to
     # @param stuff
     #   The stuff to be printed
     def print_stuff(self, stuff):
@@ -171,17 +165,15 @@ class FileLogger(object):
             self.vis.turn(stuff)
         if self.score:
             self.score.turn(stuff)
-            
-def test_game(team,team_dir, port):
+
+
+def test_game(team, team_dir, port):
     client_list = list()
     global parameters
     parameters = parse_args()
-    map_cache_str = "map.cache"
-    fileLog = FileLogger(team+parameters.log)
-    with open(team+parameters.log, 'w'):
+    fileLog = FileLogger(team + parameters.log)
+    with open(team + parameters.log, 'w'):
         pass
-    with open(map_cache_str, 'r') as f:
-        rooms = pickle.load(f)
     my_game = game.Game(parameters.map, 2, rooms)
     serv = MMServer(parameters.teams,
                     my_game,
@@ -198,22 +190,10 @@ def main():
     print "and {0} as the map\n".format(parameters.map)
     print "Running server on port {0}\n".format(parameters.port)
     print "Writing log to {0}".format(parameters.log)
-    map_cache_str = "map.cache"
     with open(parameters.log, 'w'):
         pass
     fileLog = FileLogger(parameters.log)
-    if os.path.isfile(map_cache_str) and parameters.cached_map:
-        with open(map_cache_str, 'r') as f:
-            rooms = pickle.load(f)
-        my_game = game.Game(parameters.map, parameters.turnsinhour, rooms)
-        with open(map_cache_str, 'r') as f:
-            rooms = pickle.load(f)
-    else:
-        my_game = game.Game(parameters.map, parameters.turnsinhour)
-        rooms_str = pickle.dumps(my_game.rooms)
-        with open(map_cache_str, 'w') as f:
-            f.write(rooms_str)
-        rooms = pickle.loads(rooms_str)
+    my_game = game.Game(parameters.map, parameters.turnsinhour)
     if parameters.show:
         fileLog.vis = vis.visualizer.Visualizer(rooms, parameters.mapOverlay, debug=parameters.debug_view)
     if parameters.scoreboard:
@@ -225,8 +205,6 @@ def main():
     if parameters.scoreboard:
         fileLog.score.stop()
         
-
-    
 
 class Scoreboard(object):
     def __init__(self, url=None):
@@ -258,8 +236,6 @@ class Scoreboard(object):
                 pass
 
     def stop(self):
-        """
-        """
         if self.lunched:
             try:
                 self.board.terminate()
@@ -268,6 +244,7 @@ class Scoreboard(object):
                 
     def __del__(self):
         self.kill()
+
 
 class Client_program(object):
     """
@@ -304,12 +281,11 @@ class Client_program(object):
                 pass
 
     def stop(self):
-        """
-        """
         try:
             self.bot.terminate()
         except OSError:
             pass
+
     @classmethod
     def chose_output(cls):
         output = parameters.veryVerbose
@@ -318,6 +294,7 @@ class Client_program(object):
 
         cls.first = False
         return output
+
 
 class ClientFailedToRun(Exception):
     def __init__(self, msg):
