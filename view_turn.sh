@@ -1,12 +1,13 @@
 #!/bin/bash
 
-# View Turn script from mm20 should work with mm21 with little effort
-# It assumes that one turn is printer per line and that the fist jone has
-# the connection infomaiton. If you ask for a turn higher then the last turn
-# it will show the the end of gave infomation
+# View Turn script from mm20; should work for mm21 with a few minor changes
+# It assumes that:
+# 1) one line = one turn
+# 2) the first turn contains the connection info
+# If you ask for a turn beyond the last one, it will display end of game info
 
 if [ "$1" == "-h" ]; then
-  echo "Usage: $0 turn_number (If zero is provided it will show the connection informaiton.)"
+  echo "Usage: $0 turn_number (If zero, displays connection info.)"
   exit 0
 fi
 let turn=$1+1
