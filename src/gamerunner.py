@@ -1,10 +1,14 @@
 #!/usr/bin/env python2
+import os
+import sys
+import os.path as op
+path = op.dirname(op.dirname(op.realpath(__file__)))
+print path 
+sys.path.append(path)
 from server.server import MMServer
 from subprocess import Popen
 import argparse
 from objects import game
-import sys
-import os
 import pickle
 # import vis.visualizer
 from urllib2 import urlopen, URLError
