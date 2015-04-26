@@ -59,8 +59,7 @@ class Map(object):
             totalProcessing += node.remainingProcessing
             totalNetworking += node.remainingNetworking
         if totalProcessing < processing or totalNetworking < networking:
-            raise InsufficientPowerException("networking = %d, processing = %d\nNeeded networking = %d, processing = %d" %
-                (totalNetworking, totalProcessing, networking, processing))
+            raise InsufficientPowerException("networking = %d, processing = %d\nNeeded networking = %d, processing = %d" % (totalNetworking, totalProcessing, networking, processing))
 
         # Subtract used resources from connected nodes
         for node in connectedNodes:

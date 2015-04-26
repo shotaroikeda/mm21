@@ -1,10 +1,13 @@
 """
 Data-mutators for actions players can do (to the map, other players, and/or nodes)
 """
-class AttemptToMultipleDDosException(Exception)
+
+
+class AttemptToMultipleDDosException(Exception):
     pass
 
-class AttemptToMultipleRootkitException(Exception)
+
+class AttemptToMultipleRootkitException(Exception):
     pass
 
 
@@ -20,7 +23,7 @@ def doControl(self, playerId, multiplier):
     return
 
 
-@costs(self.totalPower/5, self.totalPower/5)
+@costs(self.totalPower / 5, self.totalPower / 5)
 def doDDOS(self):
     if self.DDoSStatus == DDoSStatus.PENDING:
         raise AttemptToMultipleDDosException()
@@ -32,17 +35,17 @@ def doUpgrade(self):
     self.softwareLevel += 1
 
 
-@costs(100,0)
+@costs(100, 0)
 def doClean(self):
     self.rootkitIds = []
 
 
-@costs(25,0)
+@costs(25, 0)
 def doScan(self):
     return self.rootkitIds
 
 
-@costs(self.totalPower/5,self.totalPower/5)
+@costs(self.totalPower / 5, self.totalPower / 5)
 def doRootkit(self, playerId):
     if playerId in self.rootkitIds:
         raise AttemptToMultipleRootkitException("This player has a rootkit here already.")
