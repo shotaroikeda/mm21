@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Colors (the ones we use)
-CGRN="\033[92m"
-CRED="\033[91m"
+CGRN="\033[32m"
+CRED="\033[31m"
 CEND="\033[0m"
 FBOLD="\033[1m"
 
@@ -53,17 +53,17 @@ if hash pep8 2>/dev/null; then
         pep8 $DIR/src_test --ignore=E122,E241,W293,W291,W391,E501,E126
     fi
 else
-    echo "$CRED $FBOLD Error: pep8 not found. $CEND"
+    echo -e "$CRED $FBOLD Error: pep8 not found. $CEND"
     exit 1
 fi
 if hash py.test 2>/dev/null; then
         py.test $DIR/src $DIR/src_test
     else
-        echo "$CGRN $FBOLD Error: pytest not found. $CEND"
+        echo -e "$CGRN $FBOLD Error: pytest not found. $CEND"
         exit 1
 fi
 trap - 0
-echo "$CGRN All tests ran! $CEND"
+echo "${CGRN}All tests ran! $CEND"
 
 # Run code coverage analysis
 if [[ $* == *--cov* ]] ; then
@@ -93,4 +93,4 @@ if [ ! -L $HOOKPATH ]; then
 fi
 
 # Done!
-echo "$CGRN $FBOLD Done! $CEND"
+echo "${CGRN}${FBOLD}Done! $CEND"
