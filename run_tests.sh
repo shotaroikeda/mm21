@@ -62,10 +62,21 @@ if hash py.test 2>/dev/null; then
         echo "$CGRN $FBOLD Error: pytest not found. $CEND"
         exit 1
 fi
+trap - 0
 echo "$CGRN All tests ran! $CEND"
 
-# Print report
-
+# Run code coverage analysis
+if [[ $* == *--cov* ]] ; then
+    if $(command py.test --cov src/server src_test >/dev/null 2>&1); then
+        py.test --cov $DIR/src/server $DIR/src_test/server
+        py.test --cov $DIR/src/vis $DIR/src_test/vis
+        py.test --cov $DIR/src/mapgen $DIR/src_test/mapgen
+        py.test --cov $DIR/src/objects $DIR/src_test/objects
+    else
+        echo "Cant find pytest-cov plugin"
+        exit 1
+    fi
+fi
 
 # Install pre-commit hook
 FILE="$(basename "$(test -L "$0" && readlink "$0" || echo "$0")")"
@@ -81,17 +92,5 @@ if [ ! -L $HOOKPATH ]; then
     echo "Pre-commit hoook installed!"
 fi
 
-if [[ $* == *--cov* ]] ; then
-    if command -v py.test --cov src/server src_test >/dev/null 2>&1; then
-        py.test --cov $DIR/src/server $DIR/src_test
-        py.test --cov $DIR/src/vis $DIR/src_test
-        py.test --cov $DIR/src/mapgen $DIR/src_test
-        py.test --cov $DIR/src/objects $DIR/src_test
-    else
-        echo "Cant find pytest-cov plugin"
-    fi
-fi
-
 # Done!
-trap - 0
 echo "$CGRN $FBOLD Done! $CEND"
