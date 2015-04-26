@@ -2,33 +2,27 @@
 
 message(){
     echo ""
-    echo "errors found in your code"
-    echo "git will not let you commit until it is fixed"
-    echo "You can bypass this with git commit --no-verify"
-    echo "Try not to as it annoys Ace and makes the code look bad ;)"
+    echo "Above is a list of errors detected in your code. Please fix them before committing!"
+    echo "You can bypass this check (and incur Ace's wrath) with \'git commit --no-verify\'"
 }
 
 trap message 0
 
-# find the path to the working directory
+# Find working directory + add it to $PYTHONPATH
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do
-    # resolve $SOURCE until the file is no longer a symlink
-  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )" # resolve $SOURCE until the file is no longer a symlink
   SOURCE="$(readlink "$SOURCE")"
-  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
-  # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE is relative, resolve it relative to the symlink file's location
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 echo $DIR
-
-# Add it to the python path
 export PYTHONPATH=$DIR
 
-# turn on errors in bash
+# Show errors in bash
 set -e
 
-# check code quality and correctness
+# Run pep8 (Python linter) + unit tests
 if hash pep8 2>/dev/null; then
     if [[ $* == *--me-only* ]]; then
         for i in $( git diff --name-only HEAD ); do
@@ -42,34 +36,31 @@ if hash pep8 2>/dev/null; then
         pep8 src_test --ignore=E122,E241,W293,W291,W391,E501,E126
     fi
 else
-    echo "Error could not find pep8 installed"
+    echo "Error: pep8 not found."
     exit 1
 fi
-
-# run unit tests
 if hash py.test 2>/dev/null; then
         py.test
     else
-        echo "Error could not find pytest installed"
+        echo "Error: pytest not found."
         exit 1
 fi
+echo "All tests ran!"
 
-
-echo "All test run successful"
-
+# Install pre-commit hook
 FILE="$(basename "$(test -L "$0" && readlink "$0" || echo "$0")")"
 HOOKPATH=$DIR/".git/hooks/pre-commit"
-# install pre-commit hook
 if [ ! -L $HOOKPATH ]; then
     echo "installing precommit hook"
-    # remove old hook
+    # Remove old hook file
     if  [ -f $HOOKPATH ]; then
         rm $HOOKPATH
     fi
-    # Symlink to this file
+    # Symlink to new hook file
     ln -s $DIR/$FILE $HOOKPATH
     echo "pre-commit hoook installed"
 fi
 
+# Done!
 trap - 0
-echo "done"
+echo "Done!"
