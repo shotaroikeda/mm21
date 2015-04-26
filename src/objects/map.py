@@ -2,7 +2,7 @@
 Holds data about the map
 """
 
-import game_constants
+import src.game_constants
 
 
 class DuplicateTeamException(Exception):

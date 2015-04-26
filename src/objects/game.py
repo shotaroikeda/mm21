@@ -2,8 +2,8 @@
 This class binds on to the MM20 server.py file
 """
 
-import Map
-import Node
+import map as Map
+import node as Node
 
 
 class InvalidPlayerException(Exception):
@@ -12,9 +12,19 @@ class InvalidPlayerException(Exception):
 
 class Game(object):
 
-    def __init__(self):
+    def __init__(self, mapPath, totalTurns):
+        # Initial values
+        #  int
         self.queuedTurns = []
+        self.totalTurns = totalTurns
+        self.turnsExecuted = 0
+        #  dict
         self.playerInfos = {}
+
+        # Load map
+        # TODO @graph-gen team - figure out how we're going to load your map and put that code here
+
+        # Done!
         return
 
     # Add a player's actions to the turn queue
@@ -67,6 +77,7 @@ class Game(object):
         # Done!
         result["status"] = "fail" if "message" in result else "ok"
         self.queuedTurns = []
+        self.turnsExecuted += 1
         return True
 
     # Return the results of a turn for a particular player
@@ -74,5 +85,3 @@ class Game(object):
         if playerId not in self.playerInfos:
             raise InvalidPlayerException("Player " + playerId + " doesn't exist.")
         return self.playerInfos[playerId]
-
-i
