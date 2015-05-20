@@ -52,5 +52,6 @@ def doRootkit(self, playerId):
     self.rootkitIds.append(playerId)
 
 
+@costs(0, 500)
 def doPortScan(self):
     return self
