@@ -6,10 +6,10 @@ Holds constants used by the server and visualizer
 port = 1337
 
 # Default map
-mapFile = "gamerunner/map.json"
+mapFile = "src/gamerunner/map.json"
 
 # Default logfile path
-logFile = "gamerunner/log.json"
+logFile = "src/gamerunner/log.json"
 
 # Default client path
-defaultClient = "gamerunner/client.py"
+defaultClient = "test-clients/python/"

@@ -32,6 +32,7 @@ def launch_clients():
     else:
         numberOfClients = 0
     for x in xrange(numberOfClients, parameters.teams):
+        print parameters.defaultClient
         launch_client(os.path.join(os.getcwd(), parameters.defaultClient))
 
 
@@ -98,7 +99,7 @@ def parse_args():
         "-d", "--defaultClient",
         help="The default client to use when others aren't specified."
         "Default: {0}".format(miscConstants.defaultClient),
-        default=os.path.join(miscConstants.defaultClient).split("/"))
+        default=os.path.join(*miscConstants.defaultClient.split("/")))
 
     parser.add_argument(
         "-v", "--verbose",
