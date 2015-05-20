@@ -2,33 +2,61 @@
 Data-mutators for actions players can do (to the map, other players, and/or nodes)
 """
 
-def doControl(self, playerId):
-        if playerId == self.ownerId:
-            for k in self.infiltration.iterkeys():
-                self.infiltration[k] = max(self.infiltration[k] - 1, 0)
-        else:
-            self.infiltration[playerId] = self.infiltration.get(playerId, 0) + 1
-            if self.infiltration[playerId] > 50:  # TODO change this number
-                self.own(playerId)
-        return
+
+# Raise an exception if resources are insufficient
+def requireResources(processingCost, networkingCost):
+    map.decrementPower(self, self.processingCost, self.networkingCost)
+
+
+class AttemptToMultipleDDosException(Exception):
+    pass
+
+
+class AttemptToMultipleRootkitException(Exception):
+    pass
+
+
+def doControl(self, playerId, multiplier):
+    requireResources(multiplier, multiplier)
+    if playerId == self.ownerId:
+        for k in self.infiltration.iterkeys():
+            self.infiltration[k] = max(self.infiltration[k] - multiplier, 0)
+    else:
+        self.infiltration[playerId] = self.infiltration.get(playerId, 0) + multiplier
+        if self.infiltration[playerId] > 50:  # TODO change this number
+            self.own(playerId)
+    return
+
 
 def doDDOS(self):
-	self.isDDOSed = True
-	return
+    requireResources(self.totalPower / 5, self.totalPower / 5)
+    if self.DDoSStatus == DDoSStatus.PENDING:
+        raise AttemptToMultipleDDosException()
+    self.DDoSStatus = DDoSStatus.PENDING
+
 
 def doUpgrade(self):
-	self.softwareLevel += 1
-	return
+    requireResources(self.processing, self.networking)
+    self.softwareLevel += 1
+
 
 def doClean(self):
-	self.rootkitIds = []
-	return
+    requireResources(100, 0)
+    self.rootkitIds = []
+
 
 def doScan(self):
-	return self.rootkitIds
+    requireResources(25, 0)
+    return self.rootkitIds
+
 
 def doRootkit(self, playerId):
-	if playerId in self.rootkitIds:
-		raise Exception("This player has a rootkit here already.")
-	self.rootkitIds.append(playerId)
-	return
+    requireResources(self.totalPower / 5, self.totalPower / 5)
+    if playerId in self.rootkitIds:
+        raise AttemptToMultipleRootkitException("This player has a rootkit here already.")
+    self.rootkitIds.append(playerId)
+
+
+def doPortScan(self):
+    requireResources(0, 500)
+    return self
