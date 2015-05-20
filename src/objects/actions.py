@@ -3,6 +3,11 @@ Data-mutators for actions players can do (to the map, other players, and/or node
 """
 
 
+# Raise an exception if resources are insufficient
+def requireResources(processingCost, networkingCost):
+    map.decrementPower(self, self.processingCost, self.networkingCost)
+
+
 class AttemptToMultipleDDosException(Exception):
     pass
 
@@ -11,8 +16,8 @@ class AttemptToMultipleRootkitException(Exception):
     pass
 
 
-@costs(multiplier, multiplier)
 def doControl(self, playerId, multiplier):
+    requireResources(multiplier, multiplier)
     if playerId == self.ownerId:
         for k in self.infiltration.iterkeys():
             self.infiltration[k] = max(self.infiltration[k] - multiplier, 0)
@@ -23,35 +28,35 @@ def doControl(self, playerId, multiplier):
     return
 
 
-@costs(self.totalPower / 5, self.totalPower / 5)
 def doDDOS(self):
+    requireResources(self.totalPower / 5, self.totalPower / 5)
     if self.DDoSStatus == DDoSStatus.PENDING:
         raise AttemptToMultipleDDosException()
     self.DDoSStatus = DDoSStatus.PENDING
 
 
-@costs(self.processing, self.networking)
 def doUpgrade(self):
+    requireResources(self.processing, self.networking)
     self.softwareLevel += 1
 
 
-@costs(100, 0)
 def doClean(self):
+    requireResources(100, 0)
     self.rootkitIds = []
 
 
-@costs(25, 0)
 def doScan(self):
+    requireResources(25, 0)
     return self.rootkitIds
 
 
-@costs(self.totalPower / 5, self.totalPower / 5)
 def doRootkit(self, playerId):
+    requireResources(self.totalPower / 5, self.totalPower / 5)
     if playerId in self.rootkitIds:
         raise AttemptToMultipleRootkitException("This player has a rootkit here already.")
     self.rootkitIds.append(playerId)
 
 
-@costs(0, 500)
 def doPortScan(self):
+    requireResources(0, 500)
     return self
