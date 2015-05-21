@@ -1,11 +1,11 @@
 #!/usr/bin/env python2
 import pygame as pg
 import sys
-sys.path.append("../map-generation")
-sys.path.append("..")
 import json
 import time
 import math
+sys.path.insert(0, '../')
+from load_json import load_map_from_file as loadJson
 import vis_constants as const
 
 
@@ -26,13 +26,15 @@ class Visualizer(object):
         self.gameClock = pg.time.Clock()
 
     def runFile(self, filename):
-        try:
-            with open(filename) as json_file:
-                print "GG EASY"
-        except:
-            print "We fucked up " + filename + "! JK, the file doesn't exist!"
-            sys.exit(69)
+        with open(filename) as json_file:
+            self.JSfile = json.load(json_file)
 
+    def draw(self, args):
+# Draw things
+
+    def processAndDraw(self):
+#do some stuff
 
 # Just for now
-vis = Visualizer()
+if __name__ == "__main__":
+    vis = Visualizer()
