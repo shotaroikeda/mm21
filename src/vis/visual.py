@@ -2,12 +2,12 @@
 
 import pygame2 as pg
 import sys
-sys.path.append("../map-generation")
-sys.path.append("..")
 import json
 import time
 import math
 from visConstant import visConst as const
+sys.path.insert(0, '../')
+from load_json import load_map_from_file as loadJson
 
 class visual(object):
     def __init__(self):
@@ -25,9 +25,11 @@ class visual(object):
         self.gameClock = pg.time.Clock()
 
     def runFile(self, filename):
-        try:
-            with open(filename) as json_file:
-        except:
-            print "We fucked up " + filename + "! JK, the file doesn't exist!"
-            sys.exit(69)
-        
+        with open(filename) as fp:
+            self.JSfile = json.load(fp)
+
+    def draw(self, args):
+# Draw things
+
+    def processAndDraw(self):
+#do some stuff
