@@ -10,7 +10,7 @@ import math
 import vis_constants as const
 
 
-class visual(object):
+class Visualizer(object):
 
     def __init__(self):
         self.screenHeight = const.screenHeight
@@ -33,3 +33,7 @@ class visual(object):
         except:
             print "We fucked up " + filename + "! JK, the file doesn't exist!"
             sys.exit(69)
+
+
+# Just for now
+vis = Visualizer()
