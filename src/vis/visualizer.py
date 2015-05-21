@@ -1,5 +1,4 @@
 #!/usr/bin/env python2
-
 import pygame as pg
 import sys
 sys.path.append("../map-generation")
