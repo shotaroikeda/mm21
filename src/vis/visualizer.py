@@ -5,16 +5,12 @@ import sys
 import json
 import time
 import math
-<<<<<<< HEAD:src/vis/visual.py
-from visConstant import visConst as const
 sys.path.insert(0, '../')
 from load_json import load_map_from_file as loadJson
-=======
 import vis_constants as const
 
 
 class Visualizer(object):
->>>>>>> 92ca435047a4dbcce23aedb3a5c348e2ada61e57:src/vis/visualizer.py
 
     def __init__(self):
         self.screenHeight = const.screenHeight
@@ -31,24 +27,15 @@ class Visualizer(object):
         self.gameClock = pg.time.Clock()
 
     def runFile(self, filename):
-<<<<<<< HEAD:src/vis/visual.py
-        with open(filename) as fp:
-            self.JSfile = json.load(fp)
+        with open(filename) as json_file:
+            self.JSfile = json.load(json_file)
 
     def draw(self, args):
 # Draw things
 
     def processAndDraw(self):
 #do some stuff
-=======
-        try:
-            with open(filename) as json_file:
-                print "GG EASY"
-        except:
-            print "We fucked up " + filename + "! JK, the file doesn't exist!"
-            sys.exit(69)
-
 
 # Just for now
-vis = Visualizer()
->>>>>>> 92ca435047a4dbcce23aedb3a5c348e2ada61e57:src/vis/visualizer.py
+if __name__ == "__main__":
+    vis = Visualizer()
