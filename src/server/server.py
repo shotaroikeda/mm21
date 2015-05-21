@@ -12,7 +12,7 @@ import select
 import socket
 import time
 import json
-#import game
+# import game
 import server_constants
 
 
@@ -33,8 +33,7 @@ class _logger(object):
         print str(stuff)
 
 
-class MMServer( object ):
-    ##
+class MMServer(object):
     #   Constructs the server
     #   @param numPlayers number of players entering the game
     #   @param game Game object that holds the game state
@@ -92,17 +91,15 @@ class MMServer( object ):
         currTime = time.time()
         endTime = time.time() + self.initialTimeLimit
         while starting:
-            ready = [[],[],[]]
+            ready = [[], [], []]
             if endTime - currTime > 0:
                 ready = select.select(playerConnections, [], [], endTime - currTime)
-            if ready[0] == [] :
+            if ready[0] == []:
 
                 # Forfeits when there is a timeout on initial connection
                 for i in range(0, self.maxPlayers):
                     if turnObjects[i] is None:
-                        turnObjects[i] = json.loads('{ "status": "Failure", "errors" : ["Timeout on initial connection, auto-forfeit. '+
-                        'Make sure that your starting message was formatted correctly. '+
-                        'It should end with \'\\n\'"], "team_name": false }')
+                        turnObjects[i] = json.loads('{ "status": "Failure", "errors" : ["Timeout on initial connection, auto-forfeit. Verify your starting message ends with \'\\n\'"], "team_name": false }')
                         forfeit[i] = True
                         validTurns = validTurns + 1
             else:
@@ -126,15 +123,15 @@ class MMServer( object ):
                             (success, response) = self.game.add_new_team(jsonObject, player)
                             if success:
                                 turnObjects[player] = response
-                                validTurns = validTurns+1
+                                validTurns = validTurns + 1
                             else:
                                 try:
-                                    connection.sendall(json.dumps(response, ensure_ascii=True)+"\n")
+                                    connection.sendall(json.dumps(response, ensure_ascii=True) + "\n")
                                 except IOError:
                                     pass
                         else:
                             try:
-                                connection.sendall(json.dumps(json.loads('{ "status": "Failure", "errors" : ["Not valid JSON"], "team_name": false }'), ensure_ascii=True)+"\n")
+                                connection.sendall(json.dumps(json.loads('{ "status": "Failure", "errors" : ["Not valid JSON"], "team_name": false }'), ensure_ascii=True) + "\n")
                             except IOError:
                                 pass
             if validTurns == self.maxPlayers:
@@ -144,7 +141,7 @@ class MMServer( object ):
                 # Return turn info back to the clients
                 for i in range(0, self.maxPlayers):
                     try:
-                        playerConnections[i].sendall(json.dumps(turnObjects[i], ensure_ascii=True)+"\n")
+                        playerConnections[i].sendall(json.dumps(turnObjects[i], ensure_ascii=True) + "\n")
                     except IOError:
                         pass
             currTime = time.time()
@@ -153,8 +150,8 @@ class MMServer( object ):
         # Reset values
         validTurns = 0
         for i in range(0, self.maxPlayers):
-            turnObjects[i]=None
-            recval[i]=""
+            turnObjects[i] = None
+            recval[i] = ""
         currTime = time.time()
         endTime = time.time() + self.timeLimit
         running = True
@@ -162,7 +159,7 @@ class MMServer( object ):
 
         # Receive info
         while running:
-            ready = [[],[],[]]
+            ready = [[], [], []]
             if endTime - currTime > 0:
                 ready = select.select(playerConnections, [], [], endTime - currTime)
             if ready[0] == []:
@@ -185,11 +182,10 @@ class MMServer( object ):
                     if turnObjects[player] is None and "\n" in recval[player]:
                         try:
                             turnObjects[player] = json.loads(recval[player])
-                            validTurns = validTurns+1
                         except ValueError, TypeError:
                             turnObjects[player] = {}
                             errors[player] = ["Invalid JSON"]
-                            validTurns = validTurns+1
+                        validTurns += 1
             if validTurns == self.maxPlayers:
                 # Send turns to engine
                 for i in range(0, self.maxPlayers):
@@ -208,7 +204,7 @@ class MMServer( object ):
                                 data["errors"] = errors[i]
                             player_data_for_turn[i] = data
                             playerConnections[i].sendall(
-                                json.dumps(player_data_for_turn[i], ensure_ascii = True) + "\n")
+                                json.dumps(player_data_for_turn[i], ensure_ascii=True) + "\n")
                         except IOError:
                             pass
                 # Log results
@@ -217,9 +213,8 @@ class MMServer( object ):
                 # Clear turn objects
                 validTurns = 0
                 for i in range(0, self.maxPlayers):
-                    turnObjects[i]=None
-                for i in range(0, self.maxPlayers):
-                    recval[i]=""
+                    turnObjects[i] = None
+                    recval[i] = ""
                 errors = [[] for i in turnObjects]
 
                 # Reset end-time
@@ -227,11 +222,13 @@ class MMServer( object ):
                 endTime = time.time() + self.timeLimit
             else:
                 currTime = time.time()
-        #Close connections
+        # Close connections
         for conn in playerConnections:
             conn.close()
         serversocket.close()
 
-#if __name__ == "__main__":
-    #serv = MMServer(constants["players"], game.Game(constants["map"]))
-    #serv.run(constants["port"])
+"""
+if __name__ == "__main__":
+    serv = MMServer(constants["players"], game.Game(constants["map"]))
+    serv.run(constants["port"])
+"""

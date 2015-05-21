@@ -1,11 +1,13 @@
 from continent import Continent
 from graph import Graph
-#import networkx as nx
-#import matplotlib.pyplot as plt
+# import networkx as nx
+# import matplotlib.pyplot as plt
 
 
 class Map():
 
+    # Initialize the maps
+    #
     def __init__(self, num_continents, isp_per_continents, cities_per_isp):
         self.continent_list = []
         self.graph = Graph()
@@ -13,6 +15,10 @@ class Map():
             self.continent_list.append(Continent(self.graph, isp_per_continents, cities_per_isp))
             if i != 0:
                 self.continent_list[i].connect_continent(self.graph, self.continent_list[i - 1], 2, 2, 2, 2)
+
+    # Creates json for export.
+    # The clusters are generated such that they can be visualized as a circle.
+    # ARGS - none
 
     def convert_to_json(self):
         json = {}
@@ -38,6 +44,11 @@ class Map():
             json['continents'].append(json_continent)
 
         return json
+
+
+    # Still being implemented.
+    # This will likely not make it to final code
+    #HACK
 
     def draw_graph(self):
         G = nx.Graph()

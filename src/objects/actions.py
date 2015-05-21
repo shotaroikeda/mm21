@@ -1,49 +1,62 @@
 """
 Data-mutators for actions players can do (to the map, other players, and/or nodes)
 """
-class AttemptToMultipleDDosException(Exception)
+
+
+# Raise an exception if resources are insufficient
+def requireResources(processingCost, networkingCost):
+    map.decrementPower(self, self.processingCost, self.networkingCost)
+
+
+class AttemptToMultipleDDosException(Exception):
     pass
 
-class AttemptToMultipleRootkitException(Exception)
+
+class AttemptToMultipleRootkitException(Exception):
     pass
 
-def doControl(self, playerId):
+
+def doControl(self, playerId, multiplier):
+    requireResources(multiplier, multiplier)
     if playerId == self.ownerId:
         for k in self.infiltration.iterkeys():
-            self.infiltration[k] = max(self.infiltration[k] - 1, 0)
+            self.infiltration[k] = max(self.infiltration[k] - multiplier, 0)
     else:
-        self.infiltration[playerId] = self.infiltration.get(playerId, 0) + 1
+        self.infiltration[playerId] = self.infiltration.get(playerId, 0) + multiplier
         if self.infiltration[playerId] > 50:  # TODO change this number
             self.own(playerId)
     return
 
 
 def doDDOS(self):
-    if self.isDDOSed is True:
-        raise AttemptToMultipleDDosException() # what should I put in here? 
-    self.isDDOSed = True
-    return
+    requireResources(self.totalPower / 5, self.totalPower / 5)
+    if self.DDoSStatus == DDoSStatus.PENDING:
+        raise AttemptToMultipleDDosException()
+    self.DDoSStatus = DDoSStatus.PENDING
 
 
 def doUpgrade(self):
+    requireResources(self.processing, self.networking)
     self.softwareLevel += 1
-    return
 
 
 def doClean(self):
+    requireResources(100, 0)
     self.rootkitIds = []
-    return
 
 
 def doScan(self):
+    requireResources(25, 0)
     return self.rootkitIds
 
 
 def doRootkit(self, playerId):
+    requireResources(self.totalPower / 5, self.totalPower / 5)
     if playerId in self.rootkitIds:
         raise AttemptToMultipleRootkitException("This player has a rootkit here already.")
     self.rootkitIds.append(playerId)
-    return
+
 
 def doPortScan(self):
-	return self
+    requireResources(0, 500)
+    return self
