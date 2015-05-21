@@ -2,17 +2,29 @@
 This class binds on to the MM20 server.py file
 """
 
-import Map, Node
+import map as Map
+import node as Node
 
 
-class InvalidPlayerException(Exception)
+class InvalidPlayerException(Exception):
     pass
+
 
 class Game(object):
 
-    def __init__(self):
+    def __init__(self, mapPath, totalTurns):
+        # Initial values
+        #  int
         self.queuedTurns = []
+        self.totalTurns = totalTurns
+        self.turnsExecuted = 0
+        #  dict
         self.playerInfos = {}
+
+        # Load map
+        # TODO @graph-gen team - figure out how we're going to load your map and put that code here
+
+        # Done!
         return
 
     # Add a player's actions to the turn queue
@@ -25,40 +37,47 @@ class Game(object):
     def execute_turn(self):
 
         # Execute turns
+        turnResults = []
         for turn in self.queuedTurns:
+
+            # Values
+            move = turn["type"].toLower()
+            target = map.nodes.get(turn.get("target", None), None)
+            results = {}
+
+            # Execute actions
             try:
-                if turn["type"] == "ddos":
-                    map.nodes[turn["target"]].doDDOS()
-                elif turn["type"] == "control":
-                    map.nodes[turn["target"]].doControl(player)
-                elif turn["type"] == "upgrade":
-                    map.nodes[turn["target"]].doUpgrade()
-                elif turn["type"] == "clean":
-                    map.nodes[turn["target"]].doClean()
-                elif turn["type"] == "scan":
-                    map.nodes[turn["target"]].doScan()
-                elif turn["type"] == "rootkit":
-                    map.nodes[turn["target"]].doRootkit(player)
-                elif turn["type"] == "portScan":
+                if move == "ddos":
+                    target.doDDOS()
+                elif move == "control":
+                    target.doControl(player)
+                elif move == "upgrade":
+                    target.doUpgrade()
+                elif move == "clean":
+                    target.doClean()
+                elif move == "scan":
+                    target.doScan()
+                elif move == "rootkit":
+                    target.doRootkit(player)
+                elif move == "portScan":
                     map.doPortScan()
-                result["status"] = "ok"
+                else:
+                    result["message"] = "Unknown action."
             except KeyError:
-                result["status"] = "fail"
                 result["message"] = "Invalid node."
             except AttemptToMultipleDDosException:
-                result["status"] = "fail"
-                result["message"] = "Attempt to ddos ddosed node."
+                result["message"] = "Node is already DDoSed."
             except AttemptToMultipleRootkitException:
-                result["status"] = "fail"
-                result["message"] = "Attempt to rootkit rootkitted node."
+                result["message"] = "Node is already rootkitted."
             except IndexError:
-                result["status"] = "fail"
                 result["message"] = "Invalid playerID."
             except:
-                result["status"] = "fail"
                 result["message"] = "Unknown exception."
+
         # Done!
+        result["status"] = "fail" if "message" in result else "ok"
         self.queuedTurns = []
+        self.turnsExecuted += 1
         return True
 
     # Return the results of a turn for a particular player
@@ -66,5 +85,3 @@ class Game(object):
         if playerId not in self.playerInfos:
             raise InvalidPlayerException("Player " + playerId + " doesn't exist.")
         return self.playerInfos[playerId]
-
-
