@@ -11,21 +11,30 @@ class AttemptToMultipleRootkitException(Exception):
     pass
 
 
+class MultiplierMustBePositiveException(Exception):
+    pass
+
+
 # Node class used to model actions and their results
-class ActionNode:
+class ActionNode(object):
+
+    def __init__(self, mapNode):
+        self.mapNode = mapNode
 
     # Raise an exception if resources are insufficient
     def requireResources(self, processingCost, networkingCost):
         map.decrementPower(self, self.processingCost, self.networkingCost)
 
     def doControl(self, playerId, multiplier):
+        if multiplier <= 0:
+            raise MultiplierMustBePositiveException("Multiplier must be greater than 0.")
         self.requireResources(multiplier, multiplier)
         if playerId == self.ownerId:
             for k in self.infiltration.iterkeys():
                 self.infiltration[k] = max(self.infiltration[k] - multiplier, 0)
         else:
             self.infiltration[playerId] = self.infiltration.get(playerId, 0) + multiplier
-            if self.infiltration[playerId] > 50:  # TODO change this number
+            if self.infiltration[playerId] > self.totalPower * 2 and self.infiltration[playerId] == max(self.infiltration.values()):
                 self.own(playerId)
 
     def doDDOS(self):
