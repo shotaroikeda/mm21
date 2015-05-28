@@ -1,5 +1,5 @@
 # visualizer constants
-screenHeight = 1920
-screenWidth = 1080
+screenHeight = 500
+screenWidth = 1000
 FPStgt = 60
-title = "Luke"
+title = "Game Name"
