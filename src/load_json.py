@@ -21,6 +21,5 @@ def save_map_to_file(filename, json):
         dump(dumps(json, cls=PythonObjectEncoder), outfile, indent=2)
 
 
-def load_map_from_file(filename):
-    with open(filename, "r") as infile:
-        return loads(load(infile), object_hook=as_python_object)
+def load_map_from_file(infile):
+    return loads(load(infile), object_hook=as_python_object)
