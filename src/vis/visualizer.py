@@ -10,6 +10,12 @@ class Visualizer(object):
     def __init__(self, json_data):
         self.screenHeight = const.screenHeight
         self.screenWidth = const.screenWidth
+        self.isp_radius = const.isp_radius
+        self.isp_size = const.isp_size
+        self.datacenter_radius = const.datacenter_radius
+        self.datacenter_size = const.datacenter_size
+        self.city_radius = const.city_radius
+        self.city_size = const.city_size
         self.title = const.title
         self.fps = const.FPStgt
         self.running = True
@@ -27,18 +33,12 @@ class Visualizer(object):
         self.gameClock = pygame.time.Clock()
 
     def process_json(self):
-        self.isp_radius = 100
-        self.isp_size = 10
-        self.datacenter_radius = 30
-        self.datacenter_size = 10
-        self.city_radius = 20
-        self.city_size = 5
         self.draw_json = {}
 
         j = 0
         cont_blocks = len(self.json_data['continents'])
         for cont in self.json_data['continents']:
-            center_x = (self.screenWidth / cont_blocks) * (j + 1) - (self.screenWidth / cont_blocks)/2
+            center_x = (self.screenWidth / cont_blocks) * (j + 1 - 0.5)
             center_y = 250
 
             i = 0
@@ -75,22 +75,25 @@ class Visualizer(object):
             self.draw()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    pygame.display.quit()
+                    pygame.quit()
                     sys.exit()
 
     def update(self):
         self.fps = 60
 
     def draw(self):
-        self.screen.fill((255, 255, 255))
+        self.screen.fill(const.WHITE)
         for key, value in self.draw_json.iteritems():
             if value['type'] == 'isp':
-                pygame.draw.circle(self.screen, (255, 0, 0), [value['x'], value['y']], self.isp_size)
+                pygame.draw.circle(self.screen, const.RED, [value['x'], value['y']], self.isp_size)
             if value['type'] == 'datacenter':
-                pygame.draw.circle(self.screen, (0, 255, 0), [value['x'], value['y']], self.datacenter_size)
+                pygame.draw.circle(self.screen, const.GREEN, [value['x'], value['y']], self.datacenter_size)
             if value['type'] == 'city':
-                pygame.draw.circle(self.screen, (0, 0, 255), [value['x'], value['y']], self.city_size)
+                pygame.draw.circle(self.screen, const.BLUE, [value['x'], value['y']], self.city_size)
         for edge in self.json_data['edges']:
             v1, v2 = edge
-            pygame.draw.line(self.screen, (0, 0, 0), [self.draw_json[v1]['x'], self.draw_json[v1]['y']],
+            pygame.draw.line(self.screen, const.BLACK, [self.draw_json[v1]['x'], self.draw_json[v1]['y']],
                                                      [self.draw_json[v2]['x'], self.draw_json[v2]['y']], 1)
+        pygame.display.update()
         pygame.display.flip()
