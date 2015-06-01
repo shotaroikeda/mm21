@@ -71,6 +71,9 @@ class Visualizer(object):
 
     def run(self):
         while 1:
+            # Make sure game is on 60 FPS
+            self.gameClock.tick(self.fps)
+
             self.update()
             self.draw()
             for event in pygame.event.get():
@@ -87,9 +90,9 @@ class Visualizer(object):
         for key, value in self.draw_json.iteritems():
             if value['type'] == 'isp':
                 pygame.draw.circle(self.screen, const.RED, [value['x'], value['y']], self.isp_size)
-            if value['type'] == 'datacenter':
+            elif value['type'] == 'datacenter':
                 pygame.draw.circle(self.screen, const.GREEN, [value['x'], value['y']], self.datacenter_size)
-            if value['type'] == 'city':
+            elif value['type'] == 'city':
                 pygame.draw.circle(self.screen, const.BLUE, [value['x'], value['y']], self.city_size)
         for edge in self.json_data['edges']:
             v1, v2 = edge
