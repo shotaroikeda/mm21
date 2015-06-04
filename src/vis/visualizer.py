@@ -44,8 +44,10 @@ class Visualizer(object):
         for cont in self.json_data['continents']:
             x_blockSize = math.floor(self.screenWidth / blocks)
             y_blockSize = math.floor(self.screenHeight / blocks)
-            center_x = (x_blockSize) * ((j % blocks) + 1 - 0.5) + random.randint(-math.floor(x_blockSize / 12), math.floor(x_blockSize / 12))
-            center_y = (y_blockSize) * (math.floor(j / blocks) + 1 - 0.5) + random.randint(-math.floor(y_blockSize / 12), math.floor(y_blockSize / 12))
+            x_rand = random.randint(-math.floor(x_blockSize / 12), math.floor(x_blockSize / 12))
+            y_rand = random.randint(-math.floor(y_blockSize / 12), math.floor(y_blockSize / 12))
+            center_x = (x_blockSize) * ((j % blocks) + 1 - 0.5) + x_rand
+            center_y = (y_blockSize) * (math.floor(j / blocks) + 1 - 0.5) + y_rand
 
             i = 0
             isp_amount = len(cont['isps'])
@@ -93,6 +95,11 @@ class Visualizer(object):
                     pygame.display.quit()
                     pygame.quit()
                     sys.exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.display.quit()
+                        pygame.quit()
+                        sys.exit()
 
     def update(self):
         self.fps = 60
