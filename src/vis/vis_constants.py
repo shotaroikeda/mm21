@@ -1,7 +1,7 @@
 # VISUALIZER CONSTANTS
 
-screenHeight = 500
-screenWidth = 1000
+screenHeight = 768
+screenWidth = 1366
 FPStgt = 60
 title = "DA ONE AND ONLY VISUALIZER"
 
