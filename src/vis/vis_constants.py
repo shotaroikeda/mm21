@@ -1,18 +1,22 @@
 # VISUALIZER CONSTANTS
 
-screenHeight = 768
-screenWidth = 1366
+screenHeight = 700
+screenWidth = 700
 FPStgt = 60
 title = "DA ONE AND ONLY VISUALIZER"
 
 # BUILDING CONSTANTS
 
-isp_radius = 100
+center_offset = .05
+isp_radius = .70
 isp_size = 10
-datacenter_radius = 30
+isp_offset = .07
+datacenter_radius = .20
 datacenter_size = 10
-city_radius = 20
+datacenter_offset = .02
+city_radius = .1
 city_size = 5
+city_offset = .005
 
 # COLORS
 WHITE = (255, 255, 255)

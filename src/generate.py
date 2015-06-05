@@ -5,7 +5,7 @@ import load_json
 # TODO Fixed map gen options
 if __name__ == "__main__":
     # Generate Map
-    m = Map(3, 5, 5)
+    m = Map(7, 5, 6)
 
     # Convert to JSON
     load_json.save_map_to_file("gamerunner/map.json", m.convert_to_json())
