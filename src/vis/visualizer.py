@@ -4,6 +4,7 @@ import sys
 import math
 import random
 import vis_constants as const
+import animate as ani
 
 
 class Visualizer(object):
@@ -101,16 +102,16 @@ class Visualizer(object):
         self.fps = 60
 
     def draw(self):
-        self.screen.fill(const.WHITE)
-        for key, value in self.draw_json.iteritems():
-            if value['type'] == 'isp':
-                pygame.draw.circle(self.screen, const.RED, [value['x'], value['y']], const.isp_size)
-            elif value['type'] == 'datacenter':
-                pygame.draw.circle(self.screen, const.GREEN, [value['x'], value['y']], const.datacenter_size)
-            elif value['type'] == 'city':
-                pygame.draw.circle(self.screen, const.BLUE, [value['x'], value['y']], const.city_size)
-        for edge in self.json_data['edges']:
-            v1, v2 = edge
-            # pygame.draw.line(self.screen, const.BLACK, [self.draw_json[v1]['x'], self.draw_json[v1]['y']], [self.draw_json[v2]['x'], self.draw_json[v2]['y']], 1)
-        pygame.display.update()
-        pygame.display.flip()
+        ani.interpolate(self.screen, self.draw_json, self.json_data)
+        # for key, value in self.draw_json.iteritems():
+        #     if value['type'] == 'isp':
+        #         pygame.draw.circle(self.screen, const.RED, [value['x'], value['y']], const.isp_size)
+        #     elif value['type'] == 'datacenter':
+        #         pygame.draw.circle(self.screen, const.GREEN, [value['x'], value['y']], const.datacenter_size)
+        #     elif value['type'] == 'city':
+        #         pygame.draw.circle(self.screen, const.BLUE, [value['x'], value['y']], const.city_size)
+        # for edge in self.json_data['edges']:
+        #     v1, v2 = edge
+        #     # pygame.draw.line(self.screen, const.BLACK, [self.draw_json[v1]['x'], self.draw_json[v1]['y']], [self.draw_json[v2]['x'], self.draw_json[v2]['y']], 1)
+        # pygame.display.update()
+        # pygame.display.flip()
