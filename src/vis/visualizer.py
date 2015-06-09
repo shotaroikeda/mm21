@@ -102,7 +102,7 @@ class Visualizer(object):
         self.fps = 60
 
     def draw(self):
-        ani.interpolate(self.screen, self.draw_json, self.json_data)
+        ani.interpolate(self.screen, self.draw_json, self.json_data, 200)
         # for key, value in self.draw_json.iteritems():
         #     if value['type'] == 'isp':
         #         pygame.draw.circle(self.screen, const.RED, [value['x'], value['y']], const.isp_size)
