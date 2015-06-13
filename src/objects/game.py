@@ -43,7 +43,7 @@ class Game(object):
             # Values
             move = turn["type"].toLower()
             target = map.nodes.get(turn.get("target", None), None)
-            results = {}
+            result = {}
 
             # Execute actions
             try:
@@ -74,8 +74,11 @@ class Game(object):
             except:
                 result["message"] = "Unknown exception."
 
+            # Result status
+            result["status"] = "fail" if "message" in result else "ok"
+            turnResults.append(result)
+
         # Done!
-        result["status"] = "fail" if "message" in result else "ok"
         self.queuedTurns = []
         self.turnsExecuted += 1
         return True
