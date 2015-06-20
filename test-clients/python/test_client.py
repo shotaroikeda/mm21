@@ -9,8 +9,8 @@ def initialResponse():
     # @competitors YOUR CODE HERE
     return {'team':'test'}
 
-# Actions to take on a given turn
-def processTurn():
+# Determine actions to take on a given turn, given the server response
+def processTurn(serverResponse):
     # @competitors YOUR CODE HERE
     return {
         'team': 'test',

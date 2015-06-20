@@ -46,7 +46,7 @@ class Game(object):
         return (True, {"id": player})
 
     # Add a player's actions to the turn queue
-    def queue_turn(turnJson):
+    def queue_turn(self, turnJson, playerId):
         self.queuedTurns.append(turnJson)
         return
 
