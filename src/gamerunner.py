@@ -37,9 +37,9 @@ def launch_clients():
 
 
 def launch_client(client, port=None):
-        c = Client_program(client, port)
-        client_list.append(c)
-        c.run()
+    c = Client_program(client, port)
+    client_list.append(c)
+    c.run()
 
 
 def launch_client_test_game(client, port):
@@ -219,7 +219,7 @@ class Scoreboard(object):
             self.board = self.bot = Popen([sys.executable, "scoreServer.py"],
                                           stdout=FNULL, stderr=FNULL)
             time.sleep(1)
-        
+
     def turn(self, turn):
         try:
             r = urlopen(self.url, turn)
@@ -244,7 +244,7 @@ class Scoreboard(object):
                 self.board.terminate()
             except OSError:
                 pass
-                
+
     def __del__(self):
         self.kill()
 

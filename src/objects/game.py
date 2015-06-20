@@ -27,6 +27,24 @@ class Game(object):
         # Done!
         return
 
+    # Add a player to the game
+    def add_new_team(self, jsonObject, player):
+
+        # JSON validation
+        error = None
+        if "team" not in jsonObject:
+            error = "Missing 'team' parameter"
+        elif len(jsonObject["team"]) == 0:
+            error = "'Team' cannot be an empty string"
+        if error:
+            return (False, error)
+
+        # Add player to playerInfos
+        self.playerInfos[player] = jsonObject
+
+        # Return response (as a JSON object)
+        return (True, {"id": player})
+
     # Add a player's actions to the turn queue
     def queue_turn(turnJson):
         self.queuedTurns.append(turnJson)
@@ -84,7 +102,7 @@ class Game(object):
         return True
 
     # Return the results of a turn for a particular player
-    def get_info(playerId):
+    def get_info(self, playerId):
         if playerId not in self.playerInfos:
             raise InvalidPlayerException("Player " + playerId + " doesn't exist.")
         return self.playerInfos[playerId]
