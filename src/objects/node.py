@@ -2,25 +2,25 @@
 Holds data about a specific node on the map
 """
 
-import game_constants
+from game_constants import *
 
 
 class Node(object):
     def __init__(self, id, adjacent, nodetype):
         # int
         self.id = id
-        self.processing = game_constants.processing[nodeType]
-        self.networking = game_constants.networking[nodeType]
+        self.processing = NodeType.processing[nodetype]
+        self.networking = NodeType.networking[nodetype]
         self.totalPower = self.processing + self.networking
-        self.remainingProcessing = game_constants.networking[nodeType]
-        self.remainingNetworking = game_constants.processing[nodeType]
+        self.remainingProcessing = self.networking
+        self.remainingNetworking = self.processing
         self.ownerId = None
         self.softwareLevel = 0
         # int[]
         self.adjacentIds = adjacent
         self.rootkitIds = []
         # bool
-        self.DDoSStatus = DDosStatus.NONE
+        self.DDoSStatus = DDoSStatus.NONE
         self.isIPSed = False
         # dict<int, int>
         self.infiltration = dict()

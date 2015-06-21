@@ -4,6 +4,8 @@ Holds data about the map
 
 import src.game_constants
 import json
+import random
+from node import Node as Node
 
 
 class DuplicatePlayerException(Exception):
@@ -22,25 +24,30 @@ class MapReadException(Exception):
     pass
 
 
+class MapFormatException(Exception):
+    pass
+
+
 class GameMap(object):
     def __init__(self, mapPath):
 
         # Initial values
         self.players = []
-        self.nodes = {}  # key = id, value = node
 
         # Load map file
-        #try:
-        mapText = None
-        with open(mapPath, "r") as f:
-            mapText = f.read()
-        mapJson = json.loads(mapText)
-        #except IOError:
-        #    raise MapReadException("Error reading map file {}.".format(mapPath))
+        try:
+            mapText = None
+            with open(mapPath, "r") as f:
+                mapText = str(f.read().decode("string-escape").strip('"'))
+        except IOError:
+            raise MapReadException("Error reading map file {}.".format(mapPath))
 
         # Store map
-        print mapJson
-        self.nodes = mapJson["nodes"]
+        try:
+            mapJson = json.loads(mapText)
+            self.nodes = {x["id"]: Node(x["id"], x["adjacent-nodes"], x["type"]) for x in mapJson["nodes"]}
+        except:
+            raise MapFormatException("Invalid map file format.")
 
     # Add a player and assign them a starting node
     def addPlayer(self, playerId):
@@ -48,15 +55,16 @@ class GameMap(object):
         if playerId in self.players:
             raise DuplicatePlayerException("playerId {} is already in players".format(playerId))
         self.players.append(playerId)
-        # Assign node
-        startNode = random.choice([x for x in getNodesOfType("Large City") if not x.ownerId])  # TODO make this "fairer"
-        startNode.own(playerId)
+        # Assign starting node
+        freeNodes = [self.nodes[uid] for uid in self.getNodesOfType("Large City")]  # TODO make this "fairer"
+        freeNodes = [x for x in freeNodes if x.ownerId is None]
+        random.choice(freeNodes).own(playerId)
         # Done!
         return
 
     # Get all nodes of a given type (e.g. all ISPs)
     def getNodesOfType(self, nodeType):
-        return [x for x in nodes if x.nodetype == nodeType]
+        return [uid for uid in self.nodes.iterkeys() if self.nodes[uid].nodetype == nodeType]
 
     # Decrement the power of connected nodes
     # Will raise an exception if the required amount of power is not available
