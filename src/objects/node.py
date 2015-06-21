@@ -35,9 +35,7 @@ class Node(object):
         return
 
     def canMoveThrough(self, playerId):
-        if playerId in self.rootkitIds:
-            return True
-        return self.ownerId == playerId
+        return self.ownerId == playerId or playerId in self.rootkitIds
 
     def own(self, playerId):
         if playerId == self.ownerId:

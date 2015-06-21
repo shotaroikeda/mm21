@@ -2,14 +2,22 @@
 Holds constants used by the server and visualizer
 """
 
+import os
+
+
+# Helper functions
+def path(p):
+    return os.path.abspath(os.path.join(os.getcwd(), p))
+
+
 # Default server port
 port = 1337
 
 # Default map
-mapFile = "src/gamerunner/map.json"
+mapFile = path("src/gamerunner/map.json")
 
 # Default logfile path
-logFile = "src/gamerunner/log.json"
+logFile = path("src/gamerunner/log.json")
 
 # Default client path
-defaultClient = "test-clients/python/"
+defaultClient = path("test-clients/python/")

@@ -183,7 +183,7 @@ def test_game(team, team_dir, port):
                     logger=fileLog) 
     serv.run(port, partial(launch_client_test_game, team_dir, port), time_out=60)
     return True
-    
+
 
 def main():
     global parameters
@@ -207,7 +207,7 @@ def main():
     serv.run(parameters.port, launch_clients)
     if parameters.scoreboard:
         fileLog.score.stop()
-        
+
 
 class Scoreboard(object):
     def __init__(self, url=None):

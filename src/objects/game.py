@@ -1,7 +1,6 @@
 """
 This class binds on to the MM20 server.py file
 """
-
 from gamemap import GameMap as Map
 from node import Node as Node
 
@@ -23,7 +22,7 @@ class Game(object):
 
         # Load map
         # TODO load map in gamemap() constructor
-        self.map = Map()
+        self.map = Map(mapPath)
 
         # Done!
         return

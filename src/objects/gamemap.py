@@ -3,9 +3,10 @@ Holds data about the map
 """
 
 import src.game_constants
+import json
 
 
-class DuplicateplayerException(Exception):
+class DuplicatePlayerException(Exception):
     pass
 
 
@@ -17,22 +18,40 @@ class InsufficientPowerException(Exception):
     pass
 
 
+class MapReadException(Exception):
+    pass
+
+
 class GameMap(object):
-    def __init__(self):
+    def __init__(self, mapPath):
+
+        # Initial values
         self.players = []
-        # key = id, value = node
-        self.nodes = {}
+        self.nodes = {}  # key = id, value = node
+
+        # Load map file
+        try:
+            mapJson = None
+            with open(mapPath, "r") as f:
+                mapJson = f.read()
+            mapJson = json.loads(mapJson)
+        except IOError:
+            raise MapReadException("Error reading map file {}.".format(mapPath))
+
+        # Store map
+        self.nodes = mapJson["nodes"]
 
     # Add a player and assign them a starting node
     def addPlayer(self, playerId):
+        # Add player
         if playerId in self.players:
-            raise DuplicateplayerException("playerId {} is already in players".format(playerId))
+            raise DuplicatePlayerException("playerId {} is already in players".format(playerId))
         self.players.append(playerId)
-
-    def addNode(self, node):
-        if node.id in self.nodes:
-            raise DuplicateNodeException("nodeId {} is already in nodes.".format(node.id))
-        self.nodes[node.id] = node
+        # Assign node
+        startNode = random.choice([x for x in getNodesOfType("Large City") if x.ownerId=None])  # TODO make this "fairer"
+        startNode.own(playerId)
+        # Done!
+        return
 
     # Get all nodes of a given type (e.g. all ISPs)
     def getNodesOfType(self, nodeType):
