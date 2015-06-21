@@ -24,9 +24,6 @@ class Game(object):
         # TODO load map in gamemap() constructor
         self.map = Map(mapPath)
 
-        # Done!
-        return
-
     # Add a player to the game
     def add_new_player(self, jsonObject, playerId):
 
@@ -53,7 +50,6 @@ class Game(object):
     # Add a player's actions to the turn queue
     def queue_turn(self, turnJson, playerId):
         self.queuedTurns.append(turnJson)
-        return
 
     # Execute everyone's actions for this turn
     # @returns True if the game is still running, False otherwise
@@ -106,8 +102,13 @@ class Game(object):
         self.turnsExecuted += 1
         return True
 
-    # Return the results of a turn for a particular player
+    # Return the results of a turn ("server response") for a particular player
     def get_info(self, playerId):
         if playerId not in self.playerInfos:
             raise InvalidPlayerException("Player " + playerId + " doesn't exist.")
-        return self.playerInfos[playerId]
+        # TODO document my format!
+        return {
+            "playerInfo": self.playerInfos[playerId],
+            "map": [x for x in self.map.nodes if x.ownerId == playerId]  # TODO 1) implement port-scanning, 2) do we send map schema initially, or force them to do a portscan?
+        }
+
