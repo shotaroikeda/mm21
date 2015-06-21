@@ -17,7 +17,7 @@ class InsufficientPowerException(Exception):
     pass
 
 
-class Map(object):
+class GameMap(object):
     def __init__(self):
         self.teams = []
         # key = id, value = node

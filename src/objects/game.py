@@ -2,7 +2,7 @@
 This class binds on to the MM20 server.py file
 """
 
-import map as Map
+import gamemap as Map
 import node as Node
 
 
@@ -59,8 +59,8 @@ class Game(object):
         for turn in self.queuedTurns:
 
             # Values
-            move = turn["type"].toLower()
-            target = map.nodes.get(turn.get("target", None), None)
+            move = turn.get("type", "").lower()
+            target = Map.nodes.get(turn.get("target", None), None)
             result = {}
 
             # Execute actions
@@ -80,7 +80,7 @@ class Game(object):
                 elif move == "portScan":
                     map.doPortScan()
                 else:
-                    result["message"] = "Unknown action."
+                    result["message"] = "Invalid action type."
             except KeyError:
                 result["message"] = "Invalid node."
             except AttemptToMultipleDDosException:
