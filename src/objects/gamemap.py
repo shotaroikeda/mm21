@@ -30,15 +30,16 @@ class GameMap(object):
         self.nodes = {}  # key = id, value = node
 
         # Load map file
-        try:
-            mapJson = None
-            with open(mapPath, "r") as f:
-                mapJson = f.read()
-            mapJson = json.loads(mapJson)
-        except IOError:
-            raise MapReadException("Error reading map file {}.".format(mapPath))
+        #try:
+        mapText = None
+        with open(mapPath, "r") as f:
+            mapText = f.read()
+        mapJson = json.loads(mapText)
+        #except IOError:
+        #    raise MapReadException("Error reading map file {}.".format(mapPath))
 
         # Store map
+        print mapJson
         self.nodes = mapJson["nodes"]
 
     # Add a player and assign them a starting node
@@ -48,7 +49,7 @@ class GameMap(object):
             raise DuplicatePlayerException("playerId {} is already in players".format(playerId))
         self.players.append(playerId)
         # Assign node
-        startNode = random.choice([x for x in getNodesOfType("Large City") if x.ownerId=None])  # TODO make this "fairer"
+        startNode = random.choice([x for x in getNodesOfType("Large City") if not x.ownerId])  # TODO make this "fairer"
         startNode.own(playerId)
         # Done!
         return
