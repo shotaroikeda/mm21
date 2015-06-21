@@ -2,8 +2,8 @@
 This class binds on to the MM20 server.py file
 """
 
-import gamemap as Map
-import node as Node
+from gamemap import GameMap as Map
+from node import Node as Node
 
 
 class InvalidPlayerException(Exception):
@@ -22,28 +22,30 @@ class Game(object):
         self.playerInfos = {}
 
         # Load map
-        # TODO @graph-gen team - figure out how we're going to load your map and put that code here
+        # TODO load map in gamemap() constructor
+        self.map = Map()
 
         # Done!
         return
 
     # Add a player to the game
-    def add_new_team(self, jsonObject, player):
+    def add_new_player(self, jsonObject, playerId):
 
         # JSON validation
         error = None
-        if "team" not in jsonObject:
-            error = "Missing 'team' parameter"
-        elif len(jsonObject["team"]) == 0:
-            error = "'Team' cannot be an empty string"
+        if "teamName" not in jsonObject:
+            error = "Missing 'teamName' parameter"
+        elif len(jsonObject["teamName"]) == 0:
+            error = "'teamName' cannot be an empty string"
         if error:
             return (False, error)
 
-        # Add player to playerInfos
-        self.playerInfos[player] = jsonObject
+        # Add player to game data
+        self.playerInfos[playerId] = jsonObject
+        self.map.addPlayer(playerId)
 
         # Return response (as a JSON object)
-        return (True, {"id": player})
+        return (True, {"id": playerId})
 
     # Add a player's actions to the turn queue
     def queue_turn(self, turnJson, playerId):
@@ -60,7 +62,7 @@ class Game(object):
 
             # Values
             move = turn.get("type", "").lower()
-            target = Map.nodes.get(turn.get("target", None), None)
+            target = self.map.nodes.get(turn.get("target", None), None)
             result = {}
 
             # Execute actions

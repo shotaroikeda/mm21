@@ -7,13 +7,13 @@ import sys
 # Set initial connection data
 def initialResponse():
     # @competitors YOUR CODE HERE
-    return {'team':'test'}
+    return {'teamName':'test'}
 
 # Determine actions to take on a given turn, given the server response
 def processTurn(serverResponse):
     # @competitors YOUR CODE HERE
     return {
-        'team': 'test',
+        'teamName': 'test',
         'actions': [],
         'these-are': 'sample-values'
     }

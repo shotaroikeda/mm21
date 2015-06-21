@@ -120,7 +120,7 @@ class MMServer(object):
                             jsonObject = {}
                             validJson = False
                         if validJson:
-                            (success, response) = self.game.add_new_team(jsonObject, player)
+                            (success, response) = self.game.add_new_player(jsonObject, player)
                             if success:
                                 turnObjects[player] = response
                                 validTurns = validTurns + 1

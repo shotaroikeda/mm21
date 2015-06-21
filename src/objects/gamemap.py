@@ -5,7 +5,7 @@ Holds data about the map
 import src.game_constants
 
 
-class DuplicateTeamException(Exception):
+class DuplicateplayerException(Exception):
     pass
 
 
@@ -19,30 +19,24 @@ class InsufficientPowerException(Exception):
 
 class GameMap(object):
     def __init__(self):
-        self.teams = []
+        self.players = []
         # key = id, value = node
         self.nodes = {}
 
-    # Add a team and assign them a starting node
-    def addTeam(self, teamId):
-        if teamId in self.teams:
-            raise DuplicateTeamException(
-                "teamId {} is already in teams".format(teamId))
-        self.teams.append(teamId)
+    # Add a player and assign them a starting node
+    def addPlayer(self, playerId):
+        if playerId in self.players:
+            raise DuplicateplayerException("playerId {} is already in players".format(playerId))
+        self.players.append(playerId)
 
     def addNode(self, node):
         if node.id in self.nodes:
-            raise DuplicateNodeException(
-                "nodeId {} is already in nodes.".format(node.id))
+            raise DuplicateNodeException("nodeId {} is already in nodes.".format(node.id))
         self.nodes[node.id] = node
 
     # Get all nodes of a given type (e.g. all ISPs)
     def getNodesOfType(self, nodeType):
-        nodesOfType = []
-        for node in self.nodes.itervalues():
-            if node.nodetype == nodeType:
-                nodesOfType.append(node)
-        return nodesOfType
+        return [x for x in nodes if x.nodetype == nodeType]
 
     # Decrement the power of connected nodes
     # Will raise an exception if the required amount of power is not available
@@ -76,7 +70,7 @@ class GameMap(object):
             node.remainingNetworking -= difference
             networking -= difference
 
-    # Get all nodes that are clustered with (connected to and of the same team as) another node
+    # Get all nodes that are clustered with (connected to and of the same player as) another node
     def getClusteredNodes(self, startNode, clusteredNodes, ownerId):
         if startNode.ownerId != ownerId or startNode in clusteredNodes:
             return
