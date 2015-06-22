@@ -79,7 +79,7 @@ class GameMap(object):
 
         # Get connected nodes
         connectedNodes = set()
-        getConnectedNodes(startingNode, connectedNodes, startingNode.ownerId)
+        self.getConnectedNodes(startingNode, connectedNodes, startingNode.ownerId)
 
         # Make sure connected nodes have required resource amounts
         totalProcessing = 0
@@ -106,22 +106,26 @@ class GameMap(object):
             networking -= difference
 
     # Get all nodes that are clustered with (connected to and of the same player as) another node
-    def getClusteredNodes(self, startNode, clusteredNodes, ownerId):
+    def getClusteredNodes(self, startNode, clusteredNodes, ownerId=None):
+        if not ownerId:
+            ownerId = startNode.ownerId
         if startNode.ownerId != ownerId or startNode in clusteredNodes:
             return
         clusteredNodes.append(startNode)
         for adjacent in startNode.adjacentIds:
-            getConnectedNodes(self.nodes[adjacent], clusteredNodes, ownerId)
+            self.getConnectedNodes(self.nodes[adjacent], clusteredNodes, ownerId)
 
     # Get all nodes visible to another node
-    def getVisibleNodes(self, startNode, visibleNodes, ownerId):
+    def getVisibleNodes(self, startNode, visibleNodes, ownerId=None):
+        if not ownerId:
+            ownerId = startNode.ownerId
         if startNode in visibleNodes:
             return
         visibleNodes.append(startNode) 
-        if startNode.ownerId != ownerId and ownerId not in startNode.rootkits:
+        if startNode.ownerId != ownerId and ownerId not in startNode.rootkitIds:
             return
         for adjacent in startNode.adjacentIds:
-            getVisibleNodes(self.nodes[adjacent], visibleNodes, ownerId)
+            self.getVisibleNodes(self.nodes[adjacent], visibleNodes, ownerId)
 
     # Reset the map after a turn has finished
     def resetAfterTurn(self):

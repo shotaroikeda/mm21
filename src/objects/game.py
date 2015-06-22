@@ -112,7 +112,9 @@ class Game(object):
         ownedNodes = [x for x in self.map.nodes.values() if x.ownerId == playerId]
         visibleNodes = set(ownedNodes)
         for n in ownedNodes:
-            visibleNodes.update(n.getVisibleNodes())
+            buff = []
+            self.map.getVisibleNodes(n, buff)
+            visibleNodes.update(buff)
 
         # TODO document my format!
         return {
