@@ -55,6 +55,9 @@ class GameMap(object):
         if playerId in self.players:
             raise DuplicatePlayerException("playerId {} is already in players".format(playerId))
         self.players.append(playerId)
+        # Initialize infiltration values
+        for n in self.nodes.values():
+            n.infiltration[playerId] = 0
         # Assign starting node
         freeNodes = [self.nodes[uid] for uid in self.getNodesOfType("Large City")]  # TODO make this "fairer"
         freeNodes = [x for x in freeNodes if x.ownerId is None]
