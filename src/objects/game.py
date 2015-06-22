@@ -109,6 +109,6 @@ class Game(object):
         # TODO document my format!
         return {
             "playerInfo": self.playerInfos[playerId],
-            "map": [x for x in self.map.nodes if x.ownerId == playerId]  # TODO 1) implement port-scanning, 2) do we send map schema initially, or force them to do a portscan?
+            "map": [x.toJson(False) for x in self.map.nodes.values() if x.ownerId == playerId]  # TODO implement port-scanning + rootkit detection
         }
 

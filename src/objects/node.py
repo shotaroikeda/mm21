@@ -3,6 +3,7 @@ Holds data about a specific node on the map
 """
 
 from game_constants import *
+import json as JSON
 
 
 class Node(object):
@@ -25,6 +26,19 @@ class Node(object):
         # dict<int, int>
         self.infiltration = dict()
         self.nodetype = nodetype
+
+    def toJson(self, showRootkits):
+        return JSON.dumps({
+            "id": self.id,
+            "processingPower": self.processing,
+            "networkingPower": self.networking,
+            "owner": self.ownerId,
+            "softwareLevel": self.softwareLevel,
+            "adjacentIds": self.adjacentIds,
+            "isIPSed": self.isIPSed,
+            "infiltration": self.infiltration,
+            "rootkits": self.rootkits if showRootkits else None
+        })
 
     def connect(self, other):
         # other is a mapNode
