@@ -4,6 +4,10 @@ import json
 import random
 import sys
 
+# Debugging function
+def log(x):
+    sys.stderr.write(str(x))
+
 # Set initial connection data
 def initialResponse():
     # @competitors YOUR CODE HERE
@@ -12,10 +16,26 @@ def initialResponse():
 # Determine actions to take on a given turn, given the server response
 def processTurn(serverResponse):
     # @competitors YOUR CODE HERE
+
+    # Helpful variables
+    log(serverResponse)
+    actions = []
+    myId = serverResponse["playerInfo"]["id"]
+    myNodes = [x for x in serverResponse["map"] if x["owner"] == myId]
+
+    # Control a random node adjacent to the base
+    adjIds = myNodes[0]["adjacentIds"]
+    target = random.choice(adjIds)
+    actions.append({
+        "action": "control",
+        "target": target,
+        "multiplier": 10
+    })
+
+    # Send actions to the server
     return {
         'teamName': 'test',
-        'actions': [],
-        'these-are': 'sample-values'
+        'actions': actions
     }
 
 # Main method
@@ -49,7 +69,6 @@ if __name__ == "__main__":
                 data += s.recv(1024)
             else:
                 value = json.loads(data[0])
-                print 'Received', repr(data[0])
 
                 # Check game status
                 if 'winner' in value:
@@ -57,7 +76,8 @@ if __name__ == "__main__":
 
                 # Send next turn (if appropriate)
                 else:
-                    s.sendall(json.dumps(processTurn(value)) + '\n')
+                    msg = processTurn(value) if "map" in value else initialResponse()
+                    s.sendall(json.dumps(msg) + '\n')
                     data = s.recv(1024)
         else:
             data += s.recv(1024)
