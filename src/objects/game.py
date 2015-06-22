@@ -38,6 +38,7 @@ class Game(object):
 
         # Add player to game data
         self.playerInfos[playerId] = jsonObject
+        self.playerInfos[playerId]["id"] = playerId
         self.map.addPlayer(playerId)
 
         # Assign player a random unowned city node
@@ -109,6 +110,6 @@ class Game(object):
         # TODO document my format!
         return {
             "playerInfo": self.playerInfos[playerId],
-            "map": [x.toJson(False) for x in self.map.nodes.values() if x.ownerId == playerId]  # TODO implement port-scanning + rootkit detection
+            "map": [x.toPlayerDict(False) for x in self.map.nodes.values() if x.ownerId == playerId]  # TODO implement port-scanning + rootkit detection
         }
 

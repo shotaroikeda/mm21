@@ -27,8 +27,8 @@ class Node(object):
         self.infiltration = dict()
         self.nodetype = nodetype
 
-    def toJson(self, showRootkits):
-        return JSON.dumps({
+    def toPlayerDict(self, showRootkits):
+        return {
             "id": self.id,
             "processingPower": self.processing,
             "networkingPower": self.networking,
@@ -38,7 +38,7 @@ class Node(object):
             "isIPSed": self.isIPSed,
             "infiltration": self.infiltration,
             "rootkits": self.rootkits if showRootkits else None
-        })
+        }
 
     def connect(self, other):
         # other is a mapNode
