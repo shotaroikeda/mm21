@@ -107,9 +107,16 @@ class Game(object):
     def get_info(self, playerId):
         if playerId not in self.playerInfos:
             raise InvalidPlayerException("Player " + playerId + " doesn't exist.")
+
+        # Get list of nodes visible to player
+        ownedNodes = [x for x in self.map.nodes.values() if x.ownerId == playerId]
+        visibleNodes = set(ownedNodes)
+        for n in ownedNodes:
+            visibleNodes.update(n.getVisibleNodes())
+
         # TODO document my format!
         return {
             "playerInfo": self.playerInfos[playerId],
-            "map": [x.toPlayerDict(False) for x in self.map.nodes.values() if x.ownerId == playerId]  # TODO implement port-scanning + rootkit detection
+            "map": [x.toPlayerDict(False) for x in list(visibleNodes)]  # TODO implement port-scanning + rootkit detection
         }
 
