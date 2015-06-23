@@ -18,7 +18,7 @@ def processTurn(serverResponse):
     # @competitors YOUR CODE HERE
 
     # Helpful variables
-    log(serverResponse)
+    #log("PT CALLED")
     actions = []
     myId = serverResponse["playerInfo"]["id"]
     myNodes = [x for x in serverResponse["map"] if x["owner"] == myId]

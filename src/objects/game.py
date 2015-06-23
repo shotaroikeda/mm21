@@ -9,15 +9,24 @@ class InvalidPlayerException(Exception):
     pass
 
 
+class AttemptToMultipleDDoSException(Exception):
+    pass
+
+
+class AttemptToMultipleRootkitException(Exception):
+    pass
+
+
 class Game(object):
 
     def __init__(self, mapPath, totalTurns):
         # Initial values
         #  int
-        self.queuedTurns = []
         self.totalTurns = totalTurns
         self.turnsExecuted = 0
         #  dict
+        self.queuedTurns = {}
+        self.turnResults = {}
         self.playerInfos = {}
 
         # Load map
@@ -50,61 +59,82 @@ class Game(object):
 
     # Add a player's actions to the turn queue
     def queue_turn(self, turnJson, playerId):
-        self.queuedTurns.append(turnJson)
+        self.queuedTurns[playerId] = turnJson
 
     # Execute everyone's actions for this turn
     # @returns True if the game is still running, False otherwise
     def execute_turn(self):
 
         # Execute turns
-        turnResults = []
-        for turn in self.queuedTurns:
+        self.turnResults = {}
+        for playerId in self.queuedTurns:
+            turn = self.queuedTurns[playerId]
 
-            # Values
-            move = turn.get("type", "").lower()
-            target = self.map.nodes.get(turn.get("target", None), None)
-            result = {}
+            # Get actions
+            actions = []
+            try:
+                actions = list(turn.get("actions", []))
+            except:
+                self.turnResults[playerId] = [{"status": "fail", "messages": "'Actions' parameter must be a list."}]
+                continue  # Skip invalid turn
 
             # Execute actions
-            try:
-                if move == "ddos":
-                    target.doDDOS()
-                elif move == "control":
-                    target.doControl(player)
-                elif move == "upgrade":
-                    target.doUpgrade()
-                elif move == "clean":
-                    target.doClean()
-                elif move == "scan":
-                    target.doScan()
-                elif move == "rootkit":
-                    target.doRootkit(player)
-                elif move == "portScan":
-                    map.doPortScan()
-                else:
-                    result["message"] = "Invalid action type."
-            except KeyError:
-                result["message"] = "Invalid node."
-            except AttemptToMultipleDDosException:
-                result["message"] = "Node is already DDoSed."
-            except AttemptToMultipleRootkitException:
-                result["message"] = "Node is already rootkitted."
-            except IndexError:
-                result["message"] = "Invalid playerID."
-            except:
-                result["message"] = "Unknown exception."
+            self.turnResults[playerId] = []
+            for actionJson in actions:
+                action = actionJson.get("action", "").lower()
+                targetId = actionJson.get("target", -1)
+                actionResult = {}
 
-            # Result status
-            result["status"] = "fail" if "message" in result else "ok"
-            turnResults.append(result)
+                try:
+                    target = self.map.nodes.get(int(targetId), None)
+                    if action == "ddos":
+                        target.doDDOS()
+                    elif action == "control":
+                        target.doControl(player)
+                    elif action == "upgrade":
+                        target.doUpgrade()
+                    elif action == "clean":
+                        target.doClean()
+                    elif action == "scan":
+                        target.doScan()
+                    elif action == "rootkit":
+                        target.doRootkit(player)
+                    elif action == "portScan":
+                        map.doPortScan()
+                    else:
+                        actionResult["message"] = "Invalid action type."
+                except KeyError:
+                    actionResult["message"] = "Invalid node."
+                except AttemptToMultipleDDoSException:
+                    actionResult["message"] = "Node is already DDoSed."
+                except AttemptToMultipleRootkitException:
+                    actionResult["message"] = "Node is already rootkitted."
+                except IndexError:
+                    actionResult["message"] = "Invalid playerID."
+                except ValueError:
+                    actionResult["message"] = "Type mismatch in parameter(s)."
+                except Exception as e:
+                    actionResult["message"] = "Unknown exception."
+
+                actionResult["status"] = "fail" if "message" in actionResult else "ok"
+
+                # Record results
+                self.turnResults[playerId].append(actionResult)
+
+        # Determine winner if appropriate
+        done = self.totalTurns > 0 and self.totalTurns <= self.turnsExecuted
+        if done:
+            for result in self.turnResults.values():
+                result.append({"winnerId": 0})  # TODO determine winner + document "turnResults" format
 
         # Done!
-        self.queuedTurns = []
+        self.queuedTurns = {}
         self.turnsExecuted += 1
-        return True
+        return not done
 
     # Return the results of a turn ("server response") for a particular player
     def get_info(self, playerId):
+        print self.turnResults.get(playerId, "")
         if playerId not in self.playerInfos:
             raise InvalidPlayerException("Player " + playerId + " doesn't exist.")
 
@@ -119,6 +149,7 @@ class Game(object):
         # TODO document my format!
         return {
             "playerInfo": self.playerInfos[playerId],
+            "turnResult": self.turnResults[playerId],
             "map": [x.toPlayerDict(False) for x in list(visibleNodes)]  # TODO implement port-scanning + rootkit detection
         }
 
