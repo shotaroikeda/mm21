@@ -24,12 +24,5 @@ class NodeType:
                    'Data Center': 2000
                  }
 
-
-# DDoSStatus enum
-class DDoSStatus:
-    PENDING = 1
-    DDOSED = 2
-    NONE = 3
-
 # Default number of players
 numPlayers = 5

@@ -4,6 +4,10 @@ This class binds on to the MM20 server.py file
 from gamemap import GameMap as Map
 from node import Node as Node
 
+# Useful for debugging
+import sys
+import traceback
+
 
 class InvalidPlayerException(Exception):
     pass
@@ -90,7 +94,7 @@ class Game(object):
                     if action == "ddos":
                         target.doDDOS()
                     elif action == "control":
-                        target.doControl(player)
+                        target.doControl(playerId, actionJson.get("multiplier", 1))
                     elif action == "upgrade":
                         target.doUpgrade()
                     elif action == "clean":
@@ -98,7 +102,7 @@ class Game(object):
                     elif action == "scan":
                         target.doScan()
                     elif action == "rootkit":
-                        target.doRootkit(player)
+                        target.doRootkit(playerId)
                     elif action == "portScan":
                         map.doPortScan()
                     else:
@@ -114,13 +118,16 @@ class Game(object):
                 except ValueError:
                     actionResult["message"] = "Type mismatch in parameter(s)."
                 except Exception as e:
-                    print e
-                    actionResult["message"] = "Unknown exception."
+                    actionResult["message"] = "Unknown exception: " + str(e)
+                    print traceback.format_tb(sys.exc_info()[2])
 
                 actionResult["status"] = "fail" if "message" in actionResult else "ok"
 
                 # Record results
                 self.turnResults[playerId].append(actionResult)
+
+            # Commit turn results (e.g. DDoSes)
+            self.map.resetAfterTurn()
 
         # Determine winner if appropriate
         done = self.totalTurns > 0 and self.totalTurns <= self.turnsExecuted
@@ -144,7 +151,7 @@ class Game(object):
         visibleNodes = set(ownedNodes)
         for n in ownedNodes:
             buff = []
-            self.map.getVisibleNodes(n, buff)
+            n.getVisibleNodes(buff)
             visibleNodes.update(buff)
 
         # TODO document my format!

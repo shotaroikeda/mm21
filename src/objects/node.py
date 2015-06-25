@@ -18,8 +18,12 @@ class MultiplierMustBePositiveException(Exception):
     pass
 
 
+class NodeIsDDoSedException(Exception):
+    pass
+
+
 class Node(object):
-    def __init__(self, id, adjacent, nodetype):
+    def __init__(self, id, adjacent, nodetype, gamemap):
         # int
         self.id = id
         self.processing = NodeType.processing[nodetype]
@@ -33,11 +37,17 @@ class Node(object):
         self.adjacentIds = adjacent
         self.rootkitIds = []
         # bool
-        self.DDoSStatus = DDoSStatus.NONE
+        self.DDoSed = False
+        self.DDoSPending = False
         self.isIPSed = False
         # dict<int, int>
         self.infiltration = dict()
         self.nodetype = nodetype
+        # object
+        self.map = gamemap
+
+    def getAdjacentNodes(self):
+        return [self.map.nodes[nId] for nId in self.adjacentIds]
 
     def toPlayerDict(self, showRootkits):
         return {
@@ -52,6 +62,73 @@ class Node(object):
             "rootkits": self.rootkits if showRootkits else None
         }
 
+    """
+    Map functions
+    """
+    # Decrement the power of connected nodes
+    # @param processing The processing power required
+    # @param networking The networking power required
+    # @throws InsufficientPowerException if not enough power is available
+    def decrementPower(self, processing, networking):
+
+        # Get connected nodes
+        connectedNodes = []
+        self.getClusteredNodes(connectedNodes)
+
+        # Make sure connected nodes have required resource amounts
+        totalProcessing = 0
+        totalNetworking = 0
+        for node in connectedNodes:
+            if not node.DDoSed:
+                totalProcessing += node.remainingProcessing
+                totalNetworking += node.remainingNetworking
+        if totalProcessing < processing or totalNetworking < networking:
+            raise InsufficientPowerException("networking = %d, processing = %d\nNeeded networking = %d, processing = %d" % (totalNetworking, totalProcessing, networking, processing))
+
+        # Subtract used resources from connected nodes
+        # TODO Let players specify the order in which we go through their nodes for resources
+        for node in connectedNodes:
+            if node.DDoSed:
+                continue
+            if processing == 0:
+                break
+            difference = min(processing, node.remainingProcessing)
+            node.remainingProcessing -= difference
+            processing -= difference
+
+        for node in connectedNodes:
+            if node.DDoSed:
+                continue
+            if networking == 0:
+                break
+            difference = min(networking, node.remainingNetworking)
+            node.remainingNetworking -= difference
+            networking -= difference
+
+    # Get all nodes that are clustered with (connected to and of the same player as) another node
+    # @param clusteredNodes (Output) The list of clustered nodes
+    def getClusteredNodes(self, clusteredNodes):
+        if self in clusteredNodes:
+            return
+        clusteredNodes.append(self)
+        for adjacent in self.getAdjacentNodes():
+            if adjacent.ownerId == self.ownerId:
+                adjacent.getClusteredNodes(clusteredNodes)
+
+    # Get all nodes visible to (clustered with or adjacent to a cluster containing) another node
+    # @param visibleNodes (Output) The list of visible nodes
+    def getVisibleNodes(self, visibleNodes, ownerId=None):
+        if not ownerId:
+            ownerId = self.ownerId
+        if self in visibleNodes:
+            return
+        visibleNodes.append(self)
+        if self.ownerId == ownerId or ownerId in self.rootkitIds:
+            for adjacent in self.getAdjacentNodes():
+                adjacent.getVisibleNodes(visibleNodes)
+
+    # Connect two nodes together
+    # @param other The node to connect with
     def connect(self, other):
         # other is a mapNode
         if other.id in self.adjacentIds:
@@ -80,14 +157,19 @@ class Node(object):
     # Consume resources used to perform an action
     # @param processingCost The processing power required
     def requireResources(self, processingCost, networkingCost):
-        map.decrementPower(self, self.processingCost, self.networkingCost)
+        self.decrementPower(processingCost, networkingCost)
 
+    """
+    Player actions
+    """
     # Player action to infiltrate (AKA control) a node
     # @param playerId The ID of the infiltrating player
     # @param multiplier The amount of infiltration to performi
     def doControl(self, playerId, multiplier):
         if multiplier <= 0:
             raise MultiplierMustBePositiveException("Multiplier must be greater than 0.")
+        if self.DDoSed:
+            raise NodeIsDDoSedException("This node is DDoSed and can't be infiltrated.")
         self.requireResources(multiplier, multiplier)
         if playerId == self.ownerId:
             for k in self.infiltration.iterkeys():
@@ -99,23 +181,28 @@ class Node(object):
 
     # Player action to DDOS a node
     def doDDOS(self):
-        if self.DDoSStatus == DDoSStatus.PENDING:
-            raise AttemptToMultipleDDosException() 
         self.requireResources(self.totalPower / 5, self.totalPower / 5)
-        self.DDoSStatus = DDoSStatus.PENDING
+        self.DDoSPending = True
 
-    # Player action to upgrade a node's Software level
+    # Player action to upgrade a node's Software Level
     def doUpgrade(self):
+        if self.DDoSed:
+            raise NodeIsDDoSedException("This node is DDoSed and can't be upgraded.")
         self.requireResources(self.processing, self.networking)
         self.softwareLevel += 1
 
     # Player action to clean a node of rootkits
     def doClean(self):
+        if self.DDoSed:
+            raise NodeIsDDoSedException("This node is DDoSed and can't be cleaned.")
         self.requireResources(100, 0)
         self.rootkitIds = []
 
     # Player action to scan a node for rootkits
     def doScan(self):
+        if self.DDoSed:
+            raise NodeIsDDoSedException("This node is DDoSed and can't be scanned.")
+        self.requireResources(25, 0)
         return self.rootkitIds
 
     # Player action to add a rootkit to a node
@@ -123,6 +210,8 @@ class Node(object):
     def doRootkit(self, playerId):
         if playerId in self.rootkitIds:
             raise AttemptToMultipleRootkitException("This player has a rootkit here already.")
+        if self.DDoSed:
+            raise NodeIsDDoSedException("This node is DDoSed and can't be rootkitted.")
         self.requireResources(self.totalPower / 5, self.totalPower / 5)
         self.rootkitIds.append(playerId)
 
