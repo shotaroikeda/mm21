@@ -114,6 +114,7 @@ class Game(object):
                 except ValueError:
                     actionResult["message"] = "Type mismatch in parameter(s)."
                 except Exception as e:
+                    print e
                     actionResult["message"] = "Unknown exception."
 
                 actionResult["status"] = "fail" if "message" in actionResult else "ok"
