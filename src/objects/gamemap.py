@@ -5,7 +5,7 @@ Holds data about the map
 import src.game_constants
 import json
 import random
-from node import Node as Node
+from node import *
 
 
 class DuplicatePlayerException(Exception):
@@ -13,10 +13,6 @@ class DuplicatePlayerException(Exception):
 
 
 class DuplicateNodeException(Exception):
-    pass
-
-
-class InsufficientPowerException(Exception):
     pass
 
 
@@ -85,3 +81,6 @@ class GameMap(object):
             # Update DDoS status
             n.DDoSed = n.DDoSPending
             n.DDoSPending = False
+
+            # Reset targeter IDs (defensive programming)
+            n.targeterId = None

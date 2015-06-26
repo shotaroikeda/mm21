@@ -1,8 +1,8 @@
 """
 This class binds on to the MM20 server.py file
 """
-from gamemap import GameMap as Map
-from node import Node as Node
+from gamemap import *
+from node import *
 
 # Useful for debugging
 import sys
@@ -35,7 +35,7 @@ class Game(object):
 
         # Load map
         # TODO load map in gamemap() constructor
-        self.map = Map(mapPath)
+        self.map = GameMap(mapPath)
 
     # Add a player to the game
     def add_new_player(self, jsonObject, playerId):
@@ -91,6 +91,9 @@ class Game(object):
 
                 try:
                     target = self.map.nodes.get(int(targetId), None)
+                    if target:
+                        target.targeterId = playerId
+
                     if action == "ddos":
                         target.doDDOS()
                     elif action == "control":
@@ -113,13 +116,15 @@ class Game(object):
                     actionResult["message"] = "Node is already DDoSed."
                 except AttemptToMultipleRootkitException:
                     actionResult["message"] = "Node is already rootkitted."
+                except InsufficientPowerException:
+                    actionResult["message"] = "Insufficient networking and/or processing."
                 except IndexError:
                     actionResult["message"] = "Invalid playerID."
                 except ValueError:
                     actionResult["message"] = "Type mismatch in parameter(s)."
                 except Exception as e:
+                    # raise  # Uncomment me to raise unhandled exceptions
                     actionResult["message"] = "Unknown exception: " + str(e)
-                    print traceback.format_tb(sys.exc_info()[2])
 
                 actionResult["status"] = "fail" if "message" in actionResult else "ok"
 
@@ -142,7 +147,6 @@ class Game(object):
 
     # Return the results of a turn ("server response") for a particular player
     def get_info(self, playerId):
-        print self.turnResults.get(playerId, "")
         if playerId not in self.playerInfos:
             raise InvalidPlayerException("Player " + playerId + " doesn't exist.")
 
@@ -157,7 +161,7 @@ class Game(object):
         # TODO document my format!
         return {
             "playerInfo": self.playerInfos[playerId],
-            "turnResult": self.turnResults[playerId],
+            "turnResult": self.turnResults.get(playerId, [{"status": "fail"}, {"message": "No turn executed."}]),
             "map": [x.toPlayerDict(False) for x in list(visibleNodes)]  # TODO implement port-scanning + rootkit detection
         }
 

@@ -18,18 +18,17 @@ def processTurn(serverResponse):
     # @competitors YOUR CODE HERE
 
     # Helpful variables
-    #log("PT CALLED")
     actions = []
     myId = serverResponse["playerInfo"]["id"]
     myNodes = [x for x in serverResponse["map"] if x["owner"] == myId]
+    freeNodes = [x for x in serverResponse["map"] if x["owner"] == None]
 
     # Control a random node adjacent to the base
-    adjIds = myNodes[0]["adjacentIds"]
-    target = random.choice(adjIds)
+    target = min(freeNodes)
     actions.append({
         "action": "control",
-        "target": target,
-        "multiplier": 10
+        "target": target["id"],
+        "multiplier": 100
     })
 
     # Send actions to the server

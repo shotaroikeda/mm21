@@ -3,6 +3,7 @@ Holds data about a specific node on the map
 """
 
 from game_constants import *
+from misc_constants import *
 import json as JSON
 
 
@@ -22,16 +23,22 @@ class NodeIsDDoSedException(Exception):
     pass
 
 
+class InsufficientPowerException(Exception):
+    pass
+
+
 class Node(object):
     def __init__(self, id, adjacent, nodetype, gamemap):
         # int
         self.id = id
+        self.nodeType = nodetype
         self.processing = NodeType.processing[nodetype]
         self.networking = NodeType.networking[nodetype]
         self.totalPower = self.processing + self.networking
         self.remainingProcessing = self.networking
         self.remainingNetworking = self.processing
         self.ownerId = None
+        self.targeterId = None
         self.softwareLevel = 0
         # int[]
         self.adjacentIds = adjacent
@@ -68,12 +75,12 @@ class Node(object):
     # Decrement the power of connected nodes
     # @param processing The processing power required
     # @param networking The networking power required
-    # @throws InsufficientPowerException if not enough power is available
     def decrementPower(self, processing, networking):
 
         # Get connected nodes
         connectedNodes = []
-        self.getClusteredNodes(connectedNodes)
+        for n in self.getAdjacentNodes():
+            n.getClusteredNodes(connectedNodes, self.targeterId)
 
         # Make sure connected nodes have required resource amounts
         totalProcessing = 0
@@ -82,6 +89,7 @@ class Node(object):
             if not node.DDoSed:
                 totalProcessing += node.remainingProcessing
                 totalNetworking += node.remainingNetworking
+        print "Player {}: {} N, {} P".format(self.targeterId, totalProcessing, totalNetworking)
         if totalProcessing < processing or totalNetworking < networking:
             raise InsufficientPowerException("networking = %d, processing = %d\nNeeded networking = %d, processing = %d" % (totalNetworking, totalProcessing, networking, processing))
 
@@ -107,25 +115,26 @@ class Node(object):
 
     # Get all nodes that are clustered with (connected to and of the same player as) another node
     # @param clusteredNodes (Output) The list of clustered nodes
-    def getClusteredNodes(self, clusteredNodes):
-        if self in clusteredNodes:
-            return
-        clusteredNodes.append(self)
-        for adjacent in self.getAdjacentNodes():
-            if adjacent.ownerId == self.ownerId:
-                adjacent.getClusteredNodes(clusteredNodes)
+    # @param ownerId (Optional) Restrict nodes to those owned by this person; if not specified, the owner of the original node will be used
+    def getClusteredNodes(self, clusteredNodes, ownerId=None):
+        if ownerId is None:
+            ownerId = self.ownerId
+        if self.ownerId == ownerId and self not in clusteredNodes:
+            clusteredNodes.append(self)
+            for adjacent in self.getAdjacentNodes():
+                adjacent.getClusteredNodes(clusteredNodes, ownerId)
 
     # Get all nodes visible to (clustered with or adjacent to a cluster containing) another node
     # @param visibleNodes (Output) The list of visible nodes
     def getVisibleNodes(self, visibleNodes, ownerId=None):
-        if not ownerId:
+        if ownerId is None:
             ownerId = self.ownerId
         if self in visibleNodes:
             return
         visibleNodes.append(self)
         if self.ownerId == ownerId or ownerId in self.rootkitIds:
             for adjacent in self.getAdjacentNodes():
-                adjacent.getVisibleNodes(visibleNodes)
+                adjacent.getVisibleNodes(visibleNodes, ownerId)
 
     # Connect two nodes together
     # @param other The node to connect with
@@ -146,6 +155,7 @@ class Node(object):
     # Give control of a node to a player
     # @param playerId The ID of the player
     def own(self, playerId):
+        print printColors.GREEN + "Player {} captured Node {} (a {})!".format(playerId, self.id, self.nodeType) + printColors.RESET
         if playerId == self.ownerId:
             raise Exception("This player owns this node already.")
         self.ownerId = playerId
