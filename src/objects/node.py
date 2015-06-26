@@ -31,6 +31,10 @@ class InsufficientPowerException(Exception):
     pass
 
 
+class IpsPreventsActionException(Exception):
+    pass
+
+
 class Node(object):
     def __init__(self, id, adjacent, nodetype, gamemap):
         # int
@@ -172,8 +176,9 @@ class Node(object):
     """
     # Consume resources used to perform an action
     # @param processingCost The processing power required
-    def requireResources(self, processingCost, networkingCost):
-        self.decrementPower(processingCost, networkingCost)
+    # @param (Optional) networkingCost The networking power required; if no value is specified, processingCost will be used
+    def requireResources(self, processingCost, networkingCost=None):
+        self.decrementPower(processingCost, networkingCost if networkingCost is not none else processingCost)
         return self
 
     # Throw an exception if a node is DDoSed
@@ -184,17 +189,21 @@ class Node(object):
         return self
 
     # Throw an exception if a node is not owned by the player performing the action
-    # @param playerId The player performing the action
     def requireOwned(self):
         if self.targeterId != self.playerId:
             raise ActionRequiresOwnershipException("You must own a node to perform this action on it.")
         return self
 
     # Throw an exception if a node is owned by the player performing the action
-    # @param playerId The player performing the action
     def requireNotOwned(self):
         if self.targeterId == self.playerId:
             raise ActionRequiresOwnershipException("You cannot perform this action on a node you own.")
+        return self
+
+    # Throw an exception if a node is IPSed
+    def requireNotIPSed(self):
+        if self.targeterId == self.playerId:
+            raise IpsPreventsActionException("This action cannot be performed on an IPSed node.")
         return self
 
     """
@@ -205,7 +214,7 @@ class Node(object):
     def doControl(self, multiplier):
         if multiplier <= 0:
             raise MultiplierMustBePositiveException("Multiplier must be greater than 0.")
-        self.requireResources(multiplier, multiplier).requireNotDDoSed("controlled")
+        self.requireNotIPSed().requireNotDDoSed("controlled").requireResources(multiplier)
 
         # Heal your own nodes
         if playerId == self.ownerId:
@@ -219,7 +228,7 @@ class Node(object):
 
     # Player action to DDOS a node
     def doDDoS(self):
-        self.requireResources(self.totalPower / 5, self.totalPower / 5)
+        self.requireNotIPSed().requireResources(self.totalPower / 5)
         self.DDoSPending = True
         print printColors.RED + "Node {} DDoS INCOMING!".format(self.id) + printColors.RESET
 
@@ -240,7 +249,7 @@ class Node(object):
 
     # Player action to add a rootkit to a node
     def doRootkit(self):
-        self.requireNotOwned().requireNotDDoSed("rootkitted").requireResources(self.totalPower / 5, self.totalPower / 5)
+        self.requireNotOwned().requireNotDDoSed("rootkitted").requireNotIPSed().requireResources(self.totalPower / 5)
         if self.targeterId in self.rootkitIds:
             raise AttemptToMultipleRootkitException("This player has a rootkit here already.")
         self.rootkitIds.append(playerId)
