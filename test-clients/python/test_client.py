@@ -23,9 +23,29 @@ def processTurn(serverResponse):
     myNodes = [x for x in serverResponse["map"] if x["owner"] == myId]
     myP = sum(x["processingPower"] for x in myNodes)
     myN = sum(x["networkingPower"] for x in myNodes)
+
+    # AI variables 
+    bestScore = 0
+    target = None
+    action = "control"
+
+    # Node lists
+    attackedNodes = [x for x in myNodes if max(x["infiltration"]) != 0]
     otherNodes = [x for x in serverResponse["map"] if x["owner"] != myId]
 
-    # Capture most powerful nearby node (with free ones being slightly worse than taken ones)
+    # 1) Defend our nodes under attack
+    if len(attackedNodes) != 0:
+        for n in attackedNodes:
+            score = max(n["infiltration"])*2
+            if score > bestScore:
+                target = n
+                bestScore = score
+
+                # Last stand of the DDoS
+                if max(n["infiltration"]) > 0.75*(n["processingPower"] + n["networkingPower"]):
+                    action = "ddos"
+
+    # 2) Capture most powerful nearby node (with free ones being slightly worse than taken ones)
     if len(otherNodes) != 0:
         target = otherNodes[0]
         bestScore = 0
@@ -36,10 +56,11 @@ def processTurn(serverResponse):
             if myP > myN:
                 score = n["processingPower"]
 
-            score = score * 1.5 if n["owner"] != None else score
+            score = score * 1.25 if n["owner"] != None else score
             if score > bestScore:
                 target = n
                 bestScore = score
+                action = "control"
 
         actions.append({
             "action": "control",

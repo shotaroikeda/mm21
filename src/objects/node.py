@@ -193,6 +193,7 @@ class Node(object):
     def doDDOS(self):
         self.requireResources(self.totalPower / 5, self.totalPower / 5)
         self.DDoSPending = True
+        print printColors.RED + "Node {} DDoS INCOMING!".format(self.id) + printColors.RESET
 
     # Player action to upgrade a node's Software Level
     def doUpgrade(self):
