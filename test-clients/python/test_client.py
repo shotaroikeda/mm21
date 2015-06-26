@@ -21,15 +21,31 @@ def processTurn(serverResponse):
     actions = []
     myId = serverResponse["playerInfo"]["id"]
     myNodes = [x for x in serverResponse["map"] if x["owner"] == myId]
-    freeNodes = [x for x in serverResponse["map"] if x["owner"] == None]
+    myP = sum(x["processingPower"] for x in myNodes)
+    myN = sum(x["networkingPower"] for x in myNodes)
+    otherNodes = [x for x in serverResponse["map"] if x["owner"] != myId]
 
-    # Control a random node adjacent to the base
-    target = min(freeNodes)
-    actions.append({
-        "action": "control",
-        "target": target["id"],
-        "multiplier": 100
-    })
+    # Capture most powerful nearby node (with free ones being slightly worse than taken ones)
+    if len(otherNodes) != 0:
+        target = otherNodes[0]
+        bestScore = 0
+        for n in otherNodes:
+            score = n["processingPower"] + n["networkingPower"]
+            if myP < myN:
+                score = n["networkingPower"]
+            if myP > myN:
+                score = n["processingPower"]
+
+            score = score * 1.5 if n["owner"] != None else score
+            if score > bestScore:
+                target = n
+                bestScore = score
+
+        actions.append({
+            "action": "control",
+            "target": target["id"],
+            "multiplier": min(myP, myN)
+        })
 
     # Send actions to the server
     return {
