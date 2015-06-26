@@ -4,9 +4,21 @@ import json
 import random
 import sys
 
+# Python terminal colors; useful for debugging
+# Make sure to concat a "printColors.RESET" to the end of your statement!
+class printColors:
+    HEADER = '\033[95m'
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    RESET = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 # Debugging function
 def log(x):
-    sys.stderr.write(str(x))
+    sys.stderr.write(printColors.BLUE + str(x) + printColors.RESET + "\n")
 
 # Set initial connection data
 def initialResponse():
@@ -32,6 +44,9 @@ def processTurn(serverResponse):
     # Node lists
     attackedNodes = [x for x in myNodes if max(x["infiltration"]) != 0]
     otherNodes = [x for x in serverResponse["map"] if x["owner"] != myId]
+    if myId == 0:
+        log("MINE " + str([x["id"] for x in myNodes]))
+        log("VIS  " + str([x["id"] for x in otherNodes]))
 
     # 1) Defend our nodes under attack
     if len(attackedNodes) != 0:
@@ -42,8 +57,8 @@ def processTurn(serverResponse):
                 bestScore = score
 
                 # Last stand of the DDoS
-                if max(n["infiltration"]) > 0.75*(n["processingPower"] + n["networkingPower"]):
-                    action = "ddos"
+                #if max(n["infiltration"]) > 0.25*(n["processingPower"] + n["networkingPower"]):
+                action = "ddos"
 
     # 2) Capture most powerful nearby node (with free ones being slightly worse than taken ones)
     if len(otherNodes) != 0:
@@ -56,7 +71,7 @@ def processTurn(serverResponse):
             if myP > myN:
                 score = n["processingPower"]
 
-            score = score * 1.25 if n["owner"] != None else score
+            score = score * 1.5 if n["owner"] != None else score
             if score > bestScore:
                 target = n
                 bestScore = score

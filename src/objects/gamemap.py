@@ -60,7 +60,9 @@ class GameMap(object):
         # Assign starting node
         freeNodes = [self.nodes[uid] for uid in self.getNodesOfType("Large City")]  # TODO make this "fairer"
         freeNodes = [x for x in freeNodes if x.ownerId is None]
-        random.choice(freeNodes).own(playerId)
+        startNode = random.choice(freeNodes)
+        startNode.own(playerId)
+        startNode.isIPSed = True
 
         # Done!
         return
@@ -74,6 +76,7 @@ class GameMap(object):
 
         # Node updates
         for n in self.nodes.values():
+
             # Reset remaining resource counts
             n.remainingProcessing = n.processing
             n.remainingNetworking = n.networking
@@ -84,3 +87,10 @@ class GameMap(object):
 
             # Reset targeter IDs (defensive programming)
             n.targeterId = None
+
+            # Update owned-states
+            # We do this here so that people can't conquer a node by being earlier in the turn order
+            inf = max(n.infiltration)
+            if inf > n.totalPower * 2:
+                maxPlayers = [x for x in n.infiltration if n.infiltration[x] == inf]
+                self.own(random.choice(maxPlayers))  # Don't favor lower/higher player IDs - TODO Update the wiki to say "ties will be broken RANDOMLY, not ARBITRARILY"

@@ -54,10 +54,6 @@ class Game(object):
         self.playerInfos[playerId]["id"] = playerId
         self.map.addPlayer(playerId)
 
-        # Assign player a random unowned city node
-        # TODO make this "fair"
-        self.map.getNodesOfType("LargeCity")
-
         # Return response (as a JSON object)
         return (True, {"id": playerId})
 

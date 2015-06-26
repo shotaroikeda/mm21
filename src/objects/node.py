@@ -23,6 +23,10 @@ class NodeIsDDoSedException(Exception):
     pass
 
 
+class ActionRequiresOwnershipException(Exception):
+    pass
+
+
 class InsufficientPowerException(Exception):
     pass
 
@@ -129,12 +133,11 @@ class Node(object):
     def getVisibleNodes(self, visibleNodes, ownerId=None):
         if ownerId is None:
             ownerId = self.ownerId
-        if self in visibleNodes:
-            return
-        visibleNodes.append(self)
-        if self.ownerId == ownerId or ownerId in self.rootkitIds:
-            for adjacent in self.getAdjacentNodes():
-                adjacent.getVisibleNodes(visibleNodes, ownerId)
+        if self not in visibleNodes:
+            visibleNodes.append(self)
+            if self.ownerId == ownerId or ownerId in self.rootkitIds:
+                for adjacent in self.getAdjacentNodes():
+                    adjacent.getVisibleNodes(visibleNodes, ownerId)
 
     # Connect two nodes together
     # @param other The node to connect with
@@ -164,30 +167,55 @@ class Node(object):
             self.infiltration[k] = 0
         return
 
+    """
+    Per-node action criteria
+    """
     # Consume resources used to perform an action
     # @param processingCost The processing power required
     def requireResources(self, processingCost, networkingCost):
         self.decrementPower(processingCost, networkingCost)
+        return self
+
+    # Throw an exception if a node is DDoSed
+    # @actionName The past-tense name of the action being performed
+    def requireNotDDoSed(self, actionName):
+        if self.DDoSed:
+            raise NodeIsDDoSedException("This node is DDoSed and can't be {}.".format(actionName))
+        return self
+
+    # Throw an exception if a node is not owned by the player performing the action
+    # @param playerId The player performing the action
+    def requireOwned(self):
+        if self.targeterId != self.playerId:
+            raise ActionRequiresOwnershipException("You must own a node to perform this action on it.")
+        return self
+
+    # Throw an exception if a node is owned by the player performing the action
+    # @param playerId The player performing the action
+    def requireNotOwned(self):
+        if self.targeterId == self.playerId:
+            raise ActionRequiresOwnershipException("You cannot perform this action on a node you own.")
+        return self
 
     """
     Player actions
     """
     # Player action to infiltrate (AKA control) a node
-    # @param playerId The ID of the infiltrating player
     # @param multiplier The amount of infiltration to performi
-    def doControl(self, playerId, multiplier):
+    def doControl(self, multiplier):
         if multiplier <= 0:
             raise MultiplierMustBePositiveException("Multiplier must be greater than 0.")
-        if self.DDoSed:
-            raise NodeIsDDoSedException("This node is DDoSed and can't be infiltrated.")
-        self.requireResources(multiplier, multiplier)
+        self.requireResources(multiplier, multiplier).requireNotDDoSed("controlled")
+
+        # Heal your own nodes
         if playerId == self.ownerId:
             for k in self.infiltration.iterkeys():
                 self.infiltration[k] = max(self.infiltration[k] - multiplier, 0)
+
+        # Attack others' nodes
         else:
-            self.infiltration[playerId] = self.infiltration.get(playerId, 0) + multiplier
-            if self.infiltration[playerId] > self.totalPower * 2 and self.infiltration[playerId] == max(self.infiltration.values()):
-                self.own(playerId)
+            inf = self.infiltration.get(self.targeterId, 0) + multiplier
+            self.infiltration[self.targeterId] = inf
 
     # Player action to DDOS a node
     def doDDOS(self):
@@ -197,33 +225,24 @@ class Node(object):
 
     # Player action to upgrade a node's Software Level
     def doUpgrade(self):
-        if self.DDoSed:
-            raise NodeIsDDoSedException("This node is DDoSed and can't be upgraded.")
-        self.requireResources(self.processing, self.networking)
+        self.requireOwned().requireNotDDoSed("upgraded").requireResources(self.processing, self.networking)
         self.softwareLevel += 1
 
     # Player action to clean a node of rootkits
     def doClean(self):
-        if self.DDoSed:
-            raise NodeIsDDoSedException("This node is DDoSed and can't be cleaned.")
-        self.requireResources(100, 0)
+        self.requireOwned().requireNotDDoSed("cleaned").requireResources(100, 0)
         self.rootkitIds = []
 
     # Player action to scan a node for rootkits
     def doScan(self):
-        if self.DDoSed:
-            raise NodeIsDDoSedException("This node is DDoSed and can't be scanned.")
-        self.requireResources(25, 0)
+        self.requireOwned().requireNotDDoSed("scanned").requireResources(25, 0)
         return self.rootkitIds
 
     # Player action to add a rootkit to a node
-    # @param playerId The ID of the rootkitting player
-    def doRootkit(self, playerId):
-        if playerId in self.rootkitIds:
+    def doRootkit(self):
+        self.requireNotOwned().requireNotDDoSed("rootkitted").requireResources(self.totalPower / 5, self.totalPower / 5)
+        if self.targeterId in self.rootkitIds:
             raise AttemptToMultipleRootkitException("This player has a rootkit here already.")
-        if self.DDoSed:
-            raise NodeIsDDoSedException("This node is DDoSed and can't be rootkitted.")
-        self.requireResources(self.totalPower / 5, self.totalPower / 5)
         self.rootkitIds.append(playerId)
 
     # Player action to do a port scan
