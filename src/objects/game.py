@@ -91,7 +91,7 @@ class Game(object):
                         target.targeterId = playerId
 
                     if action == "ddos":
-                        target.doDDOS()
+                        target.doDDoS()
                     elif action == "control":
                         target.doControl(playerId, actionJson.get("multiplier", 1))
                     elif action == "upgrade":

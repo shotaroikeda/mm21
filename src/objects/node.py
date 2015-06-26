@@ -218,7 +218,7 @@ class Node(object):
             self.infiltration[self.targeterId] = inf
 
     # Player action to DDOS a node
-    def doDDOS(self):
+    def doDDoS(self):
         self.requireResources(self.totalPower / 5, self.totalPower / 5)
         self.DDoSPending = True
         print printColors.RED + "Node {} DDoS INCOMING!".format(self.id) + printColors.RESET
