@@ -93,7 +93,7 @@ class Game(object):
                     if action == "ddos":
                         target.doDDoS()
                     elif action == "control":
-                        target.doControl(playerId, actionJson.get("multiplier", 1))
+                        target.doControl(actionJson.get("multiplier", 1))
                     elif action == "upgrade":
                         target.doUpgrade()
                     elif action == "clean":
@@ -101,7 +101,7 @@ class Game(object):
                     elif action == "scan":
                         target.doScan()
                     elif action == "rootkit":
-                        target.doRootkit(playerId)
+                        target.doRootkit()
                     elif action == "portScan":
                         map.doPortScan()
                     else:
@@ -118,8 +118,10 @@ class Game(object):
                     actionResult["message"] = "Invalid playerID."
                 except ValueError:
                     actionResult["message"] = "Type mismatch in parameter(s)."
+                except MultiplierMustBePositiveException as e:
+                    actionResult["message"] = str(e)
                 except Exception as e:
-                    # raise  # Uncomment me to raise unhandled exceptions
+                    raise  # Uncomment me to raise unhandled exceptions
                     actionResult["message"] = "Unknown exception: " + str(e)
 
                 actionResult["status"] = "fail" if "message" in actionResult else "ok"
@@ -127,8 +129,8 @@ class Game(object):
                 # Record results
                 self.turnResults[playerId].append(actionResult)
 
-            # Commit turn results (e.g. DDoSes)
-            self.map.resetAfterTurn()
+        # Commit turn results (e.g. DDoSes)
+        self.map.resetAfterTurn()
 
         # Determine winner if appropriate
         done = self.totalTurns > 0 and self.totalTurns <= self.turnsExecuted

@@ -17,8 +17,9 @@ class printColors:
     UNDERLINE = '\033[4m'
 
 # Debugging function
-def log(x):
-    sys.stderr.write(printColors.BLUE + str(x) + printColors.RESET + "\n")
+def log(x,c=printColors.BLUE):
+    pass
+    sys.stderr.write(c + str(x) + printColors.RESET + "\n")
 
 # Set initial connection data
 def initialResponse():
@@ -36,36 +37,40 @@ def processTurn(serverResponse):
     myP = sum(x["processingPower"] for x in myNodes)
     myN = sum(x["networkingPower"] for x in myNodes)
 
-    # AI variables 
+    # AI variables
     bestScore = 0
     target = None
     action = "control"
 
     # Node lists
     attackedNodes = [x for x in myNodes if max(x["infiltration"]) != 0]
-    otherNodes = [x for x in serverResponse["map"] if x["owner"] != myId]
-    if myId == 0:
-        log("MINE " + str([x["id"] for x in myNodes]))
-        log("VIS  " + str([x["id"] for x in otherNodes]))
+    otherNodes = [x for x in serverResponse["map"] if x["owner"] != myId and x["isIPSed"] == False]
+    #log("Player {} P {} / N {}".format(myId, myP, myN))
+    #log("MINE " + str([x["id"] for x in myNodes]))
+    #log("VIS  " + str([x["id"] for x in otherNodes]))
 
     # 1) Defend our nodes under attack
     if len(attackedNodes) != 0:
         for n in attackedNodes:
-            score = max(n["infiltration"])*2
+            score = max(n["infiltration"])*4
             if score > bestScore:
                 target = n
                 bestScore = score
 
                 # Last stand of the DDoS
-                #if max(n["infiltration"]) > 0.25*(n["processingPower"] + n["networkingPower"]):
-                action = "ddos"
+                if max(n["infiltration"]) > 0.5*(n["processingPower"] + n["networkingPower"]):
+                    action = "ddos"
 
     # 2) Capture most powerful nearby node (with free ones being slightly worse than taken ones)
     if len(otherNodes) != 0:
         target = otherNodes[0]
         bestScore = 0
         for n in otherNodes:
-            score = n["processingPower"] + n["networkingPower"]
+            maxI = max(int(x) for x in n["infiltration"])
+            iBoost = 0
+            if not maxI:
+                iBoost = (0 if int(n["infiltration"][str(myId)]) == maxI else maxI)
+            score = n["processingPower"] + n["networkingPower"] - iBoost
             if myP < myN:
                 score = n["networkingPower"]
             if myP > myN:
@@ -77,11 +82,11 @@ def processTurn(serverResponse):
                 bestScore = score
                 action = "control"
 
-        actions.append({
-            "action": "control",
-            "target": target["id"],
-            "multiplier": min(myP, myN)
-        })
+    actions.append({
+        "action": action,
+        "target": target["id"],
+        "multiplier": min(myP, myN)
+    })
 
     # Send actions to the server
     return {

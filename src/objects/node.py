@@ -178,7 +178,7 @@ class Node(object):
     # @param processingCost The processing power required
     # @param (Optional) networkingCost The networking power required; if no value is specified, processingCost will be used
     def requireResources(self, processingCost, networkingCost=None):
-        self.decrementPower(processingCost, networkingCost if networkingCost is not none else processingCost)
+        self.decrementPower(processingCost, networkingCost if networkingCost is not None else processingCost)
         return self
 
     # Throw an exception if a node is DDoSed
@@ -190,19 +190,19 @@ class Node(object):
 
     # Throw an exception if a node is not owned by the player performing the action
     def requireOwned(self):
-        if self.targeterId != self.playerId:
+        if self.targeterId != self.ownerId:
             raise ActionRequiresOwnershipException("You must own a node to perform this action on it.")
         return self
 
     # Throw an exception if a node is owned by the player performing the action
     def requireNotOwned(self):
-        if self.targeterId == self.playerId:
+        if self.targeterId == self.ownerId:
             raise ActionRequiresOwnershipException("You cannot perform this action on a node you own.")
         return self
 
     # Throw an exception if a node is IPSed
     def requireNotIPSed(self):
-        if self.targeterId == self.playerId:
+        if self.targeterId == self.ownerId:
             raise IpsPreventsActionException("This action cannot be performed on an IPSed node.")
         return self
 
@@ -217,7 +217,7 @@ class Node(object):
         self.requireNotIPSed().requireNotDDoSed("controlled").requireResources(multiplier)
 
         # Heal your own nodes
-        if playerId == self.ownerId:
+        if self.targeterId == self.ownerId:
             for k in self.infiltration.iterkeys():
                 self.infiltration[k] = max(self.infiltration[k] - multiplier, 0)
 
@@ -252,7 +252,7 @@ class Node(object):
         self.requireNotOwned().requireNotDDoSed("rootkitted").requireNotIPSed().requireResources(self.totalPower / 5)
         if self.targeterId in self.rootkitIds:
             raise AttemptToMultipleRootkitException("This player has a rootkit here already.")
-        self.rootkitIds.append(playerId)
+        self.rootkitIds.append(self.targeterId)
 
     # Player action to do a port scan
     def doPortScan(self):

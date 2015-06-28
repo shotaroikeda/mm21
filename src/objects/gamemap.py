@@ -62,7 +62,7 @@ class GameMap(object):
         freeNodes = [x for x in freeNodes if x.ownerId is None]
         startNode = random.choice(freeNodes)
         startNode.own(playerId)
-        startNode.isIPSed = True
+        # startNode.isIPSed = True
 
         # Done!
         return
@@ -90,7 +90,8 @@ class GameMap(object):
 
             # Update owned-states
             # We do this here so that people can't conquer a node by being earlier in the turn order
-            inf = max(n.infiltration)
+            inf = max(n.infiltration.values())
             if inf > n.totalPower * 2:
+                print printColors.GREEN + "Someone conquered something" + printColors.RESET
                 maxPlayers = [x for x in n.infiltration if n.infiltration[x] == inf]
-                self.own(random.choice(maxPlayers))  # Don't favor lower/higher player IDs - TODO Update the wiki to say "ties will be broken RANDOMLY, not ARBITRARILY"
+                n.own(random.choice(maxPlayers))  # Don't favor lower/higher player IDs - TODO Update the wiki to say "ties will be broken RANDOMLY, not ARBITRARILY"
