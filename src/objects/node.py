@@ -2,8 +2,8 @@
 Holds data about a specific node on the map
 """
 
-from game_constants import *
-from misc_constants import *
+from src.game_constants import *
+from src.misc_constants import *
 import json as JSON
 
 
@@ -162,9 +162,9 @@ class Node(object):
     # Give control of a node to a player
     # @param playerId The ID of the player
     def own(self, playerId):
-        print printColors.GREEN + "Player {} captured Node {} (a {})!".format(playerId, self.id, self.nodeType) + printColors.RESET
         if playerId == self.ownerId:
             raise Exception("This player owns this node already.")
+        self.isIPSed = False
         self.ownerId = playerId
         self.rootkitIds = []
         for k in self.infiltration:
@@ -202,7 +202,7 @@ class Node(object):
 
     # Throw an exception if a node is IPSed
     def requireNotIPSed(self):
-        if self.targeterId == self.ownerId:
+        if self.isIPSed:
             raise IpsPreventsActionException("This action cannot be performed on an IPSed node.")
         return self
 
