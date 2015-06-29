@@ -143,16 +143,6 @@ class Node(object):
                 for adjacent in self.getAdjacentNodes():
                     adjacent.getVisibleNodes(visibleNodes, ownerId)
 
-    # Connect two nodes together
-    # @param other The node to connect with
-    def connect(self, other):
-        # other is a mapNode
-        if other.id in self.adjacentIds:
-            raise Exception("Nodes are already connected.")
-        self.adjacentIds.append(other.id)
-        other.adjacentIds.append(self.id)
-        return
-
     # Determine whether a player can move through a node
     # @param playerId The ID of the player
     # @returns True if the player can move through the node, false otherwise

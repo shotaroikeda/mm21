@@ -1,3 +1,7 @@
+"""
+Tests for the GameMap object
+"""
+
 import src.misc_constants as misc_constants
 from src.misc_constants import printColors
 from src.objects.gamemap import *
@@ -15,7 +19,7 @@ def test_addPlayer():
     _map.addPlayer(1)
     assert _map.players[0] == 1
     # Check initial node assignment
-    myNodes = [x for x in _map.nodes.values() if x.ownerId == 1]
+    myNodes = _map.getPlayerNodes(1)
     assert len(myNodes) == 1
     assert myNodes[0].isIPSed is True
     assert myNodes[0].nodetype == "Large City"
@@ -45,12 +49,21 @@ def test_addDupeTeam():
     assert len(_map.players) == 1
 
 
+# Test getPlayerNodes
+def test_getPlayerNodes():
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayers(1)
+    _result = _map.getPlayerNodes(1)
+    _correct = [x.id for x in _map.nodes.values() if x.playerId == 1]
+    assert sorted(_result) == sorted(_correct)
+
+
 # Test getNodesOfType
 def test_getNodesOfType():
     _map = GameMap(misc_constants.mapFile)
     _result = _map.getNodesOfType("Large City")
     _correct = [x.id for x in _map.nodes.values() if x.nodetype == "Large City"]
-    assert len(_result) == len(_correct) and sorted(_result) == sorted(_correct)
+    assert sorted(_result) == sorted(_correct)
 
 
 # Test resetAfterTurn's DDoS updates

@@ -52,6 +52,7 @@ class GameMap(object):
             self.nodes = []
 
     # Add a player and assign them a starting node
+    # @param playerId The ID of the player to add
     def addPlayer(self, playerId):
 
         # Validate player ID (since this is crucial later throughout the game)
@@ -78,8 +79,14 @@ class GameMap(object):
         return
 
     # Get all nodes of a given type (e.g. all ISPs)
+    # @param nodeType The node type to filter by (as a string)
     def getNodesOfType(self, nodeType):
         return [uid for uid in self.nodes.iterkeys() if self.nodes[uid].nodetype == nodeType]
+
+    # Get all nodes of a given type (e.g. all ISPs)
+    # @param playerId The player ID to filter by (as an int)
+    def getNodesOfType(self, playerId):
+        return [uid for uid in self.nodes.iterkeys() if self.nodes[uid].ownerId == playerId]
 
     # Reset the map after a turn has finished
     def resetAfterTurn(self):
