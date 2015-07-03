@@ -219,16 +219,24 @@ def test_getVisibleNodes_oneNode():
     _node = _map.getPlayerNodes(1)[0]
 
     _expected = [_node].extend(_node.getAdjacentNodes())
-    # To be continued...
+    assert sorted(_expected) == sorted(_node.getVisibleNodes())
 
 
 # Test one node cluster
 def test_getVisibleNodes_oneCluster():
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
-    _node = _map.getPlayerNodes(1)[0]
 
-    pass
+    _node = _map.getPlayerNodes(1)[0]
+    for n in _node.getAdjacentNodes():
+        n.own(1)
+
+    _expected = [_node].extend(_node.getAdjacentNodes())
+    for n in _node.getAdjacentNodes():
+        _expected.extend(n.getAdjacentNodes())
+    _expected = list(set(_expected))
+
+    assert sorted(_expected) == sorted(_node.getVisibleNodes())
 
 
 # Test two separate node clusters
@@ -237,7 +245,41 @@ def test_getVisibleNodes_twoClusters():
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
 
-    pass
+    # Find clusters
+    _cluster1 = [_node]
+    _cluster1.extend(_node.getAdjacentNodes())
+    _cluster2 = [n for n in _map.nodes if n not in _cluster1]
+
+    # Assign ownership (cluster 1 - blob based around initial base)
+    for n in _node.getAdjacentNodes():
+        n.own(1)
+
+    # Determine "no man's land" between clusters 1 and 2
+    _noMansLand = []
+    for n in _cluster2:
+        _noMansLand.extend(n.getAdjacentNodes)
+    _noMansLand = list(set([x for x in _noMansLand if x.ownerId != 1]))
+
+    # Assign ownership (cluster[s] 2+ - any nodes not connected directly to cluster 1)
+    _cluster2 = [x for x in _cluster2 if x not in _noMansLand]
+    for n in _cluster2:
+        n.own(1)
+
+    # Check cluster sizes
+    assert len(_cluster1) > 1
+    assert len(_cluster2) > 1
+
+    # Add visible nodes to clusters
+    for n in _cluster1:
+        _cluster1.extend(n.getAdjacentNodes())
+    for n in _cluster2:
+        _cluster2.extend(n.getAdjacentNodes())
+    _cluster1 = list(set(_cluster1))
+    _cluster2 = list(set(_cluster2))
+
+    # Check getVisibleNodes()' correctness
+    assert sorted(_cluster1) == sorted(_node.getVisibleNodes())
+    assert sorted(_cluster2) == sorted(_cluster2[0].getVisibleNodes())
 
 
 # Test custom playerId specifier
@@ -246,25 +288,72 @@ def test_getVisibleNodes_customPlayerId():
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
 
-    pass
+    _expected = [_node].extend(_node.getAdjacentNodes())
+    assert len(_node.getVisibleNodes(2)) == 0
+    assert sorted(_expected) == sorted(_node.getVisibleNodes())
+
 
 # Test two nodes connected by a rootkit chain (1 cluster)
 def test_getVisibleNodes_rootkitChain():
 
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
+
     _node = _map.getPlayerNodes(1)[0]
+    for n in _node.getAdjacentNodes():
+        n.rootkitIds.append(1)
 
-    pass
+    _expected = [_node].extend(_node.getAdjacentNodes())
+    for n in _node.getAdjacentNodes():
+        _expected.extend(n.getAdjacentNodes())
+    _expected = list(set(_expected))
 
-# Test two nodes connected by a severed rootkit chain (2 clusters)
+    assert sorted(_expected) == sorted(_node.getVisibleNodes())
+
+
+# Test two nodes not connected by a rootkit chain (2 clusters)
 def test_getVisibleNodes_severedRootkitChain():
 
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
 
-    pass
+    # Find clusters
+    _cluster1 = [_node]
+    _cluster1.extend(_node.getAdjacentNodes())
+    _cluster2 = [n for n in _map.nodes if n not in _cluster1]
+
+    # Assign rootkits (cluster 1 - blob based around initial base)
+    for n in _node.getAdjacentNodes():
+        n.rootkitIds.append(1)
+
+    # Determine "no man's land" between clusters 1 and 2
+    _noMansLand = []
+    for n in _cluster2:
+        _noMansLand.extend(n.getAdjacentNodes)
+    _noMansLand = list(set([x for x in _noMansLand if x.ownerId != 1]))
+
+    # Assign ownership (cluster[s] 2+ - any nodes not connected directly to cluster 1)
+    _cluster2 = [x for x in _cluster2 if x not in _noMansLand]
+    for n in _cluster2:
+        n.rootkitIds.append(1)
+
+    # Check cluster sizes
+    assert len(_cluster1) > 1
+    assert len(_cluster2) > 1
+
+    # Add visible nodes to clusters
+    for n in _cluster1:
+        _cluster1.extend(n.getAdjacentNodes())
+    for n in _cluster2:
+        _cluster2.extend(n.getAdjacentNodes())
+    _cluster1 = list(set(_cluster1))
+    _cluster2 = list(set(_cluster2))
+
+    # Check getVisibleNodes()' correctness
+    assert sorted(_cluster1) == sorted(_node.getVisibleNodes())
+    assert sorted(_cluster2) == sorted(_cluster2[0].getVisibleNodes())
+
 
 ######################## BELOW IS TODO! ##################################
 # Determine whether a player can move through a node
