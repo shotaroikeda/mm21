@@ -14,21 +14,25 @@ import pytest
 
 # Test addPlayer's basic functionality
 def test_addPlayer():
+
     # Check player adding
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
     assert _map.players[0] == 1
+
     # Check initial node assignment
     myNodes = _map.getPlayerNodes(1)
     assert len(myNodes) == 1
     assert myNodes[0].isIPSed is True
     assert myNodes[0].nodetype == "Large City"
+
     # Check infiltration values
     for n in _map.nodes.values():
         assert 1 in n.infiltration
 
 
 # Test handling of wrongly-formatted player IDs
+# (Tested here since it may cause 'insidious' errors down the line)
 def test_addPlayer_ForceInt():
     _map = GameMap(misc_constants.mapFile)
     with pytest.raises(ValueError):
@@ -56,6 +60,17 @@ def test_getPlayerNodes():
     _result = _map.getPlayerNodes(1)
     _correct = [x.id for x in _map.nodes.values() if x.playerId == 1]
     assert sorted(_result) == sorted(_correct)
+
+
+# Test handling of wrongly-formatted player IDs
+def test_getPlayerNodes():
+    _map = GameMap(misc_constants.mapFile)
+    with pytest.raises(ValueError):
+        _map.getPlayerNodes("1")
+    with pytest.raises(ValueError):
+        _map.getPlayerNodes(None)
+    with pytest.raises(ValueError):
+        _map.getPlayerNodes(0)
 
 
 # Test getNodesOfType

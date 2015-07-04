@@ -7,6 +7,11 @@ from src.misc_constants import *
 import json as JSON
 
 
+"""
+misc.
+"""
+
+
 # Test getAdjacentNodes
 def getAdjacentNodes(self):
     return [self.map.nodes[nId] for nId in self.adjacentIds]
@@ -38,6 +43,11 @@ def test_toPlayerDict():
     _node.doRootkit()
     assert _node.toPlayerDict(False)["rootkits"] is None
     assert _node.toPlayerDict(True)["rootkits"] = [2]
+
+
+"""
+decrementPower()
+"""
 
 
 # Test decrementPower with one node
@@ -133,9 +143,26 @@ def test_decrementPower_multiNodes():
     assert sum(x.remainingProcessing for x in _nodes) == 1
 
 
-# Get all nodes that are clustered with (connected to and of the same player as) another node
-# @param clusteredNodes (Output) The list of clustered nodes
-# @param ownerId (Optional) Restrict nodes to those owned by this person; if not specified, the owner of the original node will be used
+# Test decrementPower with negative values
+def test_decrementPower_negative():
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _node = _map.getPlayerNodes(1)[0]
+
+    # Should raise an exception
+    with pytest.raises(ValueError):
+        _node.decrementPower(-1, 1)
+    with pytest.raises(ValueError):
+        _node.decrementPower(1, -1)
+    assert _node.remainingProcessing == 500
+    assert _node.remainingNetworking == 500
+
+
+"""
+getClusteredNodes()
+"""
+
+
 # Test one node
 def test_getClusteredNodes_oneNode():
     _map = GameMap(misc_constants.mapFile)
@@ -212,6 +239,11 @@ def test_getClusteredNodes_customPlayerId():
     assert len(_node.getClusteredNodes(2)) == 0
 
 
+"""
+getVisibleNodes()
+"""
+
+
 # Test one node
 def test_getVisibleNodes_oneNode():
     _map = GameMap(misc_constants.mapFile)
@@ -227,10 +259,12 @@ def test_getVisibleNodes_oneCluster():
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
 
+    # Construct cluster
     _node = _map.getPlayerNodes(1)[0]
     for n in _node.getAdjacentNodes():
         n.own(1)
 
+    # Determine expected answer
     _expected = [_node].extend(_node.getAdjacentNodes())
     for n in _node.getAdjacentNodes():
         _expected.extend(n.getAdjacentNodes())
@@ -299,10 +333,12 @@ def test_getVisibleNodes_rootkitChain():
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
 
+    # Build cluster
     _node = _map.getPlayerNodes(1)[0]
     for n in _node.getAdjacentNodes():
         n.rootkitIds.append(1)
 
+    # Determine expected answer
     _expected = [_node].extend(_node.getAdjacentNodes())
     for n in _node.getAdjacentNodes():
         _expected.extend(n.getAdjacentNodes())
@@ -355,63 +391,121 @@ def test_getVisibleNodes_severedRootkitChain():
     assert sorted(_cluster2) == sorted(_cluster2[0].getVisibleNodes())
 
 
-######################## BELOW IS TODO! ##################################
-# Determine whether a player can move through a node
-# @param playerId The ID of the player
-# @returns True if the player can move through the node, false otherwise
-def test_canMoveThrough():
-    return self.ownerId == playerId or playerId in self.rootkitIds
+"""
+more misc.
+"""
 
-# Give control of a node to a player
-# @param playerId The ID of the player
+
+# Test canMoveThrough
+def test_canMoveThrough():
+
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _node = _map.getPlayerNodes(1)[0]
+
+    # Test unowned node
+    _unownedNode = _node.getAdjacentNodes()[0]
+    assert _unownedNode.canMoveThrough(1) is False
+
+    # Test owned node
+    assert _node.canMoveThrough(1) is True
+
+    # Test rootkitted node
+    _unownedNode.rootkitIds.append(1)
+    assert _node.canMoveThrough(1) is True
+
+    # Test custom playerID specifier
+    assert _node.canMoveThrough(2) is False
+
+
+# Test own
 def test_own(self, playerId):
-    if playerId == self.ownerId:
-        raise Exception("This player owns this node already.")
-    self.isIPSed = False
-    self.ownerId = playerId
-    self.rootkitIds = []
-    for k in self.infiltration:
-        self.infiltration[k] = 0
-    return
+
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _node = _map.getPlayerNodes(1)[0]
+
+    # Test owning an unowned node
+    _unownedNode = _node.getAdjacentNodes()[0]
+    _unownedNode.own(1)
+    assert _unownedNode.ownerId == 1
+
+    # Test that owning an already-owned node throws an exception
+    with pytest.raises(AlreadyOwnedException):
+        _node.own(1)
+
+    # Test resetting of isIPSed/rootkits/infiltration
+    _unownedNode.own(0)
+    assert _unownedNode.ownerId == 0
+    _unownedNode.isIPSed = True
+    _unownedNode.rootkitIds.add(1)
+    _unownedNode.infiltration[1] = 999
+    _unownedNode.own(1)
+    assert _unownedNode.isIPSed is False
+    assert len(_unownedNode.rootkitIds) == 0
+    assert _unownedNode.infiltration[1] == 0
+
 
 """
 Per-node action criteria
 """
-# Consume resources used to perform an action
-# @param processingCost The processing power required
-# @param (Optional) networkingCost The networking power required; if no value is specified, processingCost will be used
-def test_requireResources(self, processingCost, networkingCost=None):
-    self.decrementPower(processingCost, networkingCost if networkingCost is not None else processingCost)
-    return self
 
-# Throw an exception if a node is DDoSed
-# @actionName The past-tense name of the action being performed
+
+# Test requireNotDDoSed
 def test_requireNotDDoSed(self, actionName):
-    if self.DDoSed:
-        raise NodeIsDDoSedException("This node is DDoSed and can't be {}.".format(actionName))
-    return self
 
-# Throw an exception if a node is not owned by the player performing the action
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _node = _map.getPlayerNodes(1)[0]
+
+    self.requireNotDDoSed("")
+    self.DDoSed = True
+    with pytest.raises(NodeIsDDoSedException):
+        self.requireNotDDoSed("")
+
+
+# Test requireOwned
 def test_requireOwned(self):
-    if self.targeterId != self.ownerId:
-        raise ActionRequiresOwnershipException("You must own a node to perform this action on it.")
-    return self
 
-# Throw an exception if a node is owned by the player performing the action
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _node = _map.getPlayerNodes(1)[0]
+
+    _node.requireOwned()
+    with pytest.raises(ActionOwnershipException):
+        _node.getAdjacentNodes[0].requireOwned()
+
+
+# Test requireNotOwned
 def test_requireNotOwned(self):
-    if self.targeterId == self.ownerId:
-        raise ActionRequiresOwnershipException("You cannot perform this action on a node you own.")
-    return self
 
-# Throw an exception if a node is IPSed
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _node = _map.getPlayerNodes(1)[0]
+
+    _node.getAdjacentNodes[0].requireNotOwned()
+    with pytest.raises(ActionOwnershipException):
+        _node.requireNotOwned()
+
+
+# Test requireNotIPSed
 def test_requireNotIPSed(self):
-    if self.isIPSed:
-        raise IpsPreventsActionException("This action cannot be performed on an IPSed node.")
-    return self
+
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _node = _map.getPlayerNodes(1)[0]
+
+    _node.requireNotIPSed()
+    _node.isIPSed = True
+    with pytest.raises(IpsPreventsActionException):
+        node.requireNotIPSed()
+
 
 """
 Player actions
 """
+
+
 # Player action to infiltrate (AKA control) a node
 # @param multiplier The amount of infiltration to performi
 def test_doControl(self, multiplier):

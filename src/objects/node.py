@@ -23,7 +23,7 @@ class NodeIsDDoSedException(Exception):
     pass
 
 
-class ActionRequiresOwnershipException(Exception):
+class ActionOwnershipException(Exception):
     pass
 
 
@@ -84,6 +84,10 @@ class Node(object):
     # @param processing The processing power required
     # @param networking The networking power required
     def decrementPower(self, processing, networking):
+
+        # Make sure values are positive
+        if not (self.processing > 0 and self.networking > 0):
+            raise ValueError("Required processing/networking power values must be greater than 0.")
 
         # Get connected nodes
         connectedNodes = []
@@ -181,13 +185,13 @@ class Node(object):
     # Throw an exception if a node is not owned by the player performing the action
     def requireOwned(self):
         if self.targeterId != self.ownerId:
-            raise ActionRequiresOwnershipException("You must own a node to perform this action on it.")
+            raise ActionOwnershipException("You must own a node to perform this action on it.")
         return self
 
     # Throw an exception if a node is owned by the player performing the action
     def requireNotOwned(self):
         if self.targeterId == self.ownerId:
-            raise ActionRequiresOwnershipException("You cannot perform this action on a node you own.")
+            raise ActionOwnershipException("You cannot perform this action on a node you own.")
         return self
 
     # Throw an exception if a node is IPSed
