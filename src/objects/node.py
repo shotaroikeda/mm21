@@ -15,10 +15,6 @@ class AttemptToMultipleRootkitException(Exception):
     pass
 
 
-class MultiplierMustBePositiveException(Exception):
-    pass
-
-
 class NodeIsDDoSedException(Exception):
     pass
 
@@ -39,7 +35,7 @@ class Node(object):
     def __init__(self, id, adjacent, nodetype, gamemap):
         # int
         self.id = id
-        self.nodeType = nodetype
+        self.nodetype = nodetype
         self.processing = NodeType.processing[nodetype]
         self.networking = NodeType.networking[nodetype]
         self.totalPower = self.processing + self.networking
@@ -48,6 +44,7 @@ class Node(object):
         self.ownerId = None
         self.targeterId = None
         self.softwareLevel = 0
+        self.upgradesPending = 0
         # int[]
         self.adjacentIds = adjacent
         self.rootkitIds = []
@@ -57,7 +54,6 @@ class Node(object):
         self.isIPSed = False
         # dict<int, int>
         self.infiltration = dict()
-        self.nodetype = nodetype
         # object
         self.map = gamemap
 
@@ -67,12 +63,14 @@ class Node(object):
     def toPlayerDict(self, showRootkits):
         return {
             "id": self.id,
+            "nodeType": self.nodetype,
             "processingPower": self.processing,
             "networkingPower": self.networking,
+            "totalPower": self.totalPower,
             "owner": self.ownerId,
-            "softwareLevel": self.softwareLevel,
             "adjacentIds": self.adjacentIds,
             "isIPSed": self.isIPSed,
+            "isDDoSed": self.DDoSed,
             "infiltration": self.infiltration,
             "rootkits": self.rootkits if showRootkits else None
         }
@@ -200,6 +198,12 @@ class Node(object):
             raise IpsPreventsActionException("This action cannot be performed on an IPSed node.")
         return self
 
+    # Throw an exception if a node has an invalid targeter ID
+    def requireTargeterID(self):
+        if self.targeterId is None:
+            raise NodeIsntTargetedException
+        return self
+
     """
     Player actions
     """
@@ -207,8 +211,8 @@ class Node(object):
     # @param multiplier The amount of infiltration to performi
     def doControl(self, multiplier):
         if multiplier <= 0:
-            raise MultiplierMustBePositiveException("Multiplier must be greater than 0.")
-        self.requireNotIPSed().requireNotDDoSed("controlled").requireResources(multiplier)
+            raise ValueError("Multiplier must be greater than 0.")
+        self.requireNotIPSed().requireNotDDoSed("controlled").requireTargeterId().requireResources(multiplier)
 
         # Heal your own nodes
         if self.targeterId == self.ownerId:
@@ -229,7 +233,7 @@ class Node(object):
     # Player action to upgrade a node's Software Level
     def doUpgrade(self):
         self.requireOwned().requireNotDDoSed("upgraded").requireResources(self.processing, self.networking)
-        self.softwareLevel += 1
+        self.upgradesPending += 1
 
     # Player action to clean a node of rootkits
     def doClean(self):
@@ -243,7 +247,7 @@ class Node(object):
 
     # Player action to add a rootkit to a node
     def doRootkit(self):
-        self.requireNotOwned().requireNotDDoSed("rootkitted").requireNotIPSed().requireResources(self.totalPower / 5)
+        self.requireNotOwned().requireNotDDoSed("rootkitted").requireNotIPSed().requireTargetedId().requireResources(self.totalPower / 5)
         if self.targeterId in self.rootkitIds:
             raise AttemptToMultipleRootkitException("This player has a rootkit here already.")
         self.rootkitIds.append(self.targeterId)

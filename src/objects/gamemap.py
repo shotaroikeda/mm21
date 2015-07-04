@@ -94,13 +94,13 @@ class GameMap(object):
         # Node updates
         for n in self.nodes.values():
 
-            # Reset remaining resource counts
-            n.remainingProcessing = n.processing
-            n.remainingNetworking = n.networking
-
             # Update DDoS status
             n.DDoSed = n.DDoSPending
             n.DDoSPending = False
+
+            # Reset remaining resource counts
+            n.remainingProcessing = 0 if n.DDoSed else n.processing
+            n.remainingNetworking = 0 if n.DDoSed else n.networking
 
             # Reset targeter IDs (defensive programming)
             n.targeterId = None

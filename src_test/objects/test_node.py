@@ -12,13 +12,9 @@ misc.
 """
 
 
-# Test getAdjacentNodes
-def getAdjacentNodes(self):
-    return [self.map.nodes[nId] for nId in self.adjacentIds]
-
-
 # Test toPlayerDict
 def test_toPlayerDict():
+
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
     _map.addPlayer(2)
@@ -32,7 +28,9 @@ def test_toPlayerDict():
     assert _node.ownerId == _returned["owner"]
     assert _node.softwareLevel == _returned["softwareLevel"]
     assert _node.isIPSed == _returned["isIPSed"]
-    assert _node.infiltration == ["infiltration"]
+    assert _node.infiltration == _returned["infiltration"]
+    assert _node.nodetype == _returned["nodeType"]
+    assert _node.DDoSed == _returned["isDDoSed"]
     assert sorted(_node.adjacentIds) == sorted(returned["adjacentIds"])
     assert sorted(_node.rootkits) == sorted(returned["rootkits"])
     self.rootkits if showRootkits else None
@@ -52,6 +50,7 @@ decrementPower()
 
 # Test decrementPower with one node
 def test_decrementPower_oneNode():
+
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
@@ -59,7 +58,7 @@ def test_decrementPower_oneNode():
     # Test all-at-once deduction
     _node.decrementPower(500)
     assert _node.remainingProcessing == 0
-    assert _node.remainingProcessing == 0
+    assert _node.remainingNetworking == 0
     _map.resetAfterTurn()
 
     # Test ordering + multiple deductions
@@ -506,52 +505,130 @@ Player actions
 """
 
 
-# Player action to infiltrate (AKA control) a node
-# @param multiplier The amount of infiltration to performi
-def test_doControl(self, multiplier):
-    if multiplier <= 0:
-        raise MultiplierMustBePositiveException("Multiplier must be greater than 0.")
-    self.requireNotIPSed().requireNotDDoSed("controlled").requireResources(multiplier)
+# Test doControl in attacking mode
+def test_doControl_attack(self):
 
-    # Heal your own nodes
-    if self.targeterId == self.ownerId:
-        for k in self.infiltration.iterkeys():
-            self.infiltration[k] = max(self.infiltration[k] - multiplier, 0)
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _map.addPlayer(2)
+    _node = _map.getPlayerNodes(1)[0]
 
-    # Attack others' nodes
-    else:
-        inf = self.infiltration.get(self.targeterId, 0) + multiplier
-        self.infiltration[self.targeterId] = inf
+    _target = node.getAdjacentNodes()[0]
+    _target.own(2)
+    _target.targeterId = 1
+
+    # Test attacking without multiplier
+    assert _target.infiltration[1] == 0
+    _target.doControl()
+    assert _target.infiltration[1] == 1
+
+    # Test attacking with multiplier
+    _target.doControl(9)
+    assert _target.infiltration[1] == 10
+
+
+# Test doControl in healing mode
+def test_doControl_heal():
+
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _map.addPlayer(2)
+    _node = _map.getPlayerNodes(1)[0]
+
+    _target = node.getAdjacentNodes()[0]
+    _target.own(2)
+    _target.targeterId = 1
+    _target.doControl(5)
+    assert _target.infiltration[1] == 5
+
+    # Test healing a damaged node without multiplier
+    _target.targeterId = 2
+    _target.doControl()
+    assert _target.infiltration[1] == 4
+
+    # Test overhealing a damaged node with multiplier
+    _target.doControl(5)
+    assert _target.infiltration[1] == 0
+
+    # Test overhealing a fully-healed node without multiplier
+    _target.doControl()
+    assert _target.infiltration[1] == 0
+
 
 # Player action to DDOS a node
 def test_doDDoS(self):
-    self.requireNotIPSed().requireResources(self.totalPower / 5)
-    self.DDoSPending = True
-    print printColors.RED + "Node {} DDoS INCOMING!".format(self.id) + printColors.RESET
+
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _node = _map.getPlayerNodes(1)[0]
+
+    _node.doDDoS()
+    assert self.DDoSPending is True
+    _map.resetAfterTurn()
+    assert self.DDoSed is True
+    assert self.remainingProcessing = 0
+    assert self.remainingNetworking = 0
+
 
 # Player action to upgrade a node's Software Level
 def test_doUpgrade(self):
-    self.requireOwned().requireNotDDoSed("upgraded").requireResources(self.processing, self.networking)
-    self.softwareLevel += 1
+
+    # TODO Figure out what "upgrade" is going to look like gameplay-wise
+    pass
+
 
 # Player action to clean a node of rootkits
 def test_doClean(self):
-    self.requireOwned().requireNotDDoSed("cleaned").requireResources(100, 0)
-    self.rootkitIds = []
+
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _map.addPlayer(2)
+    _node = _map.getPlayerNodes(1)[0]
+
+    _node.rootkitIds.append(2)
+    _node.clean()
+    assert len(_node.rootkitIds) == 0
+
 
 # Player action to scan a node for rootkits
 def test_doScan(self):
-    self.requireOwned().requireNotDDoSed("scanned").requireResources(25, 0)
-    return self.rootkitIds
+
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _map.addPlayer(2)
+    _node = _map.getPlayerNodes(1)[0]
+
+    assert len(_node.doScan()) == 0
+    _node.rootkitIds.append(2)
+    assert len(_node.doScan()) == 1
+    _node.clean()
+    assert len(_node.doScan()) == 0
+
 
 # Player action to add a rootkit to a node
 def test_doRootkit(self):
-    self.requireNotOwned().requireNotDDoSed("rootkitted").requireNotIPSed().requireResources(self.totalPower / 5)
-    if self.targeterId in self.rootkitIds:
-        raise AttemptToMultipleRootkitException("This player has a rootkit here already.")
-    self.rootkitIds.append(self.targeterId)
+
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _node = _map.getPlayerNodes(1)[0]
+
+    _target = _node.getAdjacentNodes()[0]
+    assert len(_target.rootkitIds) == 0
+    _target.targeterId = 1
+    _target.doRootkit()
+    assert target.rootkitIds == [1]
+
 
 # Player action to do a port scan
 def test_doPortScan(self):
-    self.requireResources(0, 500)
-    return self
+
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _node = _map.getPlayerNodes(1)[0]
+
+    assert len(_map.portScans) == 0
+    _node.targeterId = 1
+    _node.portScan()
+    assert _map.portScans == [1]
+    _map.resetAfterTurn()
+    assert len(_map.portScans) == 0
