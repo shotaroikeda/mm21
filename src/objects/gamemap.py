@@ -5,6 +5,7 @@ Holds data about the map
 import src.game_constants
 import json
 import random
+from player import validatePlayerId
 from node import *
 
 
@@ -29,6 +30,7 @@ class GameMap(object):
 
         # Initial values
         self.players = []
+        self.portScans = []
 
         # Load map file (if appropriate)
         if mapPath:
@@ -56,8 +58,7 @@ class GameMap(object):
     def addPlayer(self, playerId):
 
         # Validate player ID (since this is crucial later throughout the game)
-        if not isinstance(playerId, int) or playerId < 1:
-            raise ValueError
+        validatePlayerId(playerId)
 
         # Add player
         if playerId in self.players:
@@ -69,7 +70,7 @@ class GameMap(object):
             n.infiltration[playerId] = 0
 
         # Assign starting node
-        freeNodes = [self.nodes[uid] for uid in self.getNodesOfType("Large City")]  # TODO make this "fairer"
+        freeNodes = self.getNodesOfType("Large City")  # TODO make this "fairer"
         freeNodes = [x for x in freeNodes if x.ownerId is None]
         startNode = random.choice(freeNodes)
         startNode.own(playerId)
@@ -79,14 +80,15 @@ class GameMap(object):
         return
 
     # Get all nodes of a given type (e.g. all ISPs)
-    # @param nodeType The node type to filter by (as a string)
-    def getNodesOfType(self, nodeType):
-        return [uid for uid in self.nodes.iterkeys() if self.nodes[uid].nodetype == nodeType]
+    # @param nodetype The node type to filter by (as a string)
+    def getNodesOfType(self, nodetype):
+        return [x for x in self.nodes.values() if x.nodetype == nodetype]
 
-    # Get all nodes of a given type (e.g. all ISPs)
-    # @param playerId The player ID to filter by (as an int)
-    def getNodesOfType(self, playerId):
-        return [uid for uid in self.nodes.iterkeys() if self.nodes[uid].ownerId == playerId]
+    # Get all nodes owned by a given player
+    # @param nodetype The player ID to filter by (as an int)
+    def getPlayerNodes(self, playerId):
+        validatePlayerId(playerId)
+        return [x for x in self.nodes.values() if x.ownerId == playerId]
 
     # Reset the map after a turn has finished
     def resetAfterTurn(self):
@@ -112,3 +114,15 @@ class GameMap(object):
                 print printColors.GREEN + "Someone conquered something" + printColors.RESET
                 maxPlayers = [x for x in n.infiltration if n.infiltration[x] == inf]
                 n.own(random.choice(maxPlayers))  # Don't favor lower/higher player IDs - TODO Update the wiki to say "ties will be broken RANDOMLY, not ARBITRARILY"
+
+        # IPS status updates
+        ipsChangedNodes = [x for x in self.nodes.values() if x.IPSPending]
+        ispChangedPlayers = set([x.ownerId for x in ispChangedNodes])
+        for pId in ispChangedPlayers:
+            pNodes = self.getPlayerNodes(pId)
+            for n in pNodes:
+                self.isIPSed = False
+            ipsedNodes = [x for x in pNodes if x.IPSPending]
+            for n in ipsedNodes:
+                n.IPSPending = False
+            ipsedNodes[-1].isIPSed = True  # Use the last-IPSed node

@@ -2,8 +2,11 @@
 Tests for the Node object
 """
 
+from src.objects.gamemap import *
+from src.objects.game import *
+from src.objects.node import *
 from src.game_constants import *
-from src.misc_constants import *
+import src.misc_constants as misc_constants
 import json as JSON
 
 
@@ -29,7 +32,7 @@ def test_toPlayerDict():
     assert _node.softwareLevel == _returned["softwareLevel"]
     assert _node.isIPSed == _returned["isIPSed"]
     assert _node.infiltration == _returned["infiltration"]
-    assert _node.nodetype == _returned["nodeType"]
+    assert _node.nodetype == _returned["nodetype"]
     assert _node.DDoSed == _returned["isDDoSed"]
     assert sorted(_node.adjacentIds) == sorted(returned["adjacentIds"])
     assert sorted(_node.rootkits) == sorted(returned["rootkits"])
@@ -40,7 +43,7 @@ def test_toPlayerDict():
     _node.targeterId = 2
     _node.doRootkit()
     assert _node.toPlayerDict(False)["rootkits"] is None
-    assert _node.toPlayerDict(True)["rootkits"] = [2]
+    assert _node.toPlayerDict(True)["rootkits"] == [2]
 
 
 """
@@ -418,7 +421,7 @@ def test_canMoveThrough():
 
 
 # Test own
-def test_own(self, playerId):
+def test_own():
 
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
@@ -451,7 +454,7 @@ Per-node action criteria
 
 
 # Test requireNotDDoSed
-def test_requireNotDDoSed(self, actionName):
+def test_requireNotDDoSed():
 
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
@@ -464,7 +467,7 @@ def test_requireNotDDoSed(self, actionName):
 
 
 # Test requireOwned
-def test_requireOwned(self):
+def test_requireOwned():
 
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
@@ -476,7 +479,7 @@ def test_requireOwned(self):
 
 
 # Test requireNotOwned
-def test_requireNotOwned(self):
+def test_requireNotOwned():
 
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
@@ -488,7 +491,7 @@ def test_requireNotOwned(self):
 
 
 # Test requireNotIPSed
-def test_requireNotIPSed(self):
+def test_requireNotIPSed():
 
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
@@ -506,7 +509,7 @@ Player actions
 
 
 # Test doControl in attacking mode
-def test_doControl_attack(self):
+def test_doControl_attack():
 
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
@@ -555,8 +558,8 @@ def test_doControl_heal():
     assert _target.infiltration[1] == 0
 
 
-# Player action to DDOS a node
-def test_doDDoS(self):
+# Test doDDoS
+def test_doDDoS():
 
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
@@ -566,19 +569,19 @@ def test_doDDoS(self):
     assert self.DDoSPending is True
     _map.resetAfterTurn()
     assert self.DDoSed is True
-    assert self.remainingProcessing = 0
-    assert self.remainingNetworking = 0
+    assert self.remainingProcessing == 0
+    assert self.remainingNetworking == 0
 
 
 # Player action to upgrade a node's Software Level
-def test_doUpgrade(self):
+def test_doUpgrade():
 
     # TODO Figure out what "upgrade" is going to look like gameplay-wise
     pass
 
 
-# Player action to clean a node of rootkits
-def test_doClean(self):
+# Test doClean
+def test_doClean():
 
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
@@ -590,8 +593,8 @@ def test_doClean(self):
     assert len(_node.rootkitIds) == 0
 
 
-# Player action to scan a node for rootkits
-def test_doScan(self):
+# Test doScan
+def test_doScan():
 
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
@@ -605,8 +608,8 @@ def test_doScan(self):
     assert len(_node.doScan()) == 0
 
 
-# Player action to add a rootkit to a node
-def test_doRootkit(self):
+# Test doRootkit
+def test_doRootkit():
 
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
@@ -619,8 +622,14 @@ def test_doRootkit(self):
     assert target.rootkitIds == [1]
 
 
-# Player action to do a port scan
-def test_doPortScan(self):
+# Test doIPS
+def test_doIPS():
+    pass  # TODO
+
+
+# Test doPortScan
+# TODO Write a test that checks for this in server response
+def test_doPortScan_gameLogic():
 
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)

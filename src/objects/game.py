@@ -104,6 +104,8 @@ class Game(object):
                         target.doRootkit()
                     elif action == "portScan":
                         map.doPortScan()
+                    elif action == "ips":
+                        target.doIPS()
                     else:
                         actionResult["message"] = "Invalid action type."
                 except KeyError:
@@ -149,17 +151,19 @@ class Game(object):
             raise InvalidPlayerException("Player " + playerId + " doesn't exist.")
 
         # Get list of nodes visible to player
-        ownedNodes = [x for x in self.map.nodes.values() if x.ownerId == playerId]
+        isPortScan = playerId in self.portScans
+        ownedNodes = [x for x in self.map.nodes.values() if isPortScan or x.ownerId == playerId]
         visibleNodes = set(ownedNodes)
-        for n in ownedNodes:
-            buff = []
-            n.getVisibleNodes(buff)
-            visibleNodes.update(buff)
+        if not isPortScan:
+            for n in ownedNodes:
+                buff = []
+                n.getVisibleNodes(buff)
+                visibleNodes.update(buff)
 
         # TODO document my format!
         return {
             "playerInfo": self.playerInfos[playerId],
             "turnResult": self.turnResults.get(playerId, [{"status": "fail"}, {"message": "No turn executed."}]),
-            "map": [x.toPlayerDict(False) for x in list(visibleNodes)]  # TODO implement port-scanning + rootkit detection
+            "map":  [x.toPlayerDict(False) for x in list(visibleNodes)]
         }
 
