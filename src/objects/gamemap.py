@@ -117,8 +117,8 @@ class GameMap(object):
 
         # IPS status updates
         ipsChangedNodes = [x for x in self.nodes.values() if x.IPSPending]
-        ispChangedPlayers = set([x.ownerId for x in ispChangedNodes])
-        for pId in ispChangedPlayers:
+        ipsChangedPlayers = set([x.ownerId for x in ipsChangedNodes])
+        for pId in ipsChangedPlayers:
             pNodes = self.getPlayerNodes(pId)
             for n in pNodes:
                 self.isIPSed = False

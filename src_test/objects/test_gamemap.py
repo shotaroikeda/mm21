@@ -77,7 +77,7 @@ def test_getPlayerNodes():
 def test_getNodesOfType():
     _map = GameMap(misc_constants.mapFile)
     _result = _map.getNodesOfType("Large City")
-    _correct = [x.id for x in _map.nodes.values() if x.nodetype == "Large City"]
+    _correct = [x for x in _map.nodes.values() if x.nodetype == "Large City"]
     assert sorted(_result) == sorted(_correct)
 
 

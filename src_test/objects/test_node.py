@@ -8,7 +8,7 @@ from src.objects.node import *
 from src.game_constants import *
 import src.misc_constants as misc_constants
 import json as JSON
-
+import pytest
 
 """
 misc.
@@ -21,7 +21,7 @@ def test_toPlayerDict():
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
     _map.addPlayer(2)
-    _node = _map.getPlayerNodes(1)
+    _node = _map.getPlayerNodes(1)[0]
 
     # Check value correctness
     _returned = _node.toPlayerDict(False)
@@ -29,21 +29,18 @@ def test_toPlayerDict():
     assert _node.processing == _returned["processingPower"]
     assert _node.networking == _returned["networkingPower"]
     assert _node.ownerId == _returned["owner"]
-    assert _node.softwareLevel == _returned["softwareLevel"]
+    #  assert _node.softwareLevel == _returned["softwareLevel"]
     assert _node.isIPSed == _returned["isIPSed"]
     assert _node.infiltration == _returned["infiltration"]
     assert _node.nodetype == _returned["nodetype"]
     assert _node.DDoSed == _returned["isDDoSed"]
-    assert sorted(_node.adjacentIds) == sorted(returned["adjacentIds"])
-    assert sorted(_node.rootkits) == sorted(returned["rootkits"])
-    self.rootkits if showRootkits else None
+    assert sorted(_node.adjacentIds) == sorted(_returned["adjacentIds"])
+    assert sorted(_node.rootkitIds) == sorted(_returned["rootkits"])
 
     # Check for rootkit hiding
-    _node.isIPSed = False
-    _node.targeterId = 2
-    _node.doRootkit()
-    assert _node.toPlayerDict(False)["rootkits"] is None
-    assert _node.toPlayerDict(True)["rootkits"] == [2]
+    _node.rootkitIds.append(2)
+    assert sorted(_node.toPlayerDict(False)["rootkits"]) == []
+    assert sorted(_node.toPlayerDict(True)["rootkits"]) == [2]
 
 
 """
@@ -59,7 +56,7 @@ def test_decrementPower_oneNode():
     _node = _map.getPlayerNodes(1)[0]
 
     # Test all-at-once deduction
-    _node.decrementPower(500)
+    _node.decrementPower(500, 500)
     assert _node.remainingProcessing == 0
     assert _node.remainingNetworking == 0
     _map.resetAfterTurn()
@@ -460,10 +457,10 @@ def test_requireNotDDoSed():
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
 
-    self.requireNotDDoSed("")
-    self.DDoSed = True
+    _node.requireNotDDoSed("")
+    _node.DDoSed = True
     with pytest.raises(NodeIsDDoSedException):
-        self.requireNotDDoSed("")
+        _node.requireNotDDoSed("")
 
 
 # Test requireOwned
@@ -485,7 +482,7 @@ def test_requireNotOwned():
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
 
-    _node.getAdjacentNodes[0].requireNotOwned()
+    _node.getAdjacentNodes()[0].requireNotOwned()
     with pytest.raises(ActionOwnershipException):
         _node.requireNotOwned()
 
@@ -497,10 +494,11 @@ def test_requireNotIPSed():
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
 
-    _node.requireNotIPSed()
-    _node.isIPSed = True
+    _target = _node.getAdjacentNodes()[0]
+    _target.requireNotIPSed()
+    _target.isIPSed = True
     with pytest.raises(IpsPreventsActionException):
-        node.requireNotIPSed()
+        _target.requireNotIPSed()
 
 
 """
@@ -516,7 +514,7 @@ def test_doControl_attack():
     _map.addPlayer(2)
     _node = _map.getPlayerNodes(1)[0]
 
-    _target = node.getAdjacentNodes()[0]
+    _target = _node.getAdjacentNodes()[0]
     _target.own(2)
     _target.targeterId = 1
 
@@ -538,7 +536,7 @@ def test_doControl_heal():
     _map.addPlayer(2)
     _node = _map.getPlayerNodes(1)[0]
 
-    _target = node.getAdjacentNodes()[0]
+    _target = _node.getAdjacentNodes()[0]
     _target.own(2)
     _target.targeterId = 1
     _target.doControl(5)
@@ -565,12 +563,15 @@ def test_doDDoS():
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
 
-    _node.doDDoS()
-    assert self.DDoSPending is True
-    _map.resetAfterTurn()
-    assert self.DDoSed is True
-    assert self.remainingProcessing == 0
-    assert self.remainingNetworking == 0
+    # Test on 1) owned node, and 2) unowned node
+    _node.isIPSed = False
+    for _target in [_node, _node.getAdjacentNodes()[0]]:
+        _target.doDDoS()
+        assert _target.DDoSPending is True
+        _map.resetAfterTurn()
+        assert _target.DDoSed is True
+        assert _target.remainingProcessing == 0
+        assert _target.remainingNetworking == 0
 
 
 # Player action to upgrade a node's Software Level
@@ -589,7 +590,7 @@ def test_doClean():
     _node = _map.getPlayerNodes(1)[0]
 
     _node.rootkitIds.append(2)
-    _node.clean()
+    _node.doClean()
     assert len(_node.rootkitIds) == 0
 
 
@@ -604,7 +605,7 @@ def test_doScan():
     assert len(_node.doScan()) == 0
     _node.rootkitIds.append(2)
     assert len(_node.doScan()) == 1
-    _node.clean()
+    _node.doClean()
     assert len(_node.doScan()) == 0
 
 
@@ -619,7 +620,7 @@ def test_doRootkit():
     assert len(_target.rootkitIds) == 0
     _target.targeterId = 1
     _target.doRootkit()
-    assert target.rootkitIds == [1]
+    assert _target.rootkitIds == [1]
 
 
 # Test doIPS
@@ -637,7 +638,7 @@ def test_doPortScan_gameLogic():
 
     assert len(_map.portScans) == 0
     _node.targeterId = 1
-    _node.portScan()
+    _node.doPortScan()
     assert _map.portScans == [1]
     _map.resetAfterTurn()
     assert len(_map.portScans) == 0

@@ -52,7 +52,7 @@ class Node(object):
         self.DDoSed = False
         self.DDoSPending = False
         self.isIPSed = False
-        self.IPSedPending = False
+        self.IPSPending = False
         # dict<int, int>
         self.infiltration = dict()
         # object
@@ -73,7 +73,7 @@ class Node(object):
             "isIPSed": self.isIPSed,
             "isDDoSed": self.DDoSed,
             "infiltration": self.infiltration,
-            "rootkits": self.rootkits if showRootkits else None
+            "rootkits": self.rootkitIds if showRootkits else []
         }
 
     """
@@ -85,11 +85,11 @@ class Node(object):
     def decrementPower(self, processing, networking):
 
         # Make sure values are positive
-        if not (self.processing > 0 and self.networking > 0):
-            raise ValueError("Required processing/networking power values must be greater than 0.")
+        if self.processing < 0 or self.networking < 0:
+            raise ValueError("Required processing/networking power values must be at least 0.")
 
         # Get connected nodes
-        connectedNodes = []
+        connectedNodes = [self]
         for n in self.getAdjacentNodes():
             n.getClusteredNodes(connectedNodes, self.targeterId)
 
@@ -212,7 +212,7 @@ class Node(object):
     """
     # Player action to infiltrate (AKA control) a node
     # @param multiplier The amount of infiltration to performi
-    def doControl(self, multiplier):
+    def doControl(self, multiplier=1):
         if multiplier <= 0:
             raise ValueError("Multiplier must be greater than 0.")
         self.requireNotIPSed().requireNotDDoSed("controlled").requireResources(multiplier)
