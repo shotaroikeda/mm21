@@ -93,6 +93,9 @@ class GameMap(object):
     # Reset the map after a turn has finished
     def resetAfterTurn(self):
 
+        # Map updates
+        self.portScans = []
+
         # Node updates
         for n in self.nodes.values():
 

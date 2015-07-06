@@ -15,6 +15,10 @@ class AttemptToMultipleRootkitException(Exception):
     pass
 
 
+class AttemptToMultiplePortScanException(Exception):
+    pass
+
+
 class NodeIsDDoSedException(Exception):
     pass
 
@@ -85,11 +89,11 @@ class Node(object):
     def decrementPower(self, processing, networking):
 
         # Make sure values are positive
-        if self.processing < 0 or self.networking < 0:
+        if processing < 0 or networking < 0:
             raise ValueError("Required processing/networking power values must be at least 0.")
 
         # Get connected nodes
-        connectedNodes = [self]
+        connectedNodes = [self] if self.ownerId == self.targeterId else []
         for n in self.getAdjacentNodes():
             n.getClusteredNodes(connectedNodes, self.targeterId)
 
@@ -155,8 +159,8 @@ class Node(object):
     # Give control of a node to a player
     # @param playerId The ID of the player
     def own(self, playerId):
-        if playerId == self.ownerId:
-            raise Exception("This player owns this node already.")
+        if self.ownerId == playerId:
+            raise ActionOwnershipException("That player already owns this node.")
         self.isIPSed = False
         self.ownerId = playerId
         self.rootkitIds = []
@@ -205,6 +209,12 @@ class Node(object):
     def requireTargeterID(self):
         if self.targeterId is None:
             raise NodeIsntTargetedException
+        return self
+
+    # Throw an exception if a player has already port-scanned
+    def requireNotPortScanned(self):
+        if self.targeterId != self.ownerId:
+            raise AttemptToMultiplePortScanException("You may not port scan more than once per turn.")
         return self
 
     """
@@ -263,5 +273,6 @@ class Node(object):
 
     # Player action to do a port scan
     def doPortScan(self):
-        self.requireResources(0, 500)
+        self.requireOwned().requireNotPortScanned().requireResources(0, 500)
+        self.map.portScans.append(self.ownerId)
         return self

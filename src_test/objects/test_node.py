@@ -99,11 +99,11 @@ def test_decrementPower_multiNodes():
     _node = _map.getPlayerNodes(1)[0]
 
     # Conquer all nodes adjacent to the base
-    for n in _node.getAdacentNodes():
+    for n in _node.getAdjacentNodes():
         n.own(1)
     _nodes = _map.getPlayerNodes(1)
-    totalP = sum(x.processingPower for x in _nodes)
-    totalN = sum(x.networkingPower for x in _nodes)
+    totalP = sum(x.processing for x in _nodes)
+    totalN = sum(x.networking for x in _nodes)
 
     # Test all-at-once deduction
     _node.decrementPower(totalP, totalN)
@@ -168,7 +168,9 @@ def test_getClusteredNodes_oneNode():
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
 
-    assert sorted(_node.getClusteredNodes()) == sorted(_map.getPlayerNodes(1))
+    _result = []
+    _node.getClusteredNodes(_result)
+    assert sorted(_result) == sorted(_map.getPlayerNodes(1))
 
 
 # Test one node cluster
@@ -180,7 +182,9 @@ def test_getClusteredNodes_oneCluster():
     for n in _node.getAdjacentNodes():
         n.own(1)
 
-    assert sorted(_node.getClusteredNodes()) == sorted(_map.getPlayerNodes(1))
+    _result = []
+    _node.getClusteredNodes(_result)
+    assert sorted(_result) == sorted(_map.getPlayerNodes(1))
 
 
 # Test two separate node clusters
@@ -192,7 +196,7 @@ def test_getClusteredNodes_twoClusters():
     # Find clusters
     _cluster1 = [_node]
     _cluster1.extend(_node.getAdjacentNodes())
-    _cluster2 = [n for n in _map.nodes if n not in _cluster1]
+    _cluster2 = [n for n in _map.nodes.values() if n not in _cluster1]
 
     # Assign ownership (cluster 1 - blob based around initial base)
     for n in _node.getAdjacentNodes():
@@ -214,8 +218,12 @@ def test_getClusteredNodes_twoClusters():
     assert len(_cluster2) > 1
 
     # Check getClusteredNodes()' correctness
-    assert sorted(_cluster1) == sorted(_node.getClusteredNodes())
-    assert sorted(_cluster2) == sorted(_cluster2[0].getClusteredNodes())
+    _result1 = []
+    _result2 = []
+    _node.getClusteredNodes(_result1)
+    _cluster2[0].getClusteredNodes(_result2)
+    assert sorted(_cluster1) == sorted(_result1)
+    assert sorted(_cluster2) == sorted(_result2)
 
 
 # Test custom playerId specifier
@@ -227,15 +235,19 @@ def test_getClusteredNodes_customPlayerId():
     # Find clusters
     _cluster1 = [_node]
     _cluster1.extend(_node.getAdjacentNodes())
-    _cluster2 = [n for n in _map.nodes if n not in _cluster1]
+    _cluster2 = [n for n in _map.nodes.values() if n not in _cluster1]
 
     # Assign ownership (cluster 1 - blob based around initial base)
     for n in _node.getAdjacentNodes():
         n.own(1)
 
     # Make sure cluster shows up correctly depending on player ID
-    assert sorted(_node.getClusteredNodes()) == sorted(_map.getPlayerNodes(1))
-    assert len(_node.getClusteredNodes(2)) == 0
+    _result1 = []
+    _result2 = []
+    _node.getClusteredNodes(_result1)
+    _node.getClusteredNodes(_result2, 2)
+    assert sorted(_result1) == sorted(_map.getPlayerNodes(1))
+    assert len(_result2) == 0
 
 
 """
@@ -281,7 +293,7 @@ def test_getVisibleNodes_twoClusters():
     # Find clusters
     _cluster1 = [_node]
     _cluster1.extend(_node.getAdjacentNodes())
-    _cluster2 = [n for n in _map.nodes if n not in _cluster1]
+    _cluster2 = [n for n in _map.nodes.values() if n not in _cluster1]
 
     # Assign ownership (cluster 1 - blob based around initial base)
     for n in _node.getAdjacentNodes():
@@ -290,7 +302,7 @@ def test_getVisibleNodes_twoClusters():
     # Determine "no man's land" between clusters 1 and 2
     _noMansLand = []
     for n in _cluster2:
-        _noMansLand.extend(n.getAdjacentNodes)
+        _noMansLand.extend(n.getAdjacentNodes())
     _noMansLand = list(set([x for x in _noMansLand if x.ownerId != 1]))
 
     # Assign ownership (cluster[s] 2+ - any nodes not connected directly to cluster 1)
@@ -322,8 +334,12 @@ def test_getVisibleNodes_customPlayerId():
     _node = _map.getPlayerNodes(1)[0]
 
     _expected = [_node].extend(_node.getAdjacentNodes())
-    assert len(_node.getVisibleNodes(2)) == 0
-    assert sorted(_expected) == sorted(_node.getVisibleNodes())
+    _visible1 = []
+    _visible2 = []
+    _node.getVisibleNodes(_visible1)
+    _node.getVisibleNodes(_visible2, 2)
+    assert sorted(_expected) == sorted(_visible1)
+    assert len(_visible2) == 0
 
 
 # Test two nodes connected by a rootkit chain (1 cluster)
@@ -356,7 +372,7 @@ def test_getVisibleNodes_severedRootkitChain():
     # Find clusters
     _cluster1 = [_node]
     _cluster1.extend(_node.getAdjacentNodes())
-    _cluster2 = [n for n in _map.nodes if n not in _cluster1]
+    _cluster2 = [n for n in _map.nodes.values() if n not in _cluster1]
 
     # Assign rootkits (cluster 1 - blob based around initial base)
     for n in _node.getAdjacentNodes():
@@ -365,7 +381,7 @@ def test_getVisibleNodes_severedRootkitChain():
     # Determine "no man's land" between clusters 1 and 2
     _noMansLand = []
     for n in _cluster2:
-        _noMansLand.extend(n.getAdjacentNodes)
+        _noMansLand.extend(n.getAdjacentNodes())
     _noMansLand = list(set([x for x in _noMansLand if x.ownerId != 1]))
 
     # Assign ownership (cluster[s] 2+ - any nodes not connected directly to cluster 1)
@@ -386,8 +402,12 @@ def test_getVisibleNodes_severedRootkitChain():
     _cluster2 = list(set(_cluster2))
 
     # Check getVisibleNodes()' correctness
-    assert sorted(_cluster1) == sorted(_node.getVisibleNodes())
-    assert sorted(_cluster2) == sorted(_cluster2[0].getVisibleNodes())
+    _visible1 = []
+    _visible2 = []
+    _node.getVisibleNodes(_visible1)
+    _cluster2.getVisibleNodes(_visible2)
+    assert sorted(_cluster1) == sorted(_visible1)
+    assert sorted(_cluster2) == sorted(_visible2)
 
 
 """
@@ -430,14 +450,14 @@ def test_own():
     assert _unownedNode.ownerId == 1
 
     # Test that owning an already-owned node throws an exception
-    with pytest.raises(AlreadyOwnedException):
+    with pytest.raises(ActionOwnershipException):
         _node.own(1)
 
     # Test resetting of isIPSed/rootkits/infiltration
     _unownedNode.own(0)
     assert _unownedNode.ownerId == 0
     _unownedNode.isIPSed = True
-    _unownedNode.rootkitIds.add(1)
+    _unownedNode.rootkitIds.append(1)
     _unownedNode.infiltration[1] = 999
     _unownedNode.own(1)
     assert _unownedNode.isIPSed is False
@@ -470,9 +490,12 @@ def test_requireOwned():
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
 
+    _node.targeterId = 1
     _node.requireOwned()
     with pytest.raises(ActionOwnershipException):
-        _node.getAdjacentNodes[0].requireOwned()
+        _other = _node.getAdjacentNodes()[0]
+        _other.targeterId = 1
+        _other.requireOwned()
 
 
 # Test requireNotOwned
@@ -482,8 +505,11 @@ def test_requireNotOwned():
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
 
-    _node.getAdjacentNodes()[0].requireNotOwned()
+    _other = _node.getAdjacentNodes()[0]
+    _other.targeterId = 1
+    _other.requireNotOwned()
     with pytest.raises(ActionOwnershipException):
+        _node.targeterId = 1
         _node.requireNotOwned()
 
 
@@ -537,7 +563,8 @@ def test_doControl_heal():
     _node = _map.getPlayerNodes(1)[0]
 
     _target = _node.getAdjacentNodes()[0]
-    _target.own(2)
+    if _target.ownerId != 2:
+        _target.own(2)
     _target.targeterId = 1
     _target.doControl(5)
     assert _target.infiltration[1] == 5
@@ -590,6 +617,7 @@ def test_doClean():
     _node = _map.getPlayerNodes(1)[0]
 
     _node.rootkitIds.append(2)
+    _node.targeterId = 1
     _node.doClean()
     assert len(_node.rootkitIds) == 0
 
@@ -602,6 +630,7 @@ def test_doScan():
     _map.addPlayer(2)
     _node = _map.getPlayerNodes(1)[0]
 
+    _node.targeterId = 1
     assert len(_node.doScan()) == 0
     _node.rootkitIds.append(2)
     assert len(_node.doScan()) == 1
