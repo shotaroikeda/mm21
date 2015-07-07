@@ -144,14 +144,17 @@ class Node(object):
 
     # Get all nodes visible to (clustered with or adjacent to a cluster containing) another node
     # @param visibleNodes (Output) The list of visible nodes
-    def getVisibleNodes(self, visibleNodes, ownerId=None):
+    # @param ownerId (Optional) Restrict traversed nodes to those owned by this person; if not specified, the owner of the original node will be used
+    # @param start (Internal) True if an initial call, False otherwise
+    def getVisibleNodes(self, visibleNodes, ownerId=None, start=True):
         if ownerId is None:
             ownerId = self.ownerId
         if self not in visibleNodes:
-            visibleNodes.append(self)
+            if not start or self.ownerId == ownerId:
+                visibleNodes.append(self)
             if self.ownerId == ownerId or ownerId in self.rootkitIds:
                 for adjacent in self.getAdjacentNodes():
-                    adjacent.getVisibleNodes(visibleNodes, ownerId)
+                    adjacent.getVisibleNodes(visibleNodes, ownerId, False)
 
     # Determine whether a player can move through a node
     # @param playerId The ID of the player

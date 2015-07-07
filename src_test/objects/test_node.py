@@ -238,14 +238,14 @@ def test_getClusteredNodes_twoClusters():
         _cluster2 = list(set([n for n in _cluster2 if n not in _notCluster2]))
 
     # Part 2: remove nodes not reachable from cluster 2
-    _cluster2final = []
+    _cluster2final = list(_cluster2)
     for n in _cluster2:
         _ok = False
         for n2 in n.getAdjacentNodes():
             _ok = _ok or (n2 not in _notCluster2)
         if _ok:
             _cluster2final.append(n)
-    _cluster2 = list(_cluster2final)
+    _cluster2 = list(set(_cluster2final))
 
     # Part 3: owning
     for n in _cluster2:
@@ -379,7 +379,7 @@ def test_getVisibleNodes_twoClusters():
             _ok = _ok or (n2 not in _notCluster2)
         if _ok:
             _cluster2final.append(n)
-    _cluster2 = list(_cluster2final)
+    _cluster2 = list(set(_cluster2final))
 
     # Part 3: owning
     for n in _cluster2:
@@ -624,7 +624,6 @@ def test_doControl_attack():
 
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
-    _map.addPlayer(2)
     _node = _map.getPlayerNodes(1)[0]
 
     _target = _node.getAdjacentNodes()[0]
