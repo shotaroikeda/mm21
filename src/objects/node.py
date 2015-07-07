@@ -43,8 +43,8 @@ class Node(object):
         self.processing = NodeType.processing[nodetype]
         self.networking = NodeType.networking[nodetype]
         self.totalPower = self.processing + self.networking
-        self.remainingProcessing = self.networking
-        self.remainingNetworking = self.processing
+        self.remainingProcessing = self.processing
+        self.remainingNetworking = self.networking
         self.ownerId = None
         self.targeterId = None
         self.softwareLevel = 0
