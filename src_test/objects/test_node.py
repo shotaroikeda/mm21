@@ -56,12 +56,14 @@ def test_decrementPower_oneNode():
     _node = _map.getPlayerNodes(1)[0]
 
     # Test all-at-once deduction
+    _node.targeterId = 1
     _node.decrementPower(500, 500)
     assert _node.remainingProcessing == 0
     assert _node.remainingNetworking == 0
     _map.resetAfterTurn()
 
     # Test ordering + multiple deductions
+    _node.targeterId = 1
     _node.decrementPower(100, 400)
     assert _node.remainingProcessing == 400
     assert _node.remainingNetworking == 100
@@ -72,6 +74,7 @@ def test_decrementPower_oneNode():
 
     # Test single over-deduction + "single power failure"
     # (No deduction should go through)
+    _node.targeterId = 1
     with pytest.raises(InsufficientPowerException):
         _node.decrementPower(501, 501)
     with pytest.raises(InsufficientPowerException):
@@ -82,6 +85,7 @@ def test_decrementPower_oneNode():
     assert _node.remainingNetworking == 500
 
     # Test multiple over-deduction
+    _node.targeterId = 1
     _node.decrementPower(499, 499)
     assert _node.remainingProcessing == 1
     assert _node.remainingNetworking == 1
@@ -94,11 +98,13 @@ def test_decrementPower_oneNode():
 
 # Test decrementPower with multiple nodes
 def test_decrementPower_multiNodes():
+
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
 
     # Conquer all nodes adjacent to the base
+    _node.targeterId = 1
     for n in _node.getAdjacentNodes():
         n.own(1)
     _nodes = _map.getPlayerNodes(1)
@@ -106,6 +112,7 @@ def test_decrementPower_multiNodes():
     totalN = sum(x.networking for x in _nodes)
 
     # Test all-at-once deduction
+    _node.targeterId = 1
     _node.decrementPower(totalP, totalN)
     for n in _nodes:
         assert n.remainingProcessing == 0
@@ -113,6 +120,7 @@ def test_decrementPower_multiNodes():
     _map.resetAfterTurn()
 
     # Test ordering + multiple deductions
+    _node.targeterId = 1
     _node.decrementPower(totalP - 100, 100)
     assert sum(x.remainingProcessing for x in _nodes) == 100
     assert sum(x.remainingNetworking for x in _nodes) == totalN - 100
@@ -123,6 +131,7 @@ def test_decrementPower_multiNodes():
     _map.resetAfterTurn()
 
     # Test single over-deduction + "single power failure"
+    _node.targeterId = 1
     with pytest.raises(InsufficientPowerException):
         _node.decrementPower(totalP + 1, totalN + 1)
     with pytest.raises(InsufficientPowerException):
@@ -133,6 +142,7 @@ def test_decrementPower_multiNodes():
     assert sum(x.remainingProcessing for x in _nodes) == totalN
 
     # Test multiple over-deduction
+    _node.targeterId = 1
     _node.decrementPower(totalP - 1, totalN - 1)
     assert sum(x.remainingNetworking for x in _nodes) == 1
     assert sum(x.remainingProcessing for x in _nodes) == 1
@@ -144,11 +154,13 @@ def test_decrementPower_multiNodes():
 
 # Test decrementPower with negative values
 def test_decrementPower_negative():
+
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
 
     # Should raise an exception
+    _node.targeterId = 1
     with pytest.raises(ValueError):
         _node.decrementPower(-1, 1)
     with pytest.raises(ValueError):
@@ -164,6 +176,7 @@ getClusteredNodes()
 
 # Test one node
 def test_getClusteredNodes_oneNode():
+
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
@@ -175,6 +188,7 @@ def test_getClusteredNodes_oneNode():
 
 # Test one node cluster
 def test_getClusteredNodes_oneCluster():
+
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
@@ -189,6 +203,7 @@ def test_getClusteredNodes_oneCluster():
 
 # Test two separate node clusters
 def test_getClusteredNodes_twoClusters():
+
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
@@ -205,7 +220,7 @@ def test_getClusteredNodes_twoClusters():
     # Determine "no man's land" between clusters 1 and 2
     _noMansLand = []
     for n in _cluster2:
-        _noMansLand.extend(n.getAdjacentNodes)
+        _noMansLand.extend(n.getAdjacentNodes())
     _noMansLand = list(set([x for x in _noMansLand if x.ownerId != 1]))
 
     # Assign ownership (cluster[s] 2+ - any nodes not connected directly to cluster 1)
@@ -228,6 +243,7 @@ def test_getClusteredNodes_twoClusters():
 
 # Test custom playerId specifier
 def test_getClusteredNodes_customPlayerId():
+
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
@@ -257,16 +273,22 @@ getVisibleNodes()
 
 # Test one node
 def test_getVisibleNodes_oneNode():
+
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
 
-    _expected = [_node].extend(_node.getAdjacentNodes())
-    assert sorted(_expected) == sorted(_node.getVisibleNodes())
+    _expected = [_node]
+    _expected.extend(_node.getAdjacentNodes())
+
+    _result = []
+    _node.getVisibleNodes(_result)
+    assert sorted(_expected) == sorted(_result)
 
 
 # Test one node cluster
 def test_getVisibleNodes_oneCluster():
+
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
 
@@ -276,16 +298,21 @@ def test_getVisibleNodes_oneCluster():
         n.own(1)
 
     # Determine expected answer
-    _expected = [_node].extend(_node.getAdjacentNodes())
+    _expected = [_node]
+    _expected.extend(_node.getAdjacentNodes())
     for n in _node.getAdjacentNodes():
         _expected.extend(n.getAdjacentNodes())
     _expected = list(set(_expected))
 
-    assert sorted(_expected) == sorted(_node.getVisibleNodes())
+    # Check expected vs. returned answers
+    _returned = []
+    _node.getVisibleNodes(_returned)
+    assert sorted(_expected) == sorted(_returned)
 
 
 # Test two separate node clusters
 def test_getVisibleNodes_twoClusters():
+
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
@@ -329,11 +356,13 @@ def test_getVisibleNodes_twoClusters():
 
 # Test custom playerId specifier
 def test_getVisibleNodes_customPlayerId():
+
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
 
-    _expected = [_node].extend(_node.getAdjacentNodes())
+    _expected = [_node]
+    _expected.extend(_node.getAdjacentNodes())
     _visible1 = []
     _visible2 = []
     _node.getVisibleNodes(_visible1)
@@ -354,12 +383,16 @@ def test_getVisibleNodes_rootkitChain():
         n.rootkitIds.append(1)
 
     # Determine expected answer
-    _expected = [_node].extend(_node.getAdjacentNodes())
+    _expected = [_node]
+    _expected.extend(_node.getAdjacentNodes())
     for n in _node.getAdjacentNodes():
         _expected.extend(n.getAdjacentNodes())
     _expected = list(set(_expected))
 
-    assert sorted(_expected) == sorted(_node.getVisibleNodes())
+    # Check expected vs. returned answers
+    _returned = []
+    _node.getVisibleNodes(_returned)
+    assert sorted(_expected) == sorted(_returned)
 
 
 # Test two nodes not connected by a rootkit chain (2 clusters)
@@ -562,7 +595,7 @@ def test_doControl_heal():
     _map.addPlayer(2)
     _node = _map.getPlayerNodes(1)[0]
 
-    _target = _node.getAdjacentNodes()[0]
+    _target = [x for x in _node.getAdjacentNodes() if x.nodetype == "Large City"][0]
     if _target.ownerId != 2:
         _target.own(2)
     _target.targeterId = 1
@@ -593,6 +626,7 @@ def test_doDDoS():
     # Test on 1) owned node, and 2) unowned node
     _node.isIPSed = False
     for _target in [_node, _node.getAdjacentNodes()[0]]:
+        _target.targeterId = 1
         _target.doDDoS()
         assert _target.DDoSPending is True
         _map.resetAfterTurn()

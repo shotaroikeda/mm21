@@ -85,10 +85,11 @@ def test_getNodesOfType():
 def test_resetAfterTurn_DDoS():
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
-    _node = _map.nodes[0]
+    _node = _map.getPlayerNodes(1)[0]
     _node.isIPSed = False  # In case the player is assigned this node
 
     # Test DDoSing a node
+    _node.targeterId = 1
     assert _node.DDoSPending is False
     assert _node.DDoSed is False
     _node.doDDoS()

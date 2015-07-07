@@ -88,6 +88,9 @@ class Node(object):
     # @param networking The networking power required
     def decrementPower(self, processing, networking):
 
+        # Require valid targeter ID
+        self.requireTargeterID()
+
         # Make sure values are positive
         if processing < 0 or networking < 0:
             raise ValueError("Required processing/networking power values must be at least 0.")
@@ -104,7 +107,7 @@ class Node(object):
             if not node.DDoSed:
                 totalProcessing += node.remainingProcessing
                 totalNetworking += node.remainingNetworking
-        print "Player {}: {} N, {} P".format(self.targeterId, totalProcessing, totalNetworking)
+        # print "Player {}: {} N, {} P".format(self.targeterId, totalProcessing, totalNetworking)
         if totalProcessing < processing or totalNetworking < networking:
             raise InsufficientPowerException("networking = %d, processing = %d\nNeeded networking = %d, processing = %d" % (totalNetworking, totalProcessing, networking, processing))
 
