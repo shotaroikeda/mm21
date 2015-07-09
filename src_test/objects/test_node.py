@@ -686,6 +686,7 @@ def test_doDDoS():
         assert _target.DDoSed is True
         assert _target.remainingProcessing == 0
         assert _target.remainingNetworking == 0
+        _map.resetAfterTurn()
 
 
 # Player action to upgrade a node's Software Level

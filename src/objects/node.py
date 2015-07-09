@@ -231,7 +231,9 @@ class Node(object):
     def doControl(self, multiplier=1):
         if multiplier <= 0:
             raise ValueError("Multiplier must be greater than 0.")
-        self.requireNotIPSed().requireNotDDoSed("controlled").requireResources(multiplier)
+        if self.isIPSed:
+            self.requireOwned()
+        self.requireNotDDoSed("controlled").requireResources(multiplier)
 
         # Heal your own nodes
         if self.targeterId == self.ownerId:
