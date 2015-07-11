@@ -504,14 +504,10 @@ def test_getVisibleNodes_severedRootkitChain():
     assert len(_cluster2) > 1
 
     # Add visible nodes to clusters
-    _cluster1plus = list(_cluster1)
-    _cluster2plus = list(_cluster2)
-    for n in _cluster1:
-        _cluster1plus.extend(n.getAdjacentNodes())
-    for n in _cluster2:
-        _cluster2plus.extend(n.getAdjacentNodes())
-    _cluster1 = list(set(_cluster1plus))
-    _cluster2 = list(set(_cluster2plus))
+    for l in [_cluster1, _cluster2]:
+        for n in list(l):
+            l.extend(n.getAdjacentNodes())
+        l = list(set(l))
 
     # Check getVisibleNodes()' correctness
     _result1 = []
