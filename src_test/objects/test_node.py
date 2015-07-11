@@ -238,11 +238,12 @@ def test_getClusteredNodes_twoClusters():
         _cluster2 = list(set([n for n in _cluster2 if n not in _notCluster2]))
 
     # Part 2: remove nodes not reachable from cluster 2
-    _cluster2final = list(_cluster2)
+    _cluster2final = []
     for n in _cluster2:
         _ok = False
         for n2 in n.getAdjacentNodes():
-            _ok = _ok or (n2 not in _notCluster2)
+            if n2 not in _notCluster2:
+                _ok = True
         if _ok:
             _cluster2final.append(n)
     _cluster2 = list(set(_cluster2final))
@@ -260,8 +261,6 @@ def test_getClusteredNodes_twoClusters():
     _result2 = []
     _node.getClusteredNodes(_result1)
     _cluster2[0].getClusteredNodes(_result2)
-    print sorted([(x.id, x.ownerId) for x in _result2])
-    print sorted([(x.id, x.ownerId) for x in _cluster2])
     assert sorted(_cluster1) == sorted(_result1)
     assert sorted(_cluster2) == sorted(_result2)
 
@@ -372,11 +371,12 @@ def test_getVisibleNodes_twoClusters():
         _cluster2 = list(set([n for n in _cluster2 if n not in _notCluster2]))
 
     # Part 2: remove nodes not reachable from cluster 2
-    _cluster2final = list(_cluster2)
+    _cluster2final = []
     for n in _cluster2:
         _ok = False
         for n2 in n.getAdjacentNodes():
-            _ok = _ok or (n2 not in _notCluster2)
+            if n2 not in _notCluster2:
+                _ok = True
         if _ok:
             _cluster2final.append(n)
     _cluster2 = list(set(_cluster2final))
@@ -456,23 +456,46 @@ def test_getVisibleNodes_severedRootkitChain():
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
 
-    # Find clusters
+    # -- Build cluster 1 --
     _cluster1 = [_node]
     _cluster1.extend(_node.getAdjacentNodes())
-    _cluster2 = [n for n in _map.nodes.values() if n not in _cluster1]
-
-    # Assign rootkits (cluster 1 - blob based around initial base)
     for n in _node.getAdjacentNodes():
         n.rootkitIds.append(1)
 
-    # Determine "no man's land" between clusters 1 and 2
+    # -- Build no man's land --
     _noMansLand = []
-    for n in _cluster2:
+    for n in _cluster1:
         _noMansLand.extend(n.getAdjacentNodes())
     _noMansLand = list(set([x for x in _noMansLand if x.ownerId != 1]))
+    for n in _noMansLand:
+        n.rootkitIds = []
 
-    # Assign ownership (cluster[s] 2+ - any nodes not connected directly to cluster 1)
-    _cluster2 = [x for x in _cluster2 if x not in _noMansLand]
+    # -- Build cluster 2 --
+    # Part 1: Initial cluster
+    _notCluster2 = _noMansLand + _cluster1
+    _cluster2 = []
+    _cluster2.extend(_noMansLand)
+    _len2 = 0
+    while _len2 != len(_cluster2):
+        _len2 = len(_cluster2)
+        _cluster2_new = []
+        for n in _cluster2:
+            _cluster2_new.extend(n.getAdjacentNodes())
+        _cluster2.extend(_cluster2_new)
+        _cluster2 = list(set([n for n in _cluster2 if n not in _notCluster2]))
+
+    # Part 2: remove nodes not reachable from cluster 2
+    _cluster2final = []
+    for n in _cluster2:
+        _ok = False
+        for n2 in n.getAdjacentNodes():
+            if n2 not in _notCluster2:
+                _ok = True
+        if _ok:
+            _cluster2final.append(n)
+    _cluster2 = list(set(_cluster2final))
+
+    # Part 3: rootkitting
     for n in _cluster2:
         n.rootkitIds.append(1)
 
@@ -481,21 +504,22 @@ def test_getVisibleNodes_severedRootkitChain():
     assert len(_cluster2) > 1
 
     # Add visible nodes to clusters
+    _cluster1plus = list(_cluster1)
+    _cluster2plus = list(_cluster2)
     for n in _cluster1:
-        _cluster1.extend(n.getAdjacentNodes())
+        _cluster1plus.extend(n.getAdjacentNodes())
     for n in _cluster2:
-        _cluster2.extend(n.getAdjacentNodes())
-    _cluster1 = list(set(_cluster1))
-    _cluster2 = list(set(_cluster2))
+        _cluster2plus.extend(n.getAdjacentNodes())
+    _cluster1 = list(set(_cluster1plus))
+    _cluster2 = list(set(_cluster2plus))
 
     # Check getVisibleNodes()' correctness
-    _visible1 = []
-    _visible2 = []
-    _node.getVisibleNodes(_visible1)
-    _cluster2.getVisibleNodes(_visible2)
-    assert sorted(_cluster1) == sorted(_visible1)
-    assert sorted(_cluster2) == sorted(_visible2)
-
+    _result1 = []
+    _result2 = []
+    _node.getVisibleNodes(_result1)
+    _cluster2[0].getVisibleNodes(_result2)
+    assert sorted(_cluster1) == sorted(_result1)
+    assert sorted(_cluster2) == sorted(_result2)
 
 """
 more misc.
@@ -649,6 +673,7 @@ def test_doControl_heal():
     _node = _map.getPlayerNodes(1)[0]
 
     _target = [x for x in _node.getAdjacentNodes() if x.nodetype == "Large City"][0]
+    _target.isIPSed = False
     if _target.ownerId != 2:
         _target.own(2)
     _target.targeterId = 1
