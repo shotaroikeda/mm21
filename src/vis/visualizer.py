@@ -3,27 +3,35 @@ import pygame
 import sys
 import math
 import random
+from node import Node
 import vis_constants as const
-import animate as ani
+# import animate as ani
 
 
 class Visualizer(object):
 
-    def __init__(self, json_data):
-        self.screenHeight = const.screenHeight
-        self.screenWidth = const.screenWidth
+    def __init__(self, _json_data, _width=const.screenWidth, _height=const.screenHeight):
+        # Check and init vis
+        self.screenHeight = _height
+        self.screenWidth = _width
         self.title = const.title
         self.fps = const.FPStgt
         self.running = True
+        self.json_data = _json_data
+        self.ticks = 0
+        self.ticks_per_turn = 60
+        self.turn_json = []
 
-        self.json_data = json_data
+        if(_json_data is not None):
+            for item in _json_data:
+                self.add_turn(item)
 
         pygame.init()
-        self.setup()
+        self.setup_pygame()
         self.process_json()
         self.run()
 
-    def setup(self):
+    def setup_pygame(self):
         pygame.display.set_caption(self.title)
         self.screen = pygame.display.set_mode((self.screenWidth, self.screenHeight))
         self.gameClock = pygame.time.Clock()
@@ -50,34 +58,31 @@ class Visualizer(object):
             i = 0
             isp_amount = len(cont['isps'])
             for isp in cont['isps']:
-                self.draw_json[isp['id']] = {}
-                self.draw_json[isp['id']]['type'] = 'isp'
                 x_offset = random.randint(-math.floor(x_blockSize * const.isp_offset), math.floor(x_blockSize * const.isp_offset))
                 y_offset = random.randint(-math.floor(y_blockSize * const.isp_offset), math.floor(y_blockSize * const.isp_offset))
-                self.draw_json[isp['id']]['x'] = int(center_x + (const.isp_radius * x_blockSize / 2) * math.cos((2 * math.pi / isp_amount) * i)) + x_offset
-                self.draw_json[isp['id']]['y'] = int(center_y + (const.isp_radius * y_blockSize / 2) * math.sin((2 * math.pi / isp_amount) * i)) + y_offset
+                x = int(center_x + (const.isp_radius * x_blockSize / 2) * math.cos((2 * math.pi / isp_amount) * i)) + x_offset
+                y = int(center_y + (const.isp_radius * y_blockSize / 2) * math.sin((2 * math.pi / isp_amount) * i)) + y_offset
+                self.draw_json[isp['id']] = Node(x, y, 'isp')
 
                 k = 0
                 city_amount = len(isp['cities'])
                 for city in isp['cities']:
-                    self.draw_json[city.uid] = {}
-                    self.draw_json[city.uid]['type'] = 'city'
                     x_offset = random.randint(-math.floor(x_blockSize * const.city_offset), math.floor(x_blockSize * const.city_offset))
                     y_offset = random.randint(-math.floor(y_blockSize * const.city_offset), math.floor(y_blockSize * const.city_offset))
-                    self.draw_json[city.uid]['x'] = int(self.draw_json[isp['id']]['x'] + (const.city_radius * x_blockSize / 2) * math.cos((2 * math.pi / city_amount) * k)) + x_offset
-                    self.draw_json[city.uid]['y'] = int(self.draw_json[isp['id']]['y'] + (const.city_radius * y_blockSize / 2) * math.sin((2 * math.pi / city_amount) * k)) + y_offset
+                    x = int(self.draw_json[isp['id']].x + (const.city_radius * x_blockSize / 2) * math.cos((2 * math.pi / city_amount) * k)) + x_offset
+                    y = int(self.draw_json[isp['id']].y + (const.city_radius * y_blockSize / 2) * math.sin((2 * math.pi / city_amount) * k)) + y_offset
+                    self.draw_json[city.uid] = Node(x, y, 'small_city')
                     k += 1
                 i += 1
 
             i = 0
             datacenter_amount = len(cont['datacenters'])
             for datacenter in cont['datacenters']:
-                self.draw_json[datacenter['id']] = {}
-                self.draw_json[datacenter['id']]['type'] = 'datacenter'
                 x_offset = random.randint(-math.floor(x_blockSize * const.datacenter_offset), math.floor(x_blockSize * const.datacenter_offset))
                 y_offset = random.randint(-math.floor(y_blockSize * const.datacenter_offset), math.floor(y_blockSize * const.datacenter_offset))
-                self.draw_json[datacenter['id']]['x'] = int(center_x + (const.datacenter_radius * x_blockSize / 2) * math.cos((2 * math.pi / datacenter_amount) * i)) + x_offset
-                self.draw_json[datacenter['id']]['y'] = int(center_y + (const.datacenter_radius * y_blockSize / 2) * math.sin((2 * math.pi / datacenter_amount) * i)) + y_offset
+                x = int(center_x + (const.datacenter_radius * x_blockSize / 2) * math.cos((2 * math.pi / datacenter_amount) * i)) + x_offset
+                y = int(center_y + (const.datacenter_radius * y_blockSize / 2) * math.sin((2 * math.pi / datacenter_amount) * i)) + y_offset
+                self.draw_json[datacenter['id']] = Node(x, y, 'datacenter')
                 i += 1
 
     def run(self):
@@ -85,33 +90,46 @@ class Visualizer(object):
             # Make sure game is on 60 FPS
             self.gameClock.tick(self.fps)
 
-            self.update()
-            self.draw()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.display.quit()
                     pygame.quit()
                     sys.exit()
                 elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        self.running = False if self.running else True
                     if event.key == pygame.K_ESCAPE:
                         pygame.display.quit()
                         pygame.quit()
                         sys.exit()
+            if self.running:
+                self.ticks += 1
+                if(self.ticks % self.ticks_per_turn == 0):
+                    self.change_turn(self.ticks / self.ticks_per_turn)
+                self.update()
+                self.draw()
 
     def update(self):
-        self.fps = 60
+        return None
 
     def draw(self):
-        ani.interpolate(self.screen, self.draw_json, self.json_data, 200)
-        # for key, value in self.draw_json.iteritems():
-        #     if value['type'] == 'isp':
-        #         pygame.draw.circle(self.screen, const.RED, [value['x'], value['y']], const.isp_size)
-        #     elif value['type'] == 'datacenter':
-        #         pygame.draw.circle(self.screen, const.GREEN, [value['x'], value['y']], const.datacenter_size)
-        #     elif value['type'] == 'city':
-        #         pygame.draw.circle(self.screen, const.BLUE, [value['x'], value['y']], const.city_size)
-        # for edge in self.json_data['edges']:
-        #     v1, v2 = edge
-        #     # pygame.draw.line(self.screen, const.BLACK, [self.draw_json[v1]['x'], self.draw_json[v1]['y']], [self.draw_json[v2]['x'], self.draw_json[v2]['y']], 1)
-        # pygame.display.update()
-        # pygame.display.flip()
+        # ani.interpolate(self.screen, self.draw_json, self.json_data, 200)
+        self.screen.fill(const.WHITE)
+        for key, value in self.draw_json.iteritems():
+            value.draw(self.screen)
+        for edge in self.json_data['edges']:
+            v1, v2 = edge
+            pygame.draw.line(self.screen, const.BLACK, [self.draw_json[v1].x, self.draw_json[v1].y], [self.draw_json[v2].x, self.draw_json[v2].y], 1)
+        pygame.display.update()
+        pygame.display.flip()
+
+    def add_turn(self, json):
+        self.turn_json.append(json)
+
+    def change_turn(self, turn):
+        if(len(self.turn_json) > turn):
+            return None
+        else:
+            print("Next turn does not exist")
+            self.ticks -= 1
+            self.running = False
