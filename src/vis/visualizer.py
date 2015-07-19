@@ -10,20 +10,20 @@ import vis_constants as const
 
 class Visualizer(object):
 
-    def __init__(self, _json_data, _width=const.screenWidth, _height=const.screenHeight):
+    def __init__(self, _map_json_data, _width=const.screenWidth, _height=const.screenHeight, _log_json_data=None):
         # Check and init vis
         self.screenHeight = _height
         self.screenWidth = _width
         self.title = const.title
         self.fps = const.FPStgt
         self.running = True
-        self.json_data = _json_data
+        self.json_data = _map_json_data
         self.ticks = 0
         self.ticks_per_turn = 60
         self.turn_json = []
 
-        if(_json_data is not None):
-            for item in _json_data:
+        if(_log_json_data is not None):
+            for item in _log_json_data:
                 self.add_turn(item)
 
         pygame.init()
