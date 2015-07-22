@@ -28,11 +28,15 @@ parser.add_argument(
     default="gamerunner/map.json")
 args = parser.parse_args()  # parse args
 
+if args.logFile is None or args.mapJson is None:
+    parser.error("No action requested, use -h to figure out available commands")
+    exit(0)
+
 try:
     with open(args.mapJson) as json_file:
         mapJsonObject = loadJson(json_file)
     if(mapJsonObject is None):
-        raise Exception()
+        raise Exception
 except IOError:
     print("File " + args.mapJson + " does not exist")
     raise
@@ -47,7 +51,7 @@ if (args.logFile is not None):
         with open(args.logFile) as json_file:
             logJsonObject = json.load(json_file)
         if(logJsonObject is None):
-            raise Exception()
+            raise Exception
     except IOError:
         print("File " + args.logJson + " does not exist")
         raise
