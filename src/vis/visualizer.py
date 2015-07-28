@@ -89,6 +89,7 @@ class Visualizer(object):
         while 1:
             # Make sure game is on 60 FPS
             self.gameClock.tick(self.fps)
+            print(self.ticks)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -110,7 +111,9 @@ class Visualizer(object):
                 self.draw()
 
     def update(self):
-        return None
+        if (self.tick % self.ticks_per_turn == 0):
+            for node in self.turn_json[self.tick / self.ticks_per_turn]:
+                self.add_animations(node, self.turn_json[(self.tick / self.ticks_per_turn) - 1][node['id']])
 
     def draw(self):
         # ani.interpolate(self.screen, self.draw_json, self.json_data, 200)
@@ -119,7 +122,7 @@ class Visualizer(object):
             value.draw(self.screen)
         for edge in self.json_data['edges']:
             v1, v2 = edge
-            pygame.draw.line(self.screen, const.BLACK, [self.draw_json[v1].x, self.draw_json[v1].y], [self.draw_json[v2].x, self.draw_json[v2].y], 1)
+            # pygame.draw.line(self.screen, const.BLACK, [self.draw_json[v1].x, self.draw_json[v1].y], [self.draw_json[v2].x, self.draw_json[v2].y], 1)
         pygame.display.update()
         pygame.display.flip()
 
@@ -133,3 +136,8 @@ class Visualizer(object):
             print("Next turn does not exist")
             self.ticks -= 1
             self.running = False
+
+    def add_animations(self, node, prev_node):
+        if (node['softwareLevel'] != prev_node['softwareLevel']):
+            self.draw_json[node['id']].animations.append(Upgrade)
+        

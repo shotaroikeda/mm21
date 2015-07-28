@@ -14,9 +14,9 @@ isp_offset = .07
 datacenter_radius = .20
 datacenter_size = 10
 datacenter_offset = .02
-city_radius = .1
+city_radius = .2
 city_size = 5
-city_offset = .005
+city_offset = .01
 
 # COLORS
 WHITE = (255, 255, 255)
