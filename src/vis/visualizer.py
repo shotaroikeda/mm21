@@ -4,6 +4,7 @@ import sys
 import math
 import random
 from node import Node
+from animation import Upgrade
 import vis_constants as const
 # import animate as ani
 
@@ -140,4 +141,3 @@ class Visualizer(object):
     def add_animations(self, node, prev_node):
         if (node['softwareLevel'] != prev_node['softwareLevel']):
             self.draw_json[node['id']].animations.append(Upgrade)
-        
