@@ -90,7 +90,7 @@ class Visualizer(object):
         while 1:
             # Make sure game is on 60 FPS
             self.gameClock.tick(self.fps)
-            print(self.ticks)
+            # print(self.ticks)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -112,9 +112,15 @@ class Visualizer(object):
                 self.draw()
 
     def update(self):
-        if (self.tick % self.ticks_per_turn == 0):
-            for node in self.turn_json[self.tick / self.ticks_per_turn]:
-                self.add_animations(node, self.turn_json[(self.tick / self.ticks_per_turn) - 1][node['id']])
+        for key, value in self.draw_json.iteritems():
+            value.update()
+        if (self.ticks % self.ticks_per_turn == 0):
+            for node in self.turn_json[self.ticks / self.ticks_per_turn]['map']:
+                # How it should work
+                # self.add_animations(node, self.turn_json[(self.ticks / self.tickss_per_turn) - 1][node['id']])
+                for prev_node in self.turn_json[(self.ticks / self.ticks_per_turn) - 1]['map']:
+                    if prev_node['softwareLevel'] != node['softwareLevel']:
+                        self.add_animations(node, prev_node)
 
     def draw(self):
         # ani.interpolate(self.screen, self.draw_json, self.json_data, 200)
@@ -135,9 +141,14 @@ class Visualizer(object):
             return None
         else:
             print("Next turn does not exist")
-            self.ticks -= 1
-            self.running = False
+            self.ticks -= 60
+            # self.running = False
 
     def add_animations(self, node, prev_node):
         if (node['softwareLevel'] != prev_node['softwareLevel']):
-            self.draw_json[node['id']].animations.append(Upgrade)
+            found_anim = False
+            for animation in self.draw_json[node['id']].animations:
+                if(type(animation) is Upgrade):
+                    found_anim = True
+            if (not found_anim):
+                self.draw_json[node['id']].animations.append(Upgrade())

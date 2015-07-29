@@ -29,4 +29,5 @@ class Node(object):
     def draw(self, screen):
         screen.blit(self.sprite, self.sprite_rect)
         for animation in self.animations:
-            animation.draw(screen)
+            if (animation.draw(screen, self.sprite_rect[0], self.sprite_rect[1])):
+                self.animations.remove(animation)
