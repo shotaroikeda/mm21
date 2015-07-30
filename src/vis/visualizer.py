@@ -112,9 +112,13 @@ class Visualizer(object):
                 self.draw()
 
     def update(self):
-        if (self.tick % self.ticks_per_turn == 0):
-            for node in self.turn_json[self.tick / self.ticks_per_turn]:
-                self.add_animations(node, self.turn_json[(self.tick / self.ticks_per_turn) - 1][node['id']])
+        if (self.ticks % self.ticks_per_turn == 0):
+        # TO ERIC
+        # the next 3 lines is what causing the code to break the code and not working
+            # for node in self.turn_json[self.ticks / self.ticks_per_turn]:
+                # print (self.turn_json[self.ticks / self.ticks_per_turn])
+                # self.add_animations(node, self.turn_json[(self.ticks / self.ticks_per_turn) - 1][node]])
+            self.add_animations(self.turn_json[self.ticks / self.ticks_per_turn]['map'][0], self.turn_json[self.ticks / self.ticks_per_turn - 1]['map'][0])
 
     def draw(self):
         # ani.interpolate(self.screen, self.draw_json, self.json_data, 200)

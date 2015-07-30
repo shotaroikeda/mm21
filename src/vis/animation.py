@@ -26,11 +26,13 @@ class Upgrade(Animation):
         self.setup_animation()
 
     def setup_animation(self):
-        self.images[0] = pygame.image.load("vis/sprites/upgrade_1.png")
-        self.images[1] = pygame.image.load("vis/sprites/upgrade_2.png")
-        self.images[2] = pygame.image.load("vis/sprites/upgrade_3.png")
-        self.images[3] = pygame.image.load("vis/sprites/upgrade_4.png")
-        self.images[4] = pygame.image.load("vis/sprites/upgrade_5.png")
+        for i in range(5):
+            self.image[i] = pygame.image.load("vis/sprites/upgrade_"+ str(i + 1) + ".png")
+        # self.images[0] = pygame.image.load("vis/sprites/upgrade_1.png")
+        # self.images[1] = pygame.image.load("vis/sprites/upgrade_2.png")
+        # self.images[2] = pygame.image.load("vis/sprites/upgrade_3.png")
+        # self.images[3] = pygame.image.load("vis/sprites/upgrade_4.png")
+        # self.images[4] = pygame.image.load("vis/sprites/upgrade_5.png")
         self.image_tick = [0, 0, 1, 1, 2, 2, 3, 3, 4, 4]
         for i in range(len(self.images)):
             self.image_rects[i] = self.images[i].get_rect()
