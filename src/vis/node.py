@@ -19,7 +19,7 @@ class Node(object):
             if(self.node_type == "small_city"):
                 self.sprite_rect[2] = 5
                 self.sprite_rect[3] = 5
-        except:  # TODO what is the exact exception?
+        except IOError:  # TODO what is the exact exception?
             print("Failed to load sprite image")
 
     def update(self):

@@ -7,7 +7,7 @@ import argparse
 
 # Define arguements
 parser = argparse.ArgumentParser(
-    description="Lauches the visualizer")
+    description="Launches the visualizer")
 parser.add_argument(
     "-f", "--logFile",
     help="Specifies a log file to use",
