@@ -119,8 +119,8 @@ class Visualizer(object):
                 # How it should work
                 # self.add_animations(node, self.turn_json[(self.ticks / self.tickss_per_turn) - 1][node['id']])
                 for prev_node in self.turn_json[(self.ticks / self.ticks_per_turn) - 1]['map']:
-                    if prev_node['softwareLevel'] != node['softwareLevel']:
-                        self.add_animations(node, prev_node)
+                    # if prev_node['softwareLevel'] != node['softwareLevel']:
+                    self.add_animations(node, prev_node)
 
     def draw(self):
         # ani.interpolate(self.screen, self.draw_json, self.json_data, 200)
@@ -145,6 +145,8 @@ class Visualizer(object):
             # self.running = False
 
     def add_animations(self, node, prev_node):
+
+        # Upgrade has occured
         if (node['softwareLevel'] != prev_node['softwareLevel']):
             found_anim = False
             for animation in self.draw_json[node['id']].animations:
@@ -152,3 +154,40 @@ class Visualizer(object):
                     found_anim = True
             if (not found_anim):
                 self.draw_json[node['id']].animations.append(Upgrade())
+
+        # Owner has changed, do CONTROL animation
+        if node['owner'] != prev_node['owner']:
+            pass
+
+        # Rootkit has been cleaned or rooted
+        if node['rootkits'] != prev_node['rootkits']:
+            if prev_node is none:
+                # rootkit deployed
+                pass
+            else:
+                # rootkit cleaned
+                pass
+
+        # infratration protection activated
+        if node['isIPSed'] is True:
+            pass
+
+        # infiltration
+        for i in range(5):
+            curr_infrat_num = node['infiltration'][str(i)]
+            prev_infrat_num = prev_node['infiltration'][str(i)]
+            if curr_infrat_num != prev_infrat_num:
+                if curr_infrat_num > prev_infrat_num:
+                    # Being infiltrated, An attack has occured
+                    break
+                else:
+                    # Is currently healing
+                    break
+        # To ERIC
+        # These two action has not been done and needs to be added ~~~~~~~~~~ 'Scan' and 'Port Scan'
+        # Ace said that on the newest node.py, it would have a dictionary entry 'isDDoSed', currently it would not work since it doesn't have that entry and
+        # it would raise a keyerror. But this part should be okay to merge once we get the latest version of node.py
+        # if node['isDDoSed']:
+        #     # DDOS
+        #     pass
+
