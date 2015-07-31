@@ -83,7 +83,8 @@ class Game(object):
             for actionJson in actions:
                 action = actionJson.get("action", "").lower()
                 targetId = actionJson.get("target", -1)
-                actionResult = {}
+                multiplier = actionJson.get("multiplier", 1)
+                actionResult = {"teamName": actionJson["teamName"], "teamId": playerId, "action": action, "targetId": targetId, "multiplier": multiplier}
 
                 try:
                     target = self.map.nodes.get(int(targetId), None)
@@ -93,7 +94,7 @@ class Game(object):
                     if action == "ddos":
                         target.doDDoS()
                     elif action == "control":
-                        target.doControl(actionJson.get("multiplier", 1))
+                        target.doControl(multiplier)
                     elif action == "upgrade":
                         target.doUpgrade()
                     elif action == "clean":
@@ -151,7 +152,7 @@ class Game(object):
             raise InvalidPlayerException("Player " + playerId + " doesn't exist.")
 
         # Get list of nodes visible to player
-        isPortScan = playerId in self.portScans
+        isPortScan = playerId in self.map.portScans
         ownedNodes = [x for x in self.map.nodes.values() if isPortScan or x.ownerId == playerId]
         visibleNodes = set(ownedNodes)
         if not isPortScan:

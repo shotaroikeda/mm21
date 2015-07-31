@@ -14,5 +14,5 @@ class Player(object):
 # Validate a player ID
 # @param playerId the player ID to validate
 def validatePlayerId(playerId):
-    if not isinstance(playerId, int) or playerId < 0:
-        raise ValueError("Player ID {} must be a nonnegative integer.")
+    if not isinstance(playerId, int) or playerId < 1:
+        raise ValueError("Player ID {} must be a positive integer.")
