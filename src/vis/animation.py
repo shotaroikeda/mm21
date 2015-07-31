@@ -31,15 +31,15 @@ class Upgrade(Animation):
         self.images.append(pygame.image.load("vis/sprites/upgrade_3.png"))
         self.images.append(pygame.image.load("vis/sprites/upgrade_4.png"))
         self.images.append(pygame.image.load("vis/sprites/upgrade_5.png"))
-        for i in range(10):
+        for i in range(12):
             self.image_tick.append(0)
-        for i in range(10):
+        for i in range(12):
             self.image_tick.append(1)
-        for i in range(10):
+        for i in range(12):
             self.image_tick.append(2)
-        for i in range(10):
+        for i in range(12):
             self.image_tick.append(3)
-        for i in range(10):
+        for i in range(12):
             self.image_tick.append(4)
         for i in range(len(self.images)):
             self.image_rects.append(self.images[i].get_rect())
