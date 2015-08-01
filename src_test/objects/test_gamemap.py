@@ -40,7 +40,7 @@ def test_addPlayer_ForceInt():
     with pytest.raises(ValueError):
         _map.addPlayer(None)
     with pytest.raises(ValueError):
-        _map.addPlayer(0)
+        _map.addPlayer(-1)
 
 
 # Test dupe-team checking
@@ -70,7 +70,7 @@ def test_getPlayerNodes():
     with pytest.raises(ValueError):
         _map.getPlayerNodes(None)
     with pytest.raises(ValueError):
-        _map.getPlayerNodes(0)
+        _map.getPlayerNodes(-1)
 
 
 # Test getNodesOfType
