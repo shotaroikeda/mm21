@@ -4,20 +4,21 @@ import sys
 import math
 import random
 from node import Node
-from animation import Upgrade
+from animation import Upgrade, ChangeOwner, AddRootkit, CleanRootkit, ISP, Infiltration, Heal
 import vis_constants as const
 # import animate as ani
 
 
 class Visualizer(object):
 
-    def __init__(self, _map_json_data, _width=const.screenWidth, _height=const.screenHeight, _log_json_data=None):
+    def __init__(self, _map_json_data, _width=const.screenWidth, _height=const.screenHeight, _debug=False, _log_json_data=None):
         # Check and init vis
         self.screenHeight = _height
         self.screenWidth = _width
         self.title = const.title
         self.fps = const.FPStgt
         self.running = True
+        self.debug = _debug
         self.json_data = _map_json_data
         self.ticks = 0
         self.ticks_per_turn = 60
@@ -100,21 +101,27 @@ class Visualizer(object):
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
                         self.running = False if self.running else True
-                    if event.key == pygame.K_ESCAPE:
-                        pygame.display.quit()
-                        pygame.quit()
-                        sys.exit()
+                    if (self.debug):
+                        if event.key == pygame.K_LEFT:
+                            self.ticks -= self.ticks_per_turn + self.ticks % self.ticks_per_turn
+                            if (self.ticks < 0):
+                                self.ticks = 0
+                            print("Changed to turn " + str(self.ticks / self.ticks_per_turn))
+                        if event.key == pygame.K_ESCAPE:
+                            pygame.display.quit()
+                            pygame.quit()
+                            sys.exit()
             if self.running:
-                self.ticks += 1
                 if(self.ticks % self.ticks_per_turn == 0):
                     self.change_turn(self.ticks / self.ticks_per_turn)
                 self.update()
                 self.draw()
+                self.ticks += 1
 
     def update(self):
         for key, value in self.draw_json.iteritems():
             value.update()
-        if (self.ticks % self.ticks_per_turn == 0):
+        if (self.ticks % self.ticks_per_turn == 0 and self.ticks is not 0):
             for node in self.turn_json[self.ticks / self.ticks_per_turn]['map']:
                 # How it should work
                 # self.add_animations(node, self.turn_json[(self.ticks / self.tickss_per_turn) - 1][node['id']])
@@ -125,11 +132,12 @@ class Visualizer(object):
     def draw(self):
         # ani.interpolate(self.screen, self.draw_json, self.json_data, 200)
         self.screen.fill(const.WHITE)
+        if (self.debug):
+            for edge in self.json_data['edges']:
+                v1, v2 = edge
+                pygame.draw.line(self.screen, const.BLACK, [self.draw_json[v1].x, self.draw_json[v1].y], [self.draw_json[v2].x, self.draw_json[v2].y], 1)
         for key, value in self.draw_json.iteritems():
             value.draw(self.screen)
-        for edge in self.json_data['edges']:
-            v1, v2 = edge
-            # pygame.draw.line(self.screen, const.BLACK, [self.draw_json[v1].x, self.draw_json[v1].y], [self.draw_json[v2].x, self.draw_json[v2].y], 1)
         pygame.display.update()
         pygame.display.flip()
 
@@ -138,6 +146,8 @@ class Visualizer(object):
 
     def change_turn(self, turn):
         if(len(self.turn_json) > turn):
+            if (self.debug):
+                print("Processing turn " + str(self.ticks / self.ticks_per_turn))
             return None
         else:
             print("Next turn does not exist")
@@ -145,32 +155,30 @@ class Visualizer(object):
             # self.running = False
 
     def add_animations(self, node, prev_node):
-
         # Upgrade has occured
         if (node['softwareLevel'] != prev_node['softwareLevel']):
-            found_anim = False
-            for animation in self.draw_json[node['id']].animations:
-                if(type(animation) is Upgrade):
-                    found_anim = True
-            if (not found_anim):
+            if (not self.found_anim(node, Upgrade)):
                 self.draw_json[node['id']].animations.append(Upgrade())
 
         # Owner has changed, do CONTROL animation
         if node['owner'] != prev_node['owner']:
-            pass
+            if (not self.found_anim(node, ChangeOwner)):
+                self.draw_json[node['id']].animations.append(ChangeOwner())
 
         # Rootkit has been cleaned or rooted
         if node['rootkits'] != prev_node['rootkits']:
-            if prev_node is none:
-                # rootkit deployed
-                pass
+            if prev_node is None:
+                if (not self.found_anim(node, AddRootkit)):
+                    self.draw_json[node['id']].animations.append(AddRootkit())
             else:
-                # rootkit cleaned
-                pass
+                # TODO Remove rootkit?
+                if (not self.found_anim(node, CleanRootkit)):
+                    self.draw_json[node['id']].animations.append(CleanRootkit())
 
         # infratration protection activated
         if node['isIPSed'] is True:
-            pass
+            if (not self.found_anim(node, ISP)):
+                self.draw_json[node['id']].animations.append(ISP())
 
         # infiltration
         for i in range(5):
@@ -178,10 +186,14 @@ class Visualizer(object):
             prev_infrat_num = prev_node['infiltration'][str(i)]
             if curr_infrat_num != prev_infrat_num:
                 if curr_infrat_num > prev_infrat_num:
-                    # Being infiltrated, An attack has occured
+                    if (not self.found_anim(node, Infiltration)):
+                        # Being infiltrated, An attack has occured
+                        self.draw_json[node['id']].animations.append(Infiltration())
                     break
                 else:
-                    # Is currently healing
+                    if (not self.found_anim(node, Heal)):
+                        # Is currently healing
+                        self.draw_json[node['id']].animations.append(Heal())
                     break
         # To ERIC
         # These two action has not been done and needs to be added ~~~~~~~~~~ 'Scan' and 'Port Scan'
@@ -191,3 +203,8 @@ class Visualizer(object):
         #     # DDOS
         #     pass
 
+    def found_anim(self, node, animation_type):
+        for animation in self.draw_json[node['id']].animations:
+            if(type(animation) is animation_type):
+                return True
+        return False

@@ -16,7 +16,7 @@ class Animation(object):
         if (self.current_tick >= len(self.image_tick) - 1):
             self.current_tick = 0
         screen.blit(self.images[self.image_tick[self.current_tick]], (x, y))
-        return False
+        return True
 
 
 class Upgrade(Animation):
@@ -26,16 +26,9 @@ class Upgrade(Animation):
         self.setup_animation()
 
     def setup_animation(self):
-
         # Add the images to the images
-        for i in range(1,6):
+        for i in range(1, 6):
             self.images.append(pygame.image.load("vis/sprites/upgrade_" + str(i) + ".png"))
-        # changing this to a for loop, easier to read and shorter
-        # self.images.append(pygame.image.load("vis/sprites/upgrade_1.png"))
-        # self.images.append(pygame.image.load("vis/sprites/upgrade_2.png"))
-        # self.images.append(pygame.image.load("vis/sprites/upgrade_3.png"))
-        # self.images.append(pygame.image.load("vis/sprites/upgrade_4.png"))
-        # self.images.append(pygame.image.load("vis/sprites/upgrade_5.png"))
         for i in range(12):
             self.image_tick.append(0)
         for i in range(12):
@@ -46,5 +39,101 @@ class Upgrade(Animation):
             self.image_tick.append(3)
         for i in range(12):
             self.image_tick.append(4)
+        for i in range(len(self.images)):
+            self.image_rects.append(self.images[i].get_rect())
+
+
+class ChangeOwner(Animation):
+
+    def __init__(self):
+        Animation.__init__(self)
+        self.setup_animation()
+
+    def setup_animation(self):
+        # Add the images to the images
+        for i in range(1):
+            self.images.append(pygame.image.load("vis/sprites/change_owner_" + str(i) + ".png"))
+        for i in range(60):
+            self.image_tick.append(0)
+        for i in range(len(self.images)):
+            self.image_rects.append(self.images[i].get_rect())
+
+
+class AddRootkit(Animation):
+
+    def __init__(self):
+        Animation.__init__(self)
+        self.setup_animation()
+
+    def setup_animation(self):
+        # Add the images to the images
+        for i in range(1):
+            self.images.append(pygame.image.load("vis/sprites/add_rootkit_" + str(i) + ".png"))
+        for i in range(60):
+            self.image_tick.append(0)
+        for i in range(len(self.images)):
+            self.image_rects.append(self.images[i].get_rect())
+
+
+class CleanRootkit(Animation):
+
+    def __init__(self):
+        Animation.__init__(self)
+        self.setup_animation()
+
+    def setup_animation(self):
+        # Add the images to the images
+        for i in range(1):
+            self.images.append(pygame.image.load("vis/sprites/clean_rootkit_" + str(i) + ".png"))
+        for i in range(60):
+            self.image_tick.append(0)
+        for i in range(len(self.images)):
+            self.image_rects.append(self.images[i].get_rect())
+
+
+class ISP(Animation):
+
+    def __init__(self):
+        Animation.__init__(self)
+        self.setup_animation()
+
+    def setup_animation(self):
+        # Add the images to the images
+        for i in range(1):
+            self.images.append(pygame.image.load("vis/sprites/isp_" + str(i) + ".png"))
+        for i in range(60):
+            self.image_tick.append(0)
+        for i in range(len(self.images)):
+            self.image_rects.append(self.images[i].get_rect())
+
+
+class Infiltration(Animation):
+
+    def __init__(self):
+        Animation.__init__(self)
+        self.setup_animation()
+
+    def setup_animation(self):
+        # Add the images to the images
+        for i in range(1):
+            self.images.append(pygame.image.load("vis/sprites/infiltration_" + str(i) + ".png"))
+        for i in range(60):
+            self.image_tick.append(0)
+        for i in range(len(self.images)):
+            self.image_rects.append(self.images[i].get_rect())
+
+
+class Heal(Animation):
+
+    def __init__(self):
+        Animation.__init__(self)
+        self.setup_animation()
+
+    def setup_animation(self):
+        # Add the images to the images
+        for i in range(1):
+            self.images.append(pygame.image.load("vis/sprites/heal_" + str(i) + ".png"))
+        for i in range(60):
+            self.image_tick.append(0)
         for i in range(len(self.images)):
             self.image_rects.append(self.images[i].get_rect())

@@ -26,6 +26,8 @@ parser.add_argument(
     "-m", "--mapJson",
     help="The map file for the visualizer",
     default="gamerunner/map.json")
+parser.add_argument("-d", "--debug", help="Turn on Debug", dest='debug', action='store_true')
+parser.set_defaults(debug=False)
 args = parser.parse_args()  # parse args
 
 if args.logFile is None or args.mapJson is None:
@@ -63,6 +65,6 @@ if (args.logFile is not None):
 
 # Initalize Visualizer
 if (logJsonObject is not None):
-    visualizer = vis.Visualizer(mapJsonObject, args.width, args.height, logJsonObject)
+    visualizer = vis.Visualizer(mapJsonObject, args.width, args.height, args.debug, logJsonObject)
 else:
-    visualizer = vis.Visualizer(mapJsonObject, args.width, args.height)
+    visualizer = vis.Visualizer(mapJsonObject, args.width, args.height, args.debug)
