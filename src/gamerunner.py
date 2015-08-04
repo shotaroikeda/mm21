@@ -37,9 +37,9 @@ def launch_clients():
 
 
 def launch_client(client, port=None):
-        c = Client_program(client, port)
-        client_list.append(c)
-        c.run()
+    c = Client_program(client, port)
+    client_list.append(c)
+    c.run()
 
 
 def launch_client_test_game(client, port):
@@ -183,7 +183,7 @@ def test_game(team, team_dir, port):
                     logger=fileLog) 
     serv.run(port, partial(launch_client_test_game, team_dir, port), time_out=60)
     return True
-    
+
 
 def main():
     global parameters
@@ -207,7 +207,7 @@ def main():
     serv.run(parameters.port, launch_clients)
     if parameters.scoreboard:
         fileLog.score.stop()
-        
+
 
 class Scoreboard(object):
     def __init__(self, url=None):
@@ -219,7 +219,7 @@ class Scoreboard(object):
             self.board = self.bot = Popen([sys.executable, "scoreServer.py"],
                                           stdout=FNULL, stderr=FNULL)
             time.sleep(1)
-        
+
     def turn(self, turn):
         try:
             r = urlopen(self.url, turn)
@@ -244,7 +244,7 @@ class Scoreboard(object):
                 self.board.terminate()
             except OSError:
                 pass
-                
+
     def __del__(self):
         self.kill()
 
