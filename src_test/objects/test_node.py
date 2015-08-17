@@ -764,7 +764,25 @@ def test_doRootkit():
 
 # Test doIPS
 def test_doIPS():
-    pass  # TODO
+ 
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _node = _map.getPlayerNodes(1)[0]
+
+    # Init
+    _node.isIPSed = False
+    _node.targeterId = 1
+
+    # Test IPS-pending
+    assert _node.isIPSed is False
+    _node.doIPS()
+    assert _node.IPSPending is True
+    _map.resetAfterTurn()
+
+    # Test IPS-active
+    assert _node.isIPSed is True
+    _map.resetAfterTurn()
+    assert _node.isIPSed is True
 
 
 # Test doPortScan

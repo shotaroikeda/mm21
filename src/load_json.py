@@ -18,7 +18,7 @@ def as_python_object(dct):
 
 def save_map_to_file(filename, json):
     with open(filename, "w") as outfile:
-        dump(dumps(json, cls=PythonObjectEncoder), outfile, indent=2)
+        dump(dumps(json), outfile, indent=2)
 
 
 def load_map_from_file(infile):
