@@ -4,7 +4,7 @@ import sys
 import math
 import random
 from node import Node
-from animation import Upgrade, ChangeOwner, AddRootkit, CleanRootkit, ISP, Infiltration, Heal
+from animation import Upgrade, ChangeOwner, AddRootkit, CleanRootkit, ISP, Infiltration, Heal, DDOS
 import vis_constants as const
 # import animate as ani
 
@@ -193,6 +193,10 @@ class Visualizer(object):
                         # Is currently healing
                         self.draw_json[node['id']].animations.append(Heal())
                     break
+
+        if node['isDDoSed']:
+            if (not self.found_anim(node, DDOS)):
+                self.draw_json[node['id']].animations.append(DDOS())
         # To ERIC
         # These two action has not been done and needs to be added ~~~~~~~~~~ 'Scan' and 'Port Scan'
         # Ace said that on the newest node.py, it would have a dictionary entry 'isDDoSed', currently it would not work since it doesn't have that entry and
