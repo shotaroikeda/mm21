@@ -23,6 +23,7 @@ class Visualizer(object):
         self.ticks = 0
         self.ticks_per_turn = 60
         self.turn_json = []
+        self.game_animations = []
 
         if(_log_json_data is not None):
             for item in _log_json_data:
@@ -88,10 +89,8 @@ class Visualizer(object):
                 i += 1
 
     def run(self):
-        while 1:
-            # Make sure game is on 60 FPS
-            self.gameClock.tick(self.fps)
-            # print(self.ticks)
+        while 1:  # Run game forever till exit
+            self.gameClock.tick(self.fps)  # Make sure game is on 60 FPS
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -112,7 +111,7 @@ class Visualizer(object):
                             pygame.quit()
                             sys.exit()
             if self.running:
-                if(self.ticks % self.ticks_per_turn == 0):
+                if(self.ticks % self.ticks_per_turn == 0 and self.ticks > 0):
                     self.change_turn(self.ticks / self.ticks_per_turn)
                 self.update()
                 self.draw()
@@ -121,23 +120,19 @@ class Visualizer(object):
     def update(self):
         for key, value in self.draw_json.iteritems():
             value.update()
-        if (self.ticks % self.ticks_per_turn == 0 and self.ticks is not 0):
-            for node in self.turn_json[self.ticks / self.ticks_per_turn]['map']:
-                # How it should work
-                # self.add_animations(node, self.turn_json[(self.ticks / self.tickss_per_turn) - 1][node['id']])
-                for prev_node in self.turn_json[(self.ticks / self.ticks_per_turn) - 1]['map']:
-                    # if prev_node['softwareLevel'] != node['softwareLevel']:
-                    self.add_animations(node, prev_node)
+        for anim in self.game_animations:
+            anim.update()
 
     def draw(self):
-        # ani.interpolate(self.screen, self.draw_json, self.json_data, 200)
-        self.screen.fill(const.WHITE)
-        if (self.debug):
+        self.screen.fill(const.WHITE)  # Background color
+        if (self.debug):  # If debug, draw edges
             for edge in self.json_data['edges']:
                 v1, v2 = edge
                 pygame.draw.line(self.screen, const.BLACK, [self.draw_json[v1].x, self.draw_json[v1].y], [self.draw_json[v2].x, self.draw_json[v2].y], 1)
         for key, value in self.draw_json.iteritems():
-            value.draw(self.screen)
+            value.draw(self.screen)  # draw nodes
+        for anim in self.game_animations:
+            anim.draw()  # draw global animations
         pygame.display.update()
         pygame.display.flip()
 
@@ -148,11 +143,14 @@ class Visualizer(object):
         if(len(self.turn_json) > turn):
             if (self.debug):
                 print("Processing turn " + str(self.ticks / self.ticks_per_turn))
-            return None
+            for node in self.turn_json[self.ticks / self.ticks_per_turn]['map']:
+                # How it should work
+                # self.add_animations(node, self.turn_json[(self.ticks / self.tickss_per_turn) - 1][node['id']])
+                for prev_node in self.turn_json[(self.ticks / self.ticks_per_turn) - 1]['map']:
+                    self.add_animations(node, prev_node)
         else:
             print("Next turn does not exist")
             self.ticks -= 60
-            # self.running = False
 
     def add_animations(self, node, prev_node):
         # Upgrade has occured
@@ -175,7 +173,7 @@ class Visualizer(object):
                 if (not self.found_anim(node, CleanRootkit)):
                     self.draw_json[node['id']].animations.append(CleanRootkit())
 
-        # infratration protection activated
+        # infiltration protection activated
         if node['isIPSed'] is True:
             if (not self.found_anim(node, ISP)):
                 self.draw_json[node['id']].animations.append(ISP())

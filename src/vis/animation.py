@@ -137,3 +137,18 @@ class Heal(Animation):
             self.image_tick.append(0)
         for i in range(len(self.images)):
             self.image_rects.append(self.images[i].get_rect())
+
+# Below are global animations
+
+
+class PortScan(object):
+
+    def __init__(self):
+        self.x = 0
+        self.speed += 1
+        
+    def update(self):
+        self.x += self.speed
+
+    def draw(self, screen):
+        return None
