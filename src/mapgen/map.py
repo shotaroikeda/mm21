@@ -7,7 +7,6 @@ from graph import Graph
 class Map():
 
     # Initialize the maps
-    #
     def __init__(self, num_continents, isp_per_continents, cities_per_isp):
         self.continent_list = []
         self.graph = Graph()
@@ -19,7 +18,6 @@ class Map():
     # Creates json for export.
     # The clusters are generated such that they can be visualized as a circle.
     # ARGS - none
-
     def convert_to_json(self):
         json = {}
         json['nodes'] = []
@@ -34,22 +32,19 @@ class Map():
                     vertex_json['adjacent-nodes'].append(list(edge)[0])
             json['nodes'].append(vertex_json)
         for edge in self.graph.edge_list:
-            json['edges'].append(edge)
+            json['edges'].append(list(edge))
         for continent in self.continent_list:
             json_continent = {'isps': [], 'datacenters': []}
             for isp in range(len(continent.isp_list)):
-                json_continent['isps'].append({'id': continent.isp_list[isp].uid, 'cities': continent.isps_city_list[isp]})
+                json_continent['isps'].append({'id': continent.isp_list[isp].uid, 'cities': [x.uid for x in continent.isps_city_list[isp]]})
             for dc in continent.datacenter_list:
                 json_continent['datacenters'].append({'id': dc.uid})
             json['continents'].append(json_continent)
 
         return json
 
-
-    # Still being implemented.
+    # TODO/HACK
     # This will likely not make it to final code
-    #HACK
-
     def draw_graph(self):
         G = nx.Graph()
         for vertex in self.graph.vertex_list:
