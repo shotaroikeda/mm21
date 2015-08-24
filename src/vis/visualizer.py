@@ -4,7 +4,7 @@ import sys
 import math
 import random
 from node import Node
-from animation import Upgrade, ChangeOwner, AddRootkit, CleanRootkit, ISP, Infiltration, Heal
+from animation import Upgrade, ChangeOwner, AddRootkit, CleanRootkit, ISP, Infiltration, Heal, DDOS
 import vis_constants as const
 # import animate as ani
 
@@ -23,6 +23,7 @@ class Visualizer(object):
         self.ticks = 0
         self.ticks_per_turn = 60
         self.turn_json = []
+        self.game_animations = []
 
         if(_log_json_data is not None):
             for item in _log_json_data:
@@ -89,10 +90,8 @@ class Visualizer(object):
                 i += 1
 
     def run(self):
-        while 1:
-            # Make sure game is on 60 FPS
-            self.gameClock.tick(self.fps)
-            # print(self.ticks)
+        while 1:  # Run game forever till exit
+            self.gameClock.tick(self.fps)  # Make sure game is on 60 FPS
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -113,7 +112,7 @@ class Visualizer(object):
                             pygame.quit()
                             sys.exit()
             if self.running:
-                if(self.ticks % self.ticks_per_turn == 0):
+                if(self.ticks % self.ticks_per_turn == 0 and self.ticks > 0):
                     self.change_turn(self.ticks / self.ticks_per_turn)
                 self.update()
                 self.draw()
@@ -122,13 +121,8 @@ class Visualizer(object):
     def update(self):
         for key, value in self.draw_json.iteritems():
             value.update()
-        if (self.ticks % self.ticks_per_turn == 0 and self.ticks is not 0):
-            for node in self.turn_json[self.ticks / self.ticks_per_turn]['map']:
-                # How it should work
-                # self.add_animations(node, self.turn_json[(self.ticks / self.tickss_per_turn) - 1][node['id']])
-                for prev_node in self.turn_json[(self.ticks / self.ticks_per_turn) - 1]['map']:
-                    # if prev_node['softwareLevel'] != node['softwareLevel']:
-                    self.add_animations(node, prev_node)
+        for anim in self.game_animations:
+            anim.update()
 
     def draw(self):
         # ani.interpolate(self.screen, self.draw_json, self.json_data, 200)
@@ -142,6 +136,9 @@ class Visualizer(object):
             if self.debug:
                 node_id = self.myfont.render(str(key), 1, (0, 0, 0))
                 self.screen.blit(node_id, (value.x - 7, value.y - 7))
+            value.draw(self.screen)  # draw nodes
+        for anim in self.game_animations:
+            anim.draw()  # draw global animations
         pygame.display.update()
         pygame.display.flip()
 
@@ -152,7 +149,11 @@ class Visualizer(object):
         if(len(self.turn_json) > turn):
             if (self.debug):
                 print("Processing turn " + str(self.ticks / self.ticks_per_turn))
-            return None
+            for node in self.turn_json[self.ticks / self.ticks_per_turn]['map']:
+                # How it should work
+                # self.add_animations(node, self.turn_json[(self.ticks / self.tickss_per_turn) - 1][node['id']])
+                for prev_node in self.turn_json[(self.ticks / self.ticks_per_turn) - 1]['map']:
+                    self.add_animations(node, prev_node)
         else:
             print("Next turn does not exist")
             self.running = False
@@ -178,7 +179,7 @@ class Visualizer(object):
                 if (not self.found_anim(node, CleanRootkit)):
                     self.draw_json[node['id']].animations.append(CleanRootkit())
 
-        # infratration protection activated
+        # infiltration protection activated
         if node['isIPSed'] is True:
             if (not self.found_anim(node, ISP)):
                 self.draw_json[node['id']].animations.append(ISP())
@@ -198,6 +199,10 @@ class Visualizer(object):
                         # Is currently healing
                         self.draw_json[node['id']].animations.append(Heal())
                     break
+
+        if node['isDDoSed']:
+            if (not self.found_anim(node, DDOS)):
+                self.draw_json[node['id']].animations.append(DDOS())
         # To ERIC
         # These two action has not been done and needs to be added ~~~~~~~~~~ 'Scan' and 'Port Scan'
         # Ace said that on the newest node.py, it would have a dictionary entry 'isDDoSed', currently it would not work since it doesn't have that entry and
