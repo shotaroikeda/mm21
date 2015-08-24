@@ -136,7 +136,6 @@ class Visualizer(object):
             if self.debug:
                 node_id = self.myfont.render(str(key), 1, (0, 0, 0))
                 self.screen.blit(node_id, (value.x - 7, value.y - 7))
-            value.draw(self.screen)  # draw nodes
         for anim in self.game_animations:
             anim.draw()  # draw global animations
         pygame.display.update()
