@@ -3,6 +3,7 @@ import pygame
 import sys
 import math
 import random
+from scoreboard import Scoreboard
 from node import Node
 from animation import Upgrade, ChangeOwner, AddRootkit, CleanRootkit, ISP, Infiltration, Heal, DDOS
 import vis_constants as const
@@ -25,7 +26,7 @@ class Visualizer(object):
         self.turn_json = []
         self.game_animations = []
 
-        if(_log_json_data is not None):
+        if (_log_json_data is not None):
             for item in _log_json_data:
                 self.add_turn(item)
 
@@ -130,12 +131,13 @@ class Visualizer(object):
         if self.debug:
             for edge in self.json_data['edges']:
                 v1, v2 = edge
-                pygame.draw.line(self.screen, const.BLACK, [self.draw_json[v1].x, self.draw_json[v1].y], [self.draw_json[v2].x, self.draw_json[v2].y], 1)
+                pygame.draw.line(self.screen, const.BLACK, (self.draw_json[v1].x, self.draw_json[v1].y), (self.draw_json[v2].x, self.draw_json[v2].y), 1)
         for key, value in self.draw_json.iteritems():
             value.draw(self.screen)
             if self.debug:
                 node_id = self.myfont.render(str(key), 1, (0, 0, 0))
                 self.screen.blit(node_id, (value.x - 7, value.y - 7))
+
         for anim in self.game_animations:
             anim.draw()  # draw global animations
         pygame.display.update()
