@@ -36,6 +36,7 @@ class Visualizer(object):
     def setup_pygame(self):
         pygame.display.set_caption(self.title)
         self.screen = pygame.display.set_mode((self.screenWidth, self.screenHeight))
+        self.myfont = pygame.font.SysFont("monospace", 12)
         self.gameClock = pygame.time.Clock()
 
     def process_json(self):
@@ -73,7 +74,7 @@ class Visualizer(object):
                     y_offset = random.randint(-math.floor(y_blockSize * const.city_offset), math.floor(y_blockSize * const.city_offset))
                     x = int(self.draw_json[isp['id']].x + (const.city_radius * x_blockSize / 2) * math.cos((2 * math.pi / city_amount) * k)) + x_offset
                     y = int(self.draw_json[isp['id']].y + (const.city_radius * y_blockSize / 2) * math.sin((2 * math.pi / city_amount) * k)) + y_offset
-                    self.draw_json[city.uid] = Node(x, y, 'small_city')
+                    self.draw_json[city] = Node(x, y, 'small_city')
                     k += 1
                 i += 1
 
@@ -132,12 +133,15 @@ class Visualizer(object):
     def draw(self):
         # ani.interpolate(self.screen, self.draw_json, self.json_data, 200)
         self.screen.fill(const.WHITE)
-        if (self.debug):
+        if self.debug:
             for edge in self.json_data['edges']:
                 v1, v2 = edge
                 pygame.draw.line(self.screen, const.BLACK, [self.draw_json[v1].x, self.draw_json[v1].y], [self.draw_json[v2].x, self.draw_json[v2].y], 1)
         for key, value in self.draw_json.iteritems():
             value.draw(self.screen)
+            if self.debug:
+                node_id = self.myfont.render(str(key), 1, (0, 0, 0))
+                self.screen.blit(node_id, (value.x - 7, value.y - 7))
         pygame.display.update()
         pygame.display.flip()
 
@@ -151,8 +155,7 @@ class Visualizer(object):
             return None
         else:
             print("Next turn does not exist")
-            self.ticks -= 60
-            # self.running = False
+            self.running = False
 
     def add_animations(self, node, prev_node):
         # Upgrade has occured

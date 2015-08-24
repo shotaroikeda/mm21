@@ -30,10 +30,6 @@ parser.add_argument("-d", "--debug", help="Turn on Debug", dest='debug', action=
 parser.set_defaults(debug=False)
 args = parser.parse_args()  # parse args
 
-if args.logFile is None or args.mapJson is None:
-    parser.error("No action requested, use -h to figure out available commands")
-    exit(0)
-
 try:
     with open(args.mapJson) as json_file:
         mapJsonObject = loadJson(json_file)
@@ -63,8 +59,8 @@ if (args.logFile is not None):
         raise
         exit(1)
 
-# Initalize Visualizer
-if (logJsonObject is not None):
+# Initialize Visualizer
+if (args.logFile is not None):
     visualizer = vis.Visualizer(mapJsonObject, args.width, args.height, args.debug, logJsonObject)
 else:
     visualizer = vis.Visualizer(mapJsonObject, args.width, args.height, args.debug)
