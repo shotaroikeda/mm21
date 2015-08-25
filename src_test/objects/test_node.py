@@ -202,7 +202,6 @@ def test_getClusteredNodes_oneCluster():
 
 
 # Test two separate node clusters
-@pytest.mark.skipif(True, reason="TODO this is flaky, @ace-n needs to fix")
 def test_getClusteredNodes_twoClusters():
 
     _map = GameMap(misc_constants.mapFile)
@@ -243,7 +242,11 @@ def test_getClusteredNodes_twoClusters():
         _ok = False
         for n2 in n.getAdjacentNodes():
             if n2 not in _notCluster2:
-                _ok = True
+                for n3 in n2.getAdjacentNodes():
+                    if n3 not in _notCluster2:
+                        for n4 in n2.getAdjacentNodes():
+                            if n4 not in _notCluster2 and n3 != n:  # TODO This goes 4 nodes deep - if this test fails, push it deeper
+                                _ok = True
         if _ok:
             _cluster2final.append(n)
     _cluster2 = list(set(_cluster2final))
@@ -265,8 +268,8 @@ def test_getClusteredNodes_twoClusters():
 
     print "OWNED: {}".format([x.id for x in _map.getPlayerNodes(1)])
 
-    for y in (_cluster2, _result2):
-        print [x.id for x in sorted(y)]
+    for y in (_cluster2, _result2, _notCluster2):
+        print sorted([x.id + 1 for x in y])
 
     for y in _result2:
         print "NODE {}: {}".format(y.id, [(z, _map.nodes[z].ownerId) for z in y.adjacentIds])

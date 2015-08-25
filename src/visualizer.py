@@ -67,6 +67,6 @@ if (args.logFile is not None):
 
 # Initialize Visualizer
 if (args.logFile is not None):
-    visualizer = vis.Visualizer(mapJsonObject, args.width, args.height, args.debug, logJsonObject)
+    visualizer = vis.Visualizer(mapJsonObject, args.debug, logJsonObject)
 else:
-    visualizer = vis.Visualizer(mapJsonObject, args.width, args.height, args.debug)
+    visualizer = vis.Visualizer(mapJsonObject, args.debug)
