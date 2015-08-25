@@ -262,6 +262,15 @@ def test_getClusteredNodes_twoClusters():
     _node.getClusteredNodes(_result1)
     _cluster2[0].getClusteredNodes(_result2)
     assert sorted(_cluster1) == sorted(_result1)
+
+    print "OWNED: {}".format([x.id for x in _map.getPlayerNodes(1)])
+
+    for y in (_cluster2, _result2):
+        print [x.id for x in sorted(y)]
+
+    for y in _result2:
+        print "NODE {}: {}".format(y.id, [(z, _map.nodes[z].ownerId) for z in y.adjacentIds])
+
     assert sorted(_cluster2) == sorted(_result2)
 
 
