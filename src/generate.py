@@ -5,7 +5,8 @@ import load_json
 # TODO Fixed map gen options
 if __name__ == "__main__":
     # Generate Map
-    m = Map(7, 5, 6)
+    # m = Map(7, 5, 6)  # Original settings
+    m = Map(2, 3, 2)  # Ace's test settings
 
     # Convert to JSON
     load_json.save_map_to_file("gamerunner/map.json", m.convert_to_json())

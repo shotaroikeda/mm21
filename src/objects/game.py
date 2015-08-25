@@ -168,3 +168,13 @@ class Game(object):
             "map":  [x.toPlayerDict(False) for x in list(visibleNodes)]
         }
 
+    # Return the entire state of the map
+    def get_all_info(self):
+        
+        isPortScan = playerId in self.map.portScans
+
+        return {
+            "playerInfos": self.playerInfos,
+            "turnResults": [self.turnResults.get(pId, [{"status": "fail"}, {"message": "No turn executed."}]) for pId in self.playerInfos],
+            "map":  [x.toPlayerDict(True) for x in self.map.nodes.values()]
+        }
