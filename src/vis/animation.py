@@ -138,6 +138,7 @@ class Heal(Animation):
         for i in range(len(self.images)):
             self.image_rects.append(self.images[i].get_rect())
 
+
 class DDOS(Animation):
 
     def __init__(self):
@@ -153,6 +154,22 @@ class DDOS(Animation):
         for i in range(len(self.images)):
             self.image_rects.append(self.images[i].get_rect())
 
+
+class Scan(Animation):
+
+    def __init__(self):
+        Animation.__init__(self)
+        self.setup_animation()
+
+    def setup_animation(self):
+        # Add the images to the images
+        for i in range(1):
+            self.images.append(pygame.image.load("vis/sprites/scan_" + str(i) + ".png"))
+        for i in range(60):
+            self.image_tick.append(0)
+        for i in range(len(self.images)):
+            self.image_rects.append(self.images[i].get_rect())
+
 # Below are global animations
 
 
@@ -161,7 +178,7 @@ class PortScan(object):
     def __init__(self):
         self.x = 0
         self.speed += 1
-        
+
     def update(self):
         self.x += self.speed
 
