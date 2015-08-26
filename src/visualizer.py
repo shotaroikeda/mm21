@@ -1,6 +1,5 @@
 #! /usr/bin/env python2
 from vis import visualizer as vis
-from vis import vis_constants as const
 from load_json import load_map_from_file as loadJson
 import json
 import argparse
@@ -11,17 +10,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     "-f", "--logFile",
     help="Specifies a log file to use",
-    default=None)
-parser.add_argument(
-    "-x", "--width",
-    help="Specifies the width of the visualizer",
-    default=const.screenWidth,
-    type=int)
-parser.add_argument(
-    "-y", "--height",
-    help="Specifies the height of the visualizer",
-    default=const.screenHeight,
-    type=int)
+    default="gamerunner/log.json")
 parser.add_argument(
     "-m", "--mapJson",
     help="The map file for the visualizer",
@@ -67,6 +56,6 @@ if (args.logFile is not None):
 
 # Initialize Visualizer
 if (args.logFile is not None):
-    visualizer = vis.Visualizer(mapJsonObject, args.width, args.height, args.debug, logJsonObject)
+    visualizer = vis.Visualizer(mapJsonObject, args.debug, logJsonObject)
 else:
-    visualizer = vis.Visualizer(mapJsonObject, args.width, args.height, args.debug)
+    visualizer = vis.Visualizer(mapJsonObject, args.debug)

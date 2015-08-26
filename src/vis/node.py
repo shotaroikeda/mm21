@@ -1,4 +1,5 @@
 import pygame
+import vis_constants as const
 
 
 class Node(object):
@@ -9,6 +10,7 @@ class Node(object):
         self.node_type = _node_type
         self.animations = []
         self.update_city_sprite()
+        self.owner_id = None
 
     def update_city_sprite(self):
         try:
@@ -24,10 +26,12 @@ class Node(object):
 
     def update(self):
         for animation in self.animations:
-            animation.update()
+            if(animation.update()):
+                self.animations.remove(animation)
 
     def draw(self, screen):
+        if (self.owner_id is not None):
+            pygame.draw.circle(screen, const.TEAM_COLORS[self.owner_id], (self.x, self.y), self.sprite_rect[2] / 2 + 4, 0)
         screen.blit(self.sprite, self.sprite_rect)
         for animation in self.animations:
-            if (animation.draw(screen, self.sprite_rect[0], self.sprite_rect[1])):
-                self.animations.remove(animation)
+            animation.draw(screen, self.sprite_rect[0], self.sprite_rect[1])
