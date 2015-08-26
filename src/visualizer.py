@@ -46,8 +46,14 @@ except Exception:
 
 if (args.logFile is not None):
     try:
+        teamJsonObject = None
+        logJsonObject = []
         with open(args.logFile) as json_file:
-            logJsonObject = json.load(json_file)
+            for line in json_file:
+                if teamJsonObject is None:
+                    teamJsonObject = json.loads(line)
+                else:
+                    logJsonObject.append(json.loads(line))
         if(logJsonObject is None):
             raise Exception
     except IOError:
@@ -61,6 +67,6 @@ if (args.logFile is not None):
 
 # Initialize Visualizer
 if (args.logFile is not None):
-    visualizer = vis.Visualizer(mapJsonObject, args.width, args.height, args.debug, logJsonObject)
+    visualizer = vis.Visualizer(mapJsonObject, args.debug, logJsonObject)
 else:
-    visualizer = vis.Visualizer(mapJsonObject, args.width, args.height, args.debug)
+    visualizer = vis.Visualizer(mapJsonObject, args.debug)

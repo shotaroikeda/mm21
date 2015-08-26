@@ -3,14 +3,16 @@ import os
 import sys
 import os.path as op
 path = op.dirname(op.dirname(op.realpath(__file__)))
-print path 
+print path
 sys.path.append(path)
 from server.server import MMServer
 from subprocess import Popen
 import argparse
 from objects import game
-import pickle
-# import vis.visualizer
+# import pickle
+import vis.visualizer
+from load_json import load_map_from_file as loadJson
+import json
 from urllib2 import urlopen, URLError
 import time
 from functools import partial
@@ -133,10 +135,10 @@ def parse_args():
         action="store_const")
     parser.add_argument(
         "-th", "--turnsinhour",
-        help="Set the game's length.", 
+        help="Set the game's length.",
         default=0,
         type=int)
-    
+
     args = parser.parse_args()
     if args.teams < 2:
         sys.stdout.write(parser.format_usage())
@@ -153,6 +155,7 @@ def parse_args():
 
 # A simple logger that writes things to a file and, if enabled, to the visualizer
 class FileLogger(object):
+
     def __init__(self, fileName):
         self.file = fileName
         self.vis = False
@@ -165,7 +168,7 @@ class FileLogger(object):
         with open(self.file, 'a') as f:
             f.write(stuff + '\n')
         if self.vis:
-            self.vis.turn(stuff)
+            self.vis.add_turn(stuff)
         if self.score:
             self.score.turn(stuff)
 
@@ -198,7 +201,20 @@ def main():
     fileLog = FileLogger(parameters.log)
     my_game = game.Game(parameters.map, parameters.turnsinhour)
     if parameters.show:
-        fileLog.vis = vis.visualizer.Visualizer(rooms, parameters.mapOverlay, debug=parameters.debug_view)
+        try:
+            with open(parameters.map) as json_file:
+                mapJsonObject = loadJson(json_file)
+            if(mapJsonObject is None):
+                raise Exception
+        except IOError:
+            print("File " + parameters.map + " does not exist")
+            raise
+            exit(1)
+        except Exception:
+            print("Failed to parse map json data")
+            raise
+            exit(1)
+        fileLog.vis = vis.visualizer.Visualizer(mapJsonObject, parameters.debug_view)
     if parameters.scoreboard:
         fileLog.score = Scoreboard(parameters.scoreboard_url)
     serv = MMServer(parameters.teams,
