@@ -42,7 +42,7 @@ class Visualizer(object):
     def setup_pygame(self):
         pygame.display.set_caption(self.title)
         self.screen = pygame.display.set_mode((self.screenWidth, self.screenHeight))
-        self.myfont = pygame.font.SysFont("monospace", 10)  # Font used for debugging purpose 
+        self.myfont = pygame.font.SysFont("monospace", 10)  # Font used for debugging purpose
         self.gameClock = pygame.time.Clock()
 
     # Go through the map json and produces where each node should be placed in the visualizer
@@ -60,7 +60,7 @@ class Visualizer(object):
         j = random.randint(0, int(blocks) ** 2 - 1)  # Randomly chose a non taken block
         for cont in self.json_data['continents']:
 
-            #This section finds the center of the randomly chosen block, with a given offset
+            # This section finds the center of the randomly chosen block, with a given offset
             while(cont_blocks_taken[j] == 1):
                 j = random.randint(0, int(blocks) ** 2 - 1)
             cont_blocks_taken[j] = 1
@@ -94,7 +94,7 @@ class Visualizer(object):
                 i += 1
 
             i = 0
-            #Same as ISPs, just no cities and closer to center of block
+            # Same as ISPs, just no cities and closer to center of block
             datacenter_amount = len(cont['datacenters'])
             for datacenter in cont['datacenters']:
                 x_offset = random.randint(-math.floor(x_blockSize * const.datacenter_offset), math.floor(x_blockSize * const.datacenter_offset))
@@ -115,9 +115,9 @@ class Visualizer(object):
                     pygame.quit()
                     sys.exit()
                 elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE: # Space pauses the game
+                    if event.key == pygame.K_SPACE:  # Space pauses the game
                         self.running = False if self.running else True
-                    if (self.debug): # If debugging, then allow to go back in time!
+                    if (self.debug):  # If debugging, then allow going back in time!
                         if event.key == pygame.K_LEFT:
                             self.ticks -= self.ticks_per_turn + self.ticks % self.ticks_per_turn
                             if (self.ticks < 0):

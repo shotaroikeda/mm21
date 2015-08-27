@@ -1,12 +1,28 @@
 from mapgen.map import Map
+import argparse
 import load_json
 
-# TODO specify json name?
-# TODO Fixed map gen options
+parser = argparse.ArgumentParser(
+    description="Launches the visualizer")
+parser.add_argument(
+    "-c", "--num_continents",
+    help="Number of continents to use",
+    default="3")
+parser.add_argument(
+    "-ipc", "--isp_per_continents",
+    help="Number of isps per continents",
+    default="5")
+parser.add_argument(
+    "-cpi", "--cities_per_isp",
+    help="Number of cities per isp",
+    default="6")
+args = parser.parse_args()  # parse args
+
 if __name__ == "__main__":
     # Generate Map
     # m = Map(7, 5, 6)  # Original settings
-    m = Map(2, 3, 2)  # Ace's test settings
+    # m = Map(2, 3, 2)  # Ace's test settings
+    m = Map(args.num_continents, args.isp_per_continents, args.cities_per_isp)
 
     # Convert to JSON
     load_json.save_map_to_file("gamerunner/map.json", m.convert_to_json())
