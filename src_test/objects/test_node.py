@@ -445,12 +445,11 @@ def test_getVisibleNodes_rootkitChain():
 
     # Check expected vs. returned answers
     _returned = []
-    _node.getVisibleNodes(_returned)
+    _node.getVisibleNodes(_returned, 1)
     assert sorted(_expected) == sorted(_returned)
 
 
 # Test two nodes not connected by a rootkit chain (2 clusters)
-@pytest.mark.xfail(reason="TODO @ace-n needs to fix this")
 def test_getVisibleNodes_severedRootkitChain():
 
     _map = GameMap(misc_constants.mapFile)
@@ -461,13 +460,13 @@ def test_getVisibleNodes_severedRootkitChain():
     _cluster1 = [_node]
     _cluster1.extend(_node.getAdjacentNodes())
     for n in _node.getAdjacentNodes():
-        n.rootkitIds.append(1)
+        n.rootkitIds = [1]
 
     # -- Build no man's land --
     _noMansLand = []
     for n in _cluster1:
         _noMansLand.extend(n.getAdjacentNodes())
-    _noMansLand = list(set([x for x in _noMansLand if x.ownerId != 1]))
+    _noMansLand = list(set([x for x in _noMansLand if len(x.rootkitIds) == 0 and x.ownerId != 1]))
     for n in _noMansLand:
         n.rootkitIds = []
 
@@ -486,35 +485,32 @@ def test_getVisibleNodes_severedRootkitChain():
         _cluster2 = list(set([n for n in _cluster2 if n not in _notCluster2]))
 
     # Part 2: remove nodes not reachable from cluster 2
-    _cluster2final = []
-    for n in _cluster2:
-        _ok = False
-        for n2 in n.getAdjacentNodes():
-            if n2 not in _notCluster2:
-                _ok = True
-        if _ok:
-            _cluster2final.append(n)
-    _cluster2 = list(set(_cluster2final))
+    _cluster2 = __clusterFilterHelper(_cluster2, _notCluster2)
 
-    # Part 3: rootkitting
+    # Part 3: owning
     for n in _cluster2:
-        n.rootkitIds.append(1)
+        n.rootkitIds = [1]
 
     # Check cluster sizes
     assert len(_cluster1) > 1
     assert len(_cluster2) > 1
 
     # Add visible nodes to clusters
-    for l in [_cluster1, _cluster2]:
-        for n in list(l):
-            l.extend(n.getAdjacentNodes())
-        l = list(set(l))
+    _anchor2 = _cluster2[0]
+    _cluster1plus = list(_cluster1)
+    _cluster2plus = list(_cluster2)
+    for n in _cluster1:
+        _cluster1plus.extend(n.getAdjacentNodes())
+    for n in _cluster2:
+        _cluster2plus.extend(n.getAdjacentNodes())
+    _cluster1 = list(set(_cluster1plus))
+    _cluster2 = list(set(_cluster2plus))
 
     # Check getVisibleNodes()' correctness
     _result1 = []
     _result2 = []
-    _node.getVisibleNodes(_result1)
-    _cluster2[0].getVisibleNodes(_result2)
+    _node.getVisibleNodes(_result1, 1)
+    _anchor2.getVisibleNodes(_result2, 1)
     assert sorted(_cluster1) == sorted(_result1)
     assert sorted(_cluster2) == sorted(_result2)
 

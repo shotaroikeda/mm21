@@ -136,7 +136,7 @@ class Node(object):
     # @param ownerId (Optional) Restrict nodes to those owned by this person; if not specified, the owner of the original node will be used
     def getClusteredNodes(self, clusteredNodes, ownerId=None):
         if ownerId is None:
-            ownerId = self.ownerId
+            ownerId = self.ownerId or 0
         if self.ownerId == ownerId and self not in clusteredNodes:
             clusteredNodes.append(self)
             for adjacent in self.getAdjacentNodes():
@@ -148,11 +148,12 @@ class Node(object):
     # @param start (Internal) True if an initial call, False otherwise
     def getVisibleNodes(self, visibleNodes, ownerId=None, start=True):
         if ownerId is None:
-            ownerId = self.ownerId
+            ownerId = self.ownerId or 0
         if self not in visibleNodes:
-            if not start or self.ownerId == ownerId:
+            branchable = self.ownerId == ownerId or ownerId in self.rootkitIds
+            if not start or branchable:
                 visibleNodes.append(self)
-            if self.ownerId == ownerId or ownerId in self.rootkitIds:
+            if branchable: 
                 for adjacent in self.getAdjacentNodes():
                     adjacent.getVisibleNodes(visibleNodes, ownerId, False)
 
