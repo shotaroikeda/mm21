@@ -208,7 +208,7 @@ class MMServer(object):
                         except IOError:
                             pass
                 # Log results
-                self.logger.print_stuff(json.dumps(player_data_for_turn))
+                self.logger.print_stuff(json.dumps(self.game.get_all_info()))
 
                 # Clear turn objects
                 validTurns = 0

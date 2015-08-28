@@ -170,9 +170,6 @@ class Game(object):
 
     # Return the entire state of the map
     def get_all_info(self):
-        
-        isPortScan = playerId in self.map.portScans
-
         return {
             "playerInfos": self.playerInfos,
             "turnResults": [self.turnResults.get(pId, [{"status": "fail"}, {"message": "No turn executed."}]) for pId in self.playerInfos],

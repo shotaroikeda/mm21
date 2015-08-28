@@ -4,17 +4,17 @@ import sys
 import math
 import random
 from node import Node
-from animation import Upgrade, ChangeOwner, AddRootkit, CleanRootkit, ISP, Infiltration, Heal
+from animation import Upgrade, ChangeOwner, AddRootkit, CleanRootkit, ISP, Infiltration, Heal, DDOS
 import vis_constants as const
 # import animate as ani
 
 
 class Visualizer(object):
 
-    def __init__(self, _map_json_data, _width=const.screenWidth, _height=const.screenHeight, _debug=False, _log_json_data=None):
+    def __init__(self, _map_json_data, _debug=False, _log_json_data=None):
         # Check and init vis
-        self.screenHeight = _height
-        self.screenWidth = _width
+        self.screenHeight = const.screenWidth
+        self.screenWidth = const.screenHeight
         self.title = const.title
         self.fps = const.FPStgt
         self.running = True
@@ -23,8 +23,9 @@ class Visualizer(object):
         self.ticks = 0
         self.ticks_per_turn = 60
         self.turn_json = []
+        self.game_animations = []
 
-        if(_log_json_data is not None):
+        if (_log_json_data is not None):
             for item in _log_json_data:
                 self.add_turn(item)
 
@@ -36,6 +37,7 @@ class Visualizer(object):
     def setup_pygame(self):
         pygame.display.set_caption(self.title)
         self.screen = pygame.display.set_mode((self.screenWidth, self.screenHeight))
+        self.myfont = pygame.font.SysFont("monospace", 12)
         self.gameClock = pygame.time.Clock()
 
     def process_json(self):
@@ -73,7 +75,7 @@ class Visualizer(object):
                     y_offset = random.randint(-math.floor(y_blockSize * const.city_offset), math.floor(y_blockSize * const.city_offset))
                     x = int(self.draw_json[isp['id']].x + (const.city_radius * x_blockSize / 2) * math.cos((2 * math.pi / city_amount) * k)) + x_offset
                     y = int(self.draw_json[isp['id']].y + (const.city_radius * y_blockSize / 2) * math.sin((2 * math.pi / city_amount) * k)) + y_offset
-                    self.draw_json[city.uid] = Node(x, y, 'small_city')
+                    self.draw_json[city] = Node(x, y, 'small_city')
                     k += 1
                 i += 1
 
@@ -88,10 +90,8 @@ class Visualizer(object):
                 i += 1
 
     def run(self):
-        while 1:
-            # Make sure game is on 60 FPS
-            self.gameClock.tick(self.fps)
-            # print(self.ticks)
+        while 1:  # Run game forever till exit
+            self.gameClock.tick(self.fps)  # Make sure game is on 60 FPS
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -112,7 +112,7 @@ class Visualizer(object):
                             pygame.quit()
                             sys.exit()
             if self.running:
-                if(self.ticks % self.ticks_per_turn == 0):
+                if(self.ticks % self.ticks_per_turn == 0 and self.ticks > 0):
                     self.change_turn(self.ticks / self.ticks_per_turn)
                 self.update()
                 self.draw()
@@ -121,23 +121,24 @@ class Visualizer(object):
     def update(self):
         for key, value in self.draw_json.iteritems():
             value.update()
-        if (self.ticks % self.ticks_per_turn == 0 and self.ticks is not 0):
-            for node in self.turn_json[self.ticks / self.ticks_per_turn]['map']:
-                # How it should work
-                # self.add_animations(node, self.turn_json[(self.ticks / self.tickss_per_turn) - 1][node['id']])
-                for prev_node in self.turn_json[(self.ticks / self.ticks_per_turn) - 1]['map']:
-                    # if prev_node['softwareLevel'] != node['softwareLevel']:
-                    self.add_animations(node, prev_node)
+        for anim in self.game_animations:
+            anim.update()
 
     def draw(self):
         # ani.interpolate(self.screen, self.draw_json, self.json_data, 200)
         self.screen.fill(const.WHITE)
-        if (self.debug):
+        if self.debug:
             for edge in self.json_data['edges']:
                 v1, v2 = edge
-                pygame.draw.line(self.screen, const.BLACK, [self.draw_json[v1].x, self.draw_json[v1].y], [self.draw_json[v2].x, self.draw_json[v2].y], 1)
+                pygame.draw.line(self.screen, const.BLACK, (self.draw_json[v1].x, self.draw_json[v1].y), (self.draw_json[v2].x, self.draw_json[v2].y), 1)
         for key, value in self.draw_json.iteritems():
             value.draw(self.screen)
+            if self.debug:
+                node_id = self.myfont.render(str(key), 1, (0, 0, 0))
+                self.screen.blit(node_id, (value.x - 7, value.y - 7))
+
+        for anim in self.game_animations:
+            anim.draw()  # draw global animations
         pygame.display.update()
         pygame.display.flip()
 
@@ -148,11 +149,15 @@ class Visualizer(object):
         if(len(self.turn_json) > turn):
             if (self.debug):
                 print("Processing turn " + str(self.ticks / self.ticks_per_turn))
-            return None
+            for player_json in self.turn_json[self.ticks / self.ticks_per_turn]:
+                for node in player_json['map']:
+                    # How it should work
+                    # self.add_animations(node, self.turn_json[(self.ticks / self.tickss_per_turn) - 1][node['id']])
+                    for prev_node in self.turn_json[(self.ticks / self.ticks_per_turn) - 1]['map']:
+                        self.add_animations(node, prev_node)
         else:
             print("Next turn does not exist")
-            self.ticks -= 60
-            # self.running = False
+            self.running = False
 
     def add_animations(self, node, prev_node):
         # Upgrade has occured
@@ -175,7 +180,7 @@ class Visualizer(object):
                 if (not self.found_anim(node, CleanRootkit)):
                     self.draw_json[node['id']].animations.append(CleanRootkit())
 
-        # infratration protection activated
+        # infiltration protection activated
         if node['isIPSed'] is True:
             if (not self.found_anim(node, ISP)):
                 self.draw_json[node['id']].animations.append(ISP())
@@ -195,13 +200,15 @@ class Visualizer(object):
                         # Is currently healing
                         self.draw_json[node['id']].animations.append(Heal())
                     break
-        # To ERIC
-        # These two action has not been done and needs to be added ~~~~~~~~~~ 'Scan' and 'Port Scan'
-        # Ace said that on the newest node.py, it would have a dictionary entry 'isDDoSed', currently it would not work since it doesn't have that entry and
-        # it would raise a keyerror. But this part should be okay to merge once we get the latest version of node.py
-        # if node['isDDoSed']:
-        #     # DDOS
-        #     pass
+
+        if node['isDDoSed']:
+            if (not self.found_anim(node, DDOS)):
+                self.draw_json[node['id']].animations.append(DDOS())
+
+        if node['isPortScaned']:  # TODO
+            pass
+
+        # PortScan
 
     def found_anim(self, node, animation_type):
         for animation in self.draw_json[node['id']].animations:
