@@ -15,6 +15,24 @@ misc.
 """
 
 
+# (Quick n' dirty) no-mans-land filtering helper
+def __clusterFilterHelper(cluster, notCluster):
+
+    clusterFinal = []
+    for n in cluster:
+        ok = False
+        for n2 in n.getAdjacentNodes():
+            if n2 not in notCluster:
+                for n3 in n2.getAdjacentNodes():
+                    if n3 not in notCluster:
+                        for n4 in n2.getAdjacentNodes():
+                            if n4 not in notCluster and n3 != n:  # TODO This goes 4 nodes deep - if this test fails, push it deeper
+                                ok = True
+        if ok and n not in clusterFinal:
+            clusterFinal.append(n)
+    return clusterFinal
+
+
 # Test toPlayerDict
 def test_toPlayerDict():
 
@@ -237,19 +255,7 @@ def test_getClusteredNodes_twoClusters():
         _cluster2 = list(set([n for n in _cluster2 if n not in _notCluster2]))
 
     # Part 2: remove nodes not reachable from cluster 2
-    _cluster2final = []
-    for n in _cluster2:
-        _ok = False
-        for n2 in n.getAdjacentNodes():
-            if n2 not in _notCluster2:
-                for n3 in n2.getAdjacentNodes():
-                    if n3 not in _notCluster2:
-                        for n4 in n2.getAdjacentNodes():
-                            if n4 not in _notCluster2 and n3 != n:  # TODO This goes 4 nodes deep - if this test fails, push it deeper
-                                _ok = True
-        if _ok:
-            _cluster2final.append(n)
-    _cluster2 = list(set(_cluster2final))
+    _cluster2 = __clusterFilterHelper(_cluster2, _notCluster2)
 
     # Part 3: owning
     for n in _cluster2:
