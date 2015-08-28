@@ -104,11 +104,29 @@ def test_resetAfterTurn_DDoS():
     assert _node.DDoSed is False
 
 
+# Test that resetAfterTurn allows only one IPSed node
+def test_resetAfterTurn_ipsMultiple():
+    _map = GameMap(misc_constants.mapFile)
+    _node = _map.nodes[0]
+    _node2 = _map.nodes[1]
+
+    _map.addPlayer(1)
+    for x in [_node, _node2]:
+        x.own(1)
+        x.isIPSed = False
+        x.IPSPending = True
+
+    _map.resetAfterTurn()
+    assert _node.IPSPending is False
+    assert _node2.IPSPending is False
+    assert _node.isIPSed or _node2.isIPSed
+    assert _node.isIPSed is not _node2.isIPSed
+    
+
 # Test resetAfterTurn's conquering updates
 # NOTE: This only cares about CONQUERING - not about mere infiltration attempts
 def test_resetAfterTurn_conquer():
     _map = GameMap(misc_constants.mapFile)
-    print _map.nodes
     _node = _map.nodes[0]
     _map.addPlayer(1)
     _map.addPlayer(2)

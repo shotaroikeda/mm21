@@ -103,6 +103,14 @@ class GameMap(object):
             n.DDoSed = n.DDoSPending
             n.DDoSPending = False
 
+            # Update upgrade level
+            if n.upgradePending:
+                n.upgradeLevel += 1
+                n.upgradePending = False
+
+                n.processing += n.initialProcessing / 10
+                n.networking += n.initialNetworking / 10
+
             # Reset remaining resource counts
             n.remainingProcessing = 0 if n.DDoSed else n.processing
             n.remainingNetworking = 0 if n.DDoSed else n.networking

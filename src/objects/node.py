@@ -47,8 +47,8 @@ class Node(object):
         self.remainingNetworking = self.networking
         self.ownerId = None
         self.targeterId = None
-        self.softwareLevel = 0
-        self.upgradesPending = 0
+        self.upgradeLevel = 0
+        self.upgradePending = False
         # int[]
         self.adjacentIds = adjacent
         self.rootkitIds = []
@@ -255,7 +255,7 @@ class Node(object):
     # Player action to upgrade a node's Software Level
     def doUpgrade(self):
         self.requireOwned().requireNotDDoSed("upgraded").requireResources(self.processing, self.networking)
-        self.upgradesPending += 1
+        self.upgradePending = True
 
     # Player action to clean a node of rootkits
     def doClean(self):
