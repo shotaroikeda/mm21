@@ -184,9 +184,9 @@ class Node(object):
     # Consume resources used to perform an action
     # @param processingCost The processing power required
     # @param (Optional) networkingCost The networking power required; if no value is specified, processingCost will be used
+    # @returns Nothing, since it should be the last require...() function called in a line
     def requireResources(self, processingCost, networkingCost=None):
         self.decrementPower(processingCost, networkingCost if networkingCost is not None else processingCost)
-        return self
 
     # Throw an exception if a node is DDoSed
     # @actionName The past-tense name of the action being performed
@@ -275,9 +275,10 @@ class Node(object):
 
     # Player action to add a rootkit to a node
     def doRootkit(self):
-        self.requireNotOwned().requireNotDDoSed("rootkitted").requireNotIPSed().requireResources(self.totalPower / 5)
+        self.requireNotOwned().requireNotDDoSed("rootkitted").requireNotIPSed()
         if self.targeterId in self.rootkitIds:
             raise AttemptToMultipleRootkitException("This player has a rootkit here already.")
+        self.requireResources(self.totalPower / 5)
         self.rootkitIds.append(self.targeterId)
 
     # Player action to IPS a node
