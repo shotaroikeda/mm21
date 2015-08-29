@@ -390,6 +390,7 @@ def test_getVisibleNodes_twoClusters():
     assert len(_cluster2) > 1
 
     # Add visible nodes to clusters
+    _anchor2 = _cluster2[0]
     _cluster1plus = list(_cluster1)
     _cluster2plus = list(_cluster2)
     for n in _cluster1:
@@ -403,7 +404,7 @@ def test_getVisibleNodes_twoClusters():
     _result1 = []
     _result2 = []
     _node.getVisibleNodes(_result1)
-    _cluster2[0].getVisibleNodes(_result2)
+    _anchor2.getVisibleNodes(_result2)
     assert sorted(_cluster1) == sorted(_result1)
     assert sorted(_cluster2) == sorted(_result2)
 
@@ -706,12 +707,45 @@ def test_doDDoS():
         assert _target.remainingNetworking == 0
         _map.resetAfterTurn()
 
+    # Test that double-DDoSing DOES NOT raise an exception
+    # If it did, players would know whether someone else was DDoSing their DDoS target
+    _node.targeterId = 1
+    _node.doDDoS()
+    _node.doDDoS()
 
-# Player action to upgrade a node's Software Level
+
+# Test doUpgrade
 def test_doUpgrade():
 
-    # TODO Figure out what "upgrade" is going to look like gameplay-wise
-    pass
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _node = _map.getPlayerNodes(1)[0]
+
+    # Test upgrading a node
+    assert _node.upgradeLevel == 0
+    _node.targeterId = 1
+    _node.doUpgrade()
+    assert _node.upgradePending is True
+    _map.resetAfterTurn()
+    assert _node.upgradePending is False
+    assert _node.upgradeLevel == 1
+
+    # Test stats of upgraded node
+    assert _node.processingPower == 1.1 * _node.initialProcessing
+    assert _node.networkingPower == 1.1 * _node.initialNetworking
+
+    # Test stats after DDoS (to make sure they're re-initialized correctly)
+    _node.DDoSPending = True
+    _map.resetAfterTurn()
+    _map.resetAfterTurn()
+    assert _node.processingPower == 1.1 * _node.initialProcessing
+    assert _node.networkingPower == 1.1 * _node.initialNetworking
+    _map.resetAfterTurn()
+
+    # Test upgrading a node multiple times per turn
+    _node.doUpgrade()
+    with pytest.raises(AttemptToMultipleUpgradeException):
+        _node.doUpgrade()
 
 
 # Test doClean
@@ -788,10 +822,20 @@ def test_doPortScan_gameLogic():
     _map = GameMap(misc_constants.mapFile)
     _map.addPlayer(1)
     _node = _map.getPlayerNodes(1)[0]
+    _node2 = _node.getAdjacentNodes()[0]
+    _node2.own(1)
 
+    # Test doing a port scan
     assert len(_map.portScans) == 0
     _node.targeterId = 1
     _node.doPortScan()
     assert _map.portScans == [1]
     _map.resetAfterTurn()
     assert len(_map.portScans) == 0
+
+    # Test that multiple port-scan requests are rejected
+    _node.targeterId = 1
+    _node2.targeterId = 1
+    _node.doPortScan()
+    with pytest.raises(AttemptToMultiplePortScanException):
+        _node2.doPortScan()

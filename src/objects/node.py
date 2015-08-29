@@ -7,15 +7,15 @@ from src.misc_constants import *
 import json as JSON
 
 
-class AttemptToMultipleDDosException(Exception):
-    pass
-
-
 class AttemptToMultipleRootkitException(Exception):
     pass
 
 
 class AttemptToMultiplePortScanException(Exception):
+    pass
+
+
+class AttemptToMultipleUpgradeException(Exception):
     pass
 
 
@@ -220,7 +220,7 @@ class Node(object):
 
     # Throw an exception if a player has already port-scanned
     def requireNotPortScanned(self):
-        if self.targeterId != self.ownerId:
+        if self.ownerId in self.map.portScans:
             raise AttemptToMultiplePortScanException("You may not port scan more than once per turn.")
         return self
 
@@ -246,11 +246,11 @@ class Node(object):
             inf = self.infiltration.get(self.targeterId, 0) + multiplier
             self.infiltration[self.targeterId] = inf
 
-    # Player action to DDOS a node
+    # Player action to DDoS a node
+    # Note: we allow players to DDoS the same node multiple times (and waste resources doing so) to avoid revealing whether someone else DDoSed it
     def doDDoS(self):
         self.requireNotIPSed().requireResources(self.totalPower / 5)
         self.DDoSPending = True
-        print printColors.RED + "Node {} DDoS INCOMING!".format(self.id) + printColors.RESET
 
     # Player action to upgrade a node's Software Level
     def doUpgrade(self):

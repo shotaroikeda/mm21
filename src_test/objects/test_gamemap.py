@@ -112,7 +112,8 @@ def test_resetAfterTurn_ipsMultiple():
 
     _map.addPlayer(1)
     for x in [_node, _node2]:
-        x.own(1)
+        if x.ownerId != 1:
+            x.own(1)
         x.isIPSed = False
         x.IPSPending = True
 
