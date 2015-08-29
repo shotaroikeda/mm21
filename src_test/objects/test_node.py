@@ -52,6 +52,7 @@ def test_toPlayerDict():
     assert _node.infiltration == _returned["infiltration"]
     assert _node.nodetype == _returned["nodetype"]
     assert _node.DDoSed == _returned["isDDoSed"]
+    assert _node.upgradeLevel == _returned["upgradeLevel"]
     assert sorted(_node.adjacentIds) == sorted(_returned["adjacentIds"])
     assert sorted(_node.rootkitIds) == sorted(_returned["rootkits"])
 
@@ -725,26 +726,42 @@ def test_doUpgrade():
     assert _node.upgradeLevel == 0
     _node.targeterId = 1
     _node.doUpgrade()
+    assert _node.initialProcessing == _node.processing
+    assert _node.initialNetworking == _node.networking
     assert _node.upgradePending is True
     _map.resetAfterTurn()
     assert _node.upgradePending is False
     assert _node.upgradeLevel == 1
 
     # Test stats of upgraded node
-    assert _node.processingPower == 1.1 * _node.initialProcessing
-    assert _node.networkingPower == 1.1 * _node.initialNetworking
+    assert _node.processing == 1.1 * _node.initialProcessing
+    assert _node.networking == 1.1 * _node.initialNetworking
+    assert _node.totalPower == _node.processing + _node.networking
 
     # Test stats after DDoS (to make sure they're re-initialized correctly)
     _node.DDoSPending = True
     _map.resetAfterTurn()
     _map.resetAfterTurn()
-    assert _node.processingPower == 1.1 * _node.initialProcessing
-    assert _node.networkingPower == 1.1 * _node.initialNetworking
+    assert _node.processing == 1.1 * _node.initialProcessing
+    assert _node.networking == 1.1 * _node.initialNetworking
+    assert _node.processing == _node.remainingProcessing
+    assert _node.networking == _node.remainingNetworking
     _map.resetAfterTurn()
 
-    # Test upgrading a node multiple times per turn
+    # Test upgrading nodes a second time
+    _node.targeterId = 1
     _node.doUpgrade()
+    _map.resetAfterTurn()
+    assert _node.processing == 1.2 * _node.initialProcessing
+    assert _node.networking == 1.2 * _node.initialNetworking
+    assert _node.totalPower == _node.processing + _node.networking
+    assert _node.processing == _node.remainingProcessing
+    assert _node.networking == _node.remainingNetworking
+
+    # Test upgrading a node multiple times per turn
+    _node.upgradePending = True
     with pytest.raises(AttemptToMultipleUpgradeException):
+        _node.targeterId = 1
         _node.doUpgrade()
 
 

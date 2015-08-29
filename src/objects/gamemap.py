@@ -110,6 +110,7 @@ class GameMap(object):
 
                 n.processing += n.initialProcessing / 10
                 n.networking += n.initialNetworking / 10
+                n.totalPower = n.processing + n.networking
 
             # Reset remaining resource counts
             n.remainingProcessing = 0 if n.DDoSed else n.processing

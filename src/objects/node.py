@@ -42,9 +42,11 @@ class Node(object):
         self.nodetype = nodetype
         self.processing = NodeType.processing[nodetype]
         self.networking = NodeType.networking[nodetype]
-        self.totalPower = self.processing + self.networking
+        self.initialProcessing = self.processing
+        self.initialNetworking = self.networking
         self.remainingProcessing = self.processing
         self.remainingNetworking = self.networking
+        self.totalPower = self.processing + self.networking
         self.ownerId = None
         self.targeterId = None
         self.upgradeLevel = 0
@@ -77,6 +79,7 @@ class Node(object):
             "isIPSed": self.isIPSed,
             "isDDoSed": self.DDoSed,
             "infiltration": self.infiltration,
+            "upgradeLevel": self.upgradeLevel,
             "rootkits": self.rootkitIds if showRootkits else []
         }
 
@@ -254,7 +257,10 @@ class Node(object):
 
     # Player action to upgrade a node's Software Level
     def doUpgrade(self):
-        self.requireOwned().requireNotDDoSed("upgraded").requireResources(self.processing, self.networking)
+        self.requireOwned().requireNotDDoSed("upgraded")
+        if self.upgradePending:
+            raise AttemptToMultipleUpgradeException("Each node can only be upgraded once per turn.")
+        self.requireResources(self.processing, self.networking)
         self.upgradePending = True
 
     # Player action to clean a node of rootkits
