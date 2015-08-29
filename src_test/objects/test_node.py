@@ -708,8 +708,18 @@ def test_doDDoS():
         assert _target.remainingNetworking == 0
         _map.resetAfterTurn()
 
+    # Test that DDoSing prevents actions
+    _node.targeterId = 1
+    _node.doDDoS()
+    _map.resetAfterTurn()
+    with pytest.raises(InsufficientPowerException):
+        _node.targeterId = 1
+        _node.doDDoS()
+    assert _node.DDoSPending is False
+
     # Test that double-DDoSing DOES NOT raise an exception
     # If it did, players would know whether someone else was DDoSing their DDoS target
+    _map.resetAfterTurn()
     _node.targeterId = 1
     _node.doDDoS()
     _node.doDDoS()
