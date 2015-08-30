@@ -54,6 +54,7 @@ class Node(object):
         # int[]
         self.adjacentIds = adjacent
         self.rootkitIds = []
+        self.supplierIds = []
         # bool
         self.DDoSed = False
         self.DDoSPending = False
@@ -89,7 +90,8 @@ class Node(object):
     # Decrement the power of connected nodes
     # @param processing The processing power required
     # @param networking The networking power required
-    def decrementPower(self, processing, networking):
+    # @param supplierIds The nodes to take power from before any others
+    def decrementPower(self, processing, networking, supplierIds):
 
         # Require valid targeter ID
         self.requireTargeterID()
@@ -103,6 +105,12 @@ class Node(object):
         for n in self.getAdjacentNodes():
             n.getClusteredNodes(connectedNodes, self.targeterId)
 
+        # Filter specified-supplier nodes
+        for x in supplierIds:
+            if x not in self.map.nodes:
+                raise KeyError("Invalid supplier node ID")
+        supplierNodes = [x for x in [self.map.nodes[y] for y in supplierIds] if x in connectedNodes]
+
         # Make sure connected nodes have required resource amounts
         totalProcessing = 0
         totalNetworking = 0
@@ -110,29 +118,23 @@ class Node(object):
             if not node.DDoSed:
                 totalProcessing += node.remainingProcessing
                 totalNetworking += node.remainingNetworking
-        # print "Player {}: {} N, {} P".format(self.targeterId, totalProcessing, totalNetworking)
         if totalProcessing < processing or totalNetworking < networking:
             raise InsufficientPowerException("networking = %d, processing = %d\nNeeded networking = %d, processing = %d" % (totalNetworking, totalProcessing, networking, processing))
 
         # Subtract used resources from connected nodes
-        # TODO Let players specify the order in which we go through their nodes for resources
-        for node in connectedNodes:
-            if node.DDoSed:
-                continue
-            if processing == 0:
-                break
-            difference = min(processing, node.remainingProcessing)
-            node.remainingProcessing -= difference
-            processing -= difference
+        for nodeList in [supplierNodes, connectedNodes]:
+            for node in nodeList:
+                if node.DDoSed:
+                    continue
+                if processing == 0 and networking == 0:
+                    break
+                difference = min(processing, node.remainingProcessing)
+                node.remainingProcessing -= difference
+                processing -= difference
 
-        for node in connectedNodes:
-            if node.DDoSed:
-                continue
-            if networking == 0:
-                break
-            difference = min(networking, node.remainingNetworking)
-            node.remainingNetworking -= difference
-            networking -= difference
+                difference = min(networking, node.remainingNetworking)
+                node.remainingNetworking -= difference
+                networking -= difference
 
     # Get all nodes that are clustered with (connected to and of the same player as) another node
     # @param clusteredNodes (Output) The list of clustered nodes
@@ -186,7 +188,7 @@ class Node(object):
     # @param (Optional) networkingCost The networking power required; if no value is specified, processingCost will be used
     # @returns Nothing, since it should be the last require...() function called in a line
     def requireResources(self, processingCost, networkingCost=None):
-        self.decrementPower(processingCost, networkingCost if networkingCost is not None else processingCost)
+        self.decrementPower(processingCost, networkingCost if networkingCost is not None else processingCost, self.supplierIds)
 
     # Throw an exception if a node is DDoSed
     # @actionName The past-tense name of the action being performed

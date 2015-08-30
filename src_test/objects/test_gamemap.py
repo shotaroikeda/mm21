@@ -186,3 +186,23 @@ def test_resetAfterTurn_conquer():
     if _timeout == 0:
         print printColors.RED + "NOTE: This test involves randomness; try running again." + printColors.RESET
         assert False
+
+
+# Test resetAfterTurn's targetId/supplierIds updates
+def test_resetAfterTurn_targetSupplierIds():
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _node = _map.getPlayerNodes(1)[0]
+    _node.isIPSed = False  # In case the player is assigned this node
+
+    # Test resetting targetId
+    assert _node.targeterId is None
+    _node.targeterId = 1
+    _map.resetAfterTurn()
+    assert _node.targeterId is None
+
+    # Test resetting supplierIds
+    assert _node.supplierIds == []
+    _node.supplierIds = [1]
+    _map.resetAfterTurn()
+    assert _node.supplierIds == []

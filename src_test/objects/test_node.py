@@ -76,17 +76,17 @@ def test_decrementPower_oneNode():
 
     # Test all-at-once deduction
     _node.targeterId = 1
-    _node.decrementPower(500, 500)
+    _node.decrementPower(500, 500, [])
     assert _node.remainingProcessing == 0
     assert _node.remainingNetworking == 0
     _map.resetAfterTurn()
 
     # Test ordering + multiple deductions
     _node.targeterId = 1
-    _node.decrementPower(100, 400)
+    _node.decrementPower(100, 400, [])
     assert _node.remainingProcessing == 400
     assert _node.remainingNetworking == 100
-    _node.decrementPower(400, 100)
+    _node.decrementPower(400, 100, [])
     assert _node.remainingProcessing == 0
     assert _node.remainingNetworking == 0
     _map.resetAfterTurn()
@@ -95,21 +95,21 @@ def test_decrementPower_oneNode():
     # (No deduction should go through)
     _node.targeterId = 1
     with pytest.raises(InsufficientPowerException):
-        _node.decrementPower(501, 501)
+        _node.decrementPower(501, 501, [])
     with pytest.raises(InsufficientPowerException):
-        _node.decrementPower(501, 500)
+        _node.decrementPower(501, 500, [])
     with pytest.raises(InsufficientPowerException):
-        _node.decrementPower(500, 501)
+        _node.decrementPower(500, 501, [])
     assert _node.remainingProcessing == 500
     assert _node.remainingNetworking == 500
 
     # Test multiple over-deduction
     _node.targeterId = 1
-    _node.decrementPower(499, 499)
+    _node.decrementPower(499, 499, [])
     assert _node.remainingProcessing == 1
     assert _node.remainingNetworking == 1
     with pytest.raises(InsufficientPowerException):
-        _node.decrementPower(2, 2)
+        _node.decrementPower(2, 2, [])
     assert _node.remainingProcessing == 1
     assert _node.remainingNetworking == 1
     _map.resetAfterTurn()
@@ -132,7 +132,7 @@ def test_decrementPower_multiNodes():
 
     # Test all-at-once deduction
     _node.targeterId = 1
-    _node.decrementPower(totalP, totalN)
+    _node.decrementPower(totalP, totalN, [])
     for n in _nodes:
         assert n.remainingProcessing == 0
         assert n.remainingNetworking == 0
@@ -140,10 +140,10 @@ def test_decrementPower_multiNodes():
 
     # Test ordering + multiple deductions
     _node.targeterId = 1
-    _node.decrementPower(totalP - 100, 100)
+    _node.decrementPower(totalP - 100, 100, [])
     assert sum(x.remainingProcessing for x in _nodes) == 100
     assert sum(x.remainingNetworking for x in _nodes) == totalN - 100
-    _node.decrementPower(100, totalN - 100)
+    _node.decrementPower(100, totalN - 100, [])
     for n in _nodes:
         assert n.remainingProcessing == 0
         assert n.remainingNetworking == 0
@@ -152,21 +152,21 @@ def test_decrementPower_multiNodes():
     # Test single over-deduction + "single power failure"
     _node.targeterId = 1
     with pytest.raises(InsufficientPowerException):
-        _node.decrementPower(totalP + 1, totalN + 1)
+        _node.decrementPower(totalP + 1, totalN + 1, [])
     with pytest.raises(InsufficientPowerException):
-        _node.decrementPower(totalP + 1, totalN)
+        _node.decrementPower(totalP + 1, totalN, [])
     with pytest.raises(InsufficientPowerException):
-        _node.decrementPower(totalP, totalN + 1)
+        _node.decrementPower(totalP, totalN + 1, [])
     assert sum(x.remainingNetworking for x in _nodes) == totalN
     assert sum(x.remainingProcessing for x in _nodes) == totalP
 
     # Test multiple over-deduction
     _node.targeterId = 1
-    _node.decrementPower(totalP - 1, totalN - 1)
+    _node.decrementPower(totalP - 1, totalN - 1, [])
     assert sum(x.remainingNetworking for x in _nodes) == 1
     assert sum(x.remainingProcessing for x in _nodes) == 1
     with pytest.raises(InsufficientPowerException):
-        _node.decrementPower(2, 2)
+        _node.decrementPower(2, 2, [])
     assert sum(x.remainingNetworking for x in _nodes) == 1
     assert sum(x.remainingProcessing for x in _nodes) == 1
 
@@ -181,11 +181,56 @@ def test_decrementPower_negative():
     # Should raise an exception
     _node.targeterId = 1
     with pytest.raises(ValueError):
-        _node.decrementPower(-1, 1)
+        _node.decrementPower(-1, 1, [])
     with pytest.raises(ValueError):
-        _node.decrementPower(1, -1)
+        _node.decrementPower(1, -1, [])
     assert _node.remainingProcessing == 500
     assert _node.remainingNetworking == 500
+
+
+# Test decrementPower with specified supplier IDs
+def test_decrementPower_supplierIds():
+
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _node = _map.getPlayerNodes(1)[0]
+    _neighbors = _node.getAdjacentNodes()
+    _node2 = _neighbors[0]
+    _node2.own(1)
+
+    # Test normal supplier ID functionality
+    _node.targeterId = 1
+    _node.decrementPower(_node2.processing + 1, _node2.networking + 1, [_node2.id])
+    assert _node2.remainingNetworking == 0
+    assert _node2.remainingProcessing == 0
+    assert _node.remainingNetworking == 499
+    assert _node.remainingProcessing == 499
+    _map.resetAfterTurn()
+
+    # Test out-of-range supplier IDs
+    with pytest.raises(KeyError):
+        _node.targeterId = 1
+        _node.decrementPower(1, 1, [-1])
+
+    # Test supplier IDs not connected to an active cluster
+    _separateNode = None
+    for n in _map.nodes.values():
+        _adj = n.getAdjacentNodes()
+        if _node in _adj or _node2 in _adj:
+            continue
+        _separateNode = n
+        break
+    assert _separateNode is not None
+    _separateNode.own(1)
+    with pytest.raises(InsufficientPowerException):
+        _separateNode.targeterId = 1
+        _separateNode.decrementPower(_separateNode.networking + 1, _separateNode.processing + 1, [_node.id, _node2.id, _separateNode.id])
+    _map.resetAfterTurn()
+
+    # Test supplier IDs of unowned nodes
+    with pytest.raises(InsufficientPowerException):
+        _separateNode.targeterId = 1
+        _separateNode.decrementPower(_separateNode.networking + 1, _separateNode.processing + 1, _separateNode.adjacentIds)
 
 
 """
@@ -736,6 +781,7 @@ def test_doUpgrade():
     assert _node.upgradeLevel == 0
     _node.targeterId = 1
     _node.doUpgrade()
+    assert _node.upgradeLevel == 0
     assert _node.initialProcessing == _node.processing
     assert _node.initialNetworking == _node.networking
     assert _node.upgradePending is True
@@ -762,6 +808,7 @@ def test_doUpgrade():
     _node.targeterId = 1
     _node.doUpgrade()
     _map.resetAfterTurn()
+    assert _node.upgradeLevel == 2
     assert _node.processing == 1.2 * _node.initialProcessing
     assert _node.networking == 1.2 * _node.initialNetworking
     assert _node.totalPower == _node.processing + _node.networking

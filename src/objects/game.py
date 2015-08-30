@@ -84,12 +84,14 @@ class Game(object):
                 action = actionJson.get("action", "").lower()
                 targetId = actionJson.get("target", -1)
                 multiplier = actionJson.get("multiplier", 1)
+                supplierIds = actionJson.get("supplierIds", [])
                 actionResult = {"teamId": playerId, "action": action, "targetId": targetId, "multiplier": multiplier}
 
                 try:
                     target = self.map.nodes.get(int(targetId), None)
                     if target:
                         target.targeterId = playerId
+                        target.supplierIds = supplierIds
 
                     if action == "ddos":
                         target.doDDoS()

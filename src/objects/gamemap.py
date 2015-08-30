@@ -116,8 +116,9 @@ class GameMap(object):
             n.remainingProcessing = 0 if n.DDoSed else n.processing
             n.remainingNetworking = 0 if n.DDoSed else n.networking
 
-            # Reset targeter IDs (defensive programming)
+            # Reset targeter/supplier IDs (defensive programming)
             n.targeterId = None
+            n.supplierIds = []
 
             # Update owned-states
             # We do this here so that people can't conquer a node by being earlier in the turn order
