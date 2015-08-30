@@ -1,4 +1,5 @@
 import pygame
+import vis_constants as const
 
 
 class Animation(object):
@@ -8,15 +9,21 @@ class Animation(object):
         self.images = []
         self.image_tick = []
         self.image_rects = []
+        self.remove_after_complete = True
+        self.repeat = False
 
     def update(self):
         self.current_tick += 1
+        if (self.current_tick >= len(self.image_tick) - 1):
+            if (self.remove_after_complete):
+                return True
+            elif (self.repeat):
+                self.current_tick = 0
+            else:
+                self.current_tick = len(self.image_tick) - 2
 
     def draw(self, screen, x, y):
-        if (self.current_tick >= len(self.image_tick) - 1):
-            self.current_tick = 0
         screen.blit(self.images[self.image_tick[self.current_tick]], (x, y))
-        return True
 
 
 class Upgrade(Animation):
@@ -51,7 +58,7 @@ class ChangeOwner(Animation):
 
     def setup_animation(self):
         # Add the images to the images
-        for i in range(1):
+        for i in range(1, 2):
             self.images.append(pygame.image.load("vis/sprites/change_owner_" + str(i) + ".png"))
         for i in range(60):
             self.image_tick.append(0)
@@ -64,10 +71,11 @@ class AddRootkit(Animation):
     def __init__(self):
         Animation.__init__(self)
         self.setup_animation()
+        self.remove_after_complete = False
 
     def setup_animation(self):
         # Add the images to the images
-        for i in range(1):
+        for i in range(1, 2):
             self.images.append(pygame.image.load("vis/sprites/add_rootkit_" + str(i) + ".png"))
         for i in range(60):
             self.image_tick.append(0)
@@ -83,7 +91,7 @@ class CleanRootkit(Animation):
 
     def setup_animation(self):
         # Add the images to the images
-        for i in range(1):
+        for i in range(1, 2):
             self.images.append(pygame.image.load("vis/sprites/clean_rootkit_" + str(i) + ".png"))
         for i in range(60):
             self.image_tick.append(0)
@@ -91,16 +99,17 @@ class CleanRootkit(Animation):
             self.image_rects.append(self.images[i].get_rect())
 
 
-class ISP(Animation):
+class IPS(Animation):
 
     def __init__(self):
         Animation.__init__(self)
         self.setup_animation()
+        self.remove_after_complete = False
 
     def setup_animation(self):
         # Add the images to the images
-        for i in range(1):
-            self.images.append(pygame.image.load("vis/sprites/isp_" + str(i) + ".png"))
+        for i in range(1, 2):
+            self.images.append(pygame.image.load("vis/sprites/ips_" + str(i) + ".png"))
         for i in range(60):
             self.image_tick.append(0)
         for i in range(len(self.images)):
@@ -115,7 +124,7 @@ class Infiltration(Animation):
 
     def setup_animation(self):
         # Add the images to the images
-        for i in range(1):
+        for i in range(1, 2):
             self.images.append(pygame.image.load("vis/sprites/infiltration_" + str(i) + ".png"))
         for i in range(60):
             self.image_tick.append(0)
@@ -131,7 +140,7 @@ class Heal(Animation):
 
     def setup_animation(self):
         # Add the images to the images
-        for i in range(1):
+        for i in range(1, 2):
             self.images.append(pygame.image.load("vis/sprites/heal_" + str(i) + ".png"))
         for i in range(60):
             self.image_tick.append(0)
@@ -147,7 +156,7 @@ class DDOS(Animation):
 
     def setup_animation(self):
         # Add the images to the images
-        for i in range(1):
+        for i in range(1, 2):
             self.images.append(pygame.image.load("vis/sprites/ddos_" + str(i) + ".png"))
         for i in range(60):
             self.image_tick.append(0)
@@ -163,7 +172,7 @@ class Scan(Animation):
 
     def setup_animation(self):
         # Add the images to the images
-        for i in range(1):
+        for i in range(1, 2):
             self.images.append(pygame.image.load("vis/sprites/scan_" + str(i) + ".png"))
         for i in range(60):
             self.image_tick.append(0)
@@ -181,6 +190,8 @@ class PortScan(object):
 
     def update(self):
         self.x += self.speed
+        if (self.x > const.screenWidth):
+            return True
 
     def draw(self, screen):
-        return None
+        pygame.draw.line(screen, (0, 255, 0), (self.x, 0), (self.x, const.screenHeight), width=3)

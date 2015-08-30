@@ -6,7 +6,6 @@ from graph import Graph
 
 class Map():
 
-    # Initialize the maps
     def __init__(self, num_continents, isp_per_continents, cities_per_isp):
         self.continent_list = []
         self.graph = Graph()
@@ -42,14 +41,3 @@ class Map():
             json['continents'].append(json_continent)
 
         return json
-
-    # TODO/HACK
-    # This will likely not make it to final code
-    def draw_graph(self):
-        G = nx.Graph()
-        for vertex in self.graph.vertex_list:
-            G.add_node(vertex.uid)
-        for edge in self.graph.edge_list:
-            G.add_edge(list(edge)[0], list(edge)[1])
-        nx.draw(G)
-        plt.savefig("path.png")

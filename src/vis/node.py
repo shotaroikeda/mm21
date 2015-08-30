@@ -1,4 +1,5 @@
 import pygame
+import vis_constants as const
 
 
 class Node(object):
@@ -9,25 +10,25 @@ class Node(object):
         self.node_type = _node_type
         self.animations = []
         self.update_city_sprite()
+        self.owner_id = None
 
     def update_city_sprite(self):
         try:
             self.sprite = pygame.image.load("vis/sprites/" + self.node_type + ".png")
             self.sprite_rect = self.sprite.get_rect()
-            self.sprite_rect[0] = self.x - self.sprite_rect[2] / 2
-            self.sprite_rect[1] = self.y - self.sprite_rect[3] / 2
-            if(self.node_type == "small_city"):
-                self.sprite_rect[2] = 5
-                self.sprite_rect[3] = 5
+            self.sprite_rect[0] = self.x - int(self.sprite_rect[2] / 2.0)
+            self.sprite_rect[1] = self.y - int(self.sprite_rect[3] / 2.0)
         except IOError:  # TODO what is the exact exception?
             print("Failed to load sprite image")
 
     def update(self):
         for animation in self.animations:
-            animation.update()
+            if(animation.update()):
+                self.animations.remove(animation)
 
     def draw(self, screen):
+        if (self.owner_id is not None):
+            pygame.draw.circle(screen, const.TEAM_COLORS[self.owner_id], (self.x, self.y), int(self.sprite_rect[2] / 2.0) + 4, 0)
         screen.blit(self.sprite, self.sprite_rect)
         for animation in self.animations:
-            if (animation.draw(screen, self.sprite_rect[0], self.sprite_rect[1])):
-                self.animations.remove(animation)
+            animation.draw(screen, self.sprite_rect[0], self.sprite_rect[1])

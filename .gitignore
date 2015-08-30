@@ -114,3 +114,5 @@ hs_err_pid*
 
 test-clients/c/client
 mm20-passwords.txt
+
+src/gamerunner
