@@ -91,6 +91,7 @@ class Node(object):
     # @param processing The processing power required
     # @param networking The networking power required
     # @param supplierIds The nodes to take power from before any others
+    # @returns The nodes the power was taken from (if successful)
     def decrementPower(self, processing, networking, supplierIds):
 
         # Require valid targeter ID
@@ -122,19 +123,28 @@ class Node(object):
             raise InsufficientPowerException("networking = %d, processing = %d\nNeeded networking = %d, processing = %d" % (totalNetworking, totalProcessing, networking, processing))
 
         # Subtract used resources from connected nodes
+        powerSourceNodes = []
         for nodeList in [supplierNodes, connectedNodes]:
             for node in nodeList:
                 if node.DDoSed:
                     continue
                 if processing == 0 and networking == 0:
                     break
+
                 difference = min(processing, node.remainingProcessing)
                 node.remainingProcessing -= difference
                 processing -= difference
+                if difference != 0:
+                    powerSourceNodes.append(node)
 
                 difference = min(networking, node.remainingNetworking)
                 node.remainingNetworking -= difference
                 networking -= difference
+                if difference != 0:
+                    powerSourceNodes.append(node)
+
+        # Done!
+        return powerSourceNodes
 
     # Get all nodes that are clustered with (connected to and of the same player as) another node
     # @param clusteredNodes (Output) The list of clustered nodes
@@ -186,9 +196,9 @@ class Node(object):
     # Consume resources used to perform an action
     # @param processingCost The processing power required
     # @param (Optional) networkingCost The networking power required; if no value is specified, processingCost will be used
-    # @returns Nothing, since it should be the last require...() function called in a line
+    # @returns The nodes power was drawn from 
     def requireResources(self, processingCost, networkingCost=None):
-        self.decrementPower(processingCost, networkingCost if networkingCost is not None else processingCost, self.supplierIds)
+        return self.decrementPower(processingCost, networkingCost if networkingCost is not None else processingCost, self.supplierIds)
 
     # Throw an exception if a node is DDoSed
     # @actionName The past-tense name of the action being performed
@@ -239,7 +249,7 @@ class Node(object):
             raise ValueError("Multiplier must be greater than 0.")
         if self.isIPSed:
             self.requireOwned()
-        self.requireNotDDoSed("controlled").requireResources(multiplier)
+        powerSources = self.requireNotDDoSed("controlled").requireResources(multiplier)
 
         # Heal your own nodes
         if self.targeterId == self.ownerId:
@@ -251,37 +261,44 @@ class Node(object):
             inf = self.infiltration.get(self.targeterId, 0) + multiplier
             self.infiltration[self.targeterId] = inf
 
+        # Done!
+        return powerSources
+
     # Player action to DDoS a node
     # Note: we allow players to DDoS the same node multiple times (and waste resources doing so) to avoid revealing whether someone else DDoSed it
     def doDDoS(self):
-        self.requireNotIPSed().requireResources(self.totalPower / 5)
+        powerSources = self.requireNotIPSed().requireResources(self.totalPower / 5)
         self.DDoSPending = True
+        return powerSources
 
     # Player action to upgrade a node's Software Level
     def doUpgrade(self):
         self.requireOwned().requireNotDDoSed("upgraded")
         if self.upgradePending:
             raise AttemptToMultipleUpgradeException("Each node can only be upgraded once per turn.")
-        self.requireResources(self.processing, self.networking)
+        powerSources = self.requireResources(self.processing, self.networking)
         self.upgradePending = True
+        return powerSources
 
     # Player action to clean a node of rootkits
     def doClean(self):
-        self.requireOwned().requireNotDDoSed("cleaned").requireResources(100, 0)
+        powerSources = self.requireOwned().requireNotDDoSed("cleaned").requireResources(100, 0)
         self.rootkitIds = []
+        return powerSources
 
     # Player action to scan a node for rootkits
     def doScan(self):
-        self.requireOwned().requireNotDDoSed("scanned").requireResources(25, 0)
-        return self.rootkitIds
+        powerSources = self.requireOwned().requireNotDDoSed("scanned").requireResources(25, 0)
+        return powerSources
 
     # Player action to add a rootkit to a node
     def doRootkit(self):
         self.requireNotOwned().requireNotDDoSed("rootkitted").requireNotIPSed()
         if self.targeterId in self.rootkitIds:
             raise AttemptToMultipleRootkitException("This player has a rootkit here already.")
-        self.requireResources(self.totalPower / 5)
+        powerSources = self.requireResources(self.totalPower / 5)
         self.rootkitIds.append(self.targeterId)
+        return powerSources
 
     # Player action to IPS a node
     # This is the only action that can be done despite a DDoS
@@ -291,6 +308,6 @@ class Node(object):
 
     # Player action to do a port scan
     def doPortScan(self):
-        self.requireOwned().requireNotPortScanned().requireResources(0, 500)
+        powerSources = self.requireOwned().requireNotPortScanned().requireResources(0, 500)
         self.map.portScans.append(self.ownerId)
-        return self
+        return powerSources
