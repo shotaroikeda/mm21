@@ -45,7 +45,7 @@ class GameMap(object):
             # TODO: Make map-generator 0-indexed instead of doing it here
             try:
                 mapJson = json.loads(mapText)
-                self.nodes = {int(x["id"]) - 1: Node(int(x["id"]) - 1, [int(n) - 1 for n in x["adjacent-nodes"]], x["type"], self) for x in mapJson["nodes"]}
+                self.nodes = {int(x["id"]): Node(int(x["id"]), [int(n) for n in x["adjacent-nodes"]], x["type"], self) for x in mapJson["nodes"]}
             except:
                 raise MapFormatException("Invalid map file format.")
 
