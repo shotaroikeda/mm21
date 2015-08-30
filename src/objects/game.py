@@ -170,7 +170,7 @@ class Game(object):
         return {
             "playerInfo": self.playerInfos[playerId],
             "turnResult": self.turnResults.get(playerId, [{"status": "fail"}, {"message": "No turn executed."}]),
-            "map":  [x.toPlayerDict(False) for x in list(visibleNodes)]
+            "map":  [x.toPlayerDict(x.scanPending) for x in list(visibleNodes)]
         }
 
     # Return the entire state of the map

@@ -831,6 +831,7 @@ def test_doClean():
     _node = _map.getPlayerNodes(1)[0]
 
     _node.rootkitIds.append(2)
+    assert len(_node.rootkitIds) == 1
     _node.targeterId = 1
     _node.doClean()
     assert len(_node.rootkitIds) == 0
@@ -844,12 +845,12 @@ def test_doScan():
     _map.addPlayer(2)
     _node = _map.getPlayerNodes(1)[0]
 
+    assert _node.scanPending is False
     _node.targeterId = 1
-    assert len(_node.doScan()) == 0
-    _node.rootkitIds.append(2)
-    assert len(_node.doScan()) == 1
-    _node.doClean()
-    assert len(_node.doScan()) == 0
+    _node.doScan()
+    assert _node.scanPending is True
+    _map.resetAfterTurn()
+    assert _node.scanPending is False
 
 
 # Test doRootkit

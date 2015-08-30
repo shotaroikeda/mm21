@@ -51,6 +51,7 @@ class Node(object):
         self.targeterId = None
         self.upgradeLevel = 0
         self.upgradePending = False
+        self.scanPending = False
         # int[]
         self.adjacentIds = adjacent
         self.rootkitIds = []
@@ -289,6 +290,7 @@ class Node(object):
     # Player action to scan a node for rootkits
     def doScan(self):
         powerSources = self.requireOwned().requireNotDDoSed("scanned").requireResources(25, 0)
+        self.scanPending = True
         return powerSources
 
     # Player action to add a rootkit to a node

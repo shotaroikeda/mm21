@@ -103,6 +103,9 @@ class GameMap(object):
             n.DDoSed = n.DDoSPending
             n.DDoSPending = False
 
+            # Update scan status
+            n.scanPending = False
+
             # Update upgrade level
             if n.upgradePending:
                 n.upgradeLevel += 1
