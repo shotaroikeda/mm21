@@ -103,6 +103,9 @@ class GameMap(object):
             n.DDoSed = n.DDoSPending
             n.DDoSPending = False
 
+            # Update scan status
+            n.scanPending = False
+
             # Update upgrade level
             if n.upgradePending:
                 n.upgradeLevel += 1
@@ -124,7 +127,6 @@ class GameMap(object):
             # We do this here so that people can't conquer a node by being earlier in the turn order
             inf = max(n.infiltration.values())
             if inf > n.totalPower * 2:
-                print printColors.GREEN + "Someone conquered something" + printColors.RESET
                 maxPlayers = [x for x in n.infiltration if n.infiltration[x] == inf]
                 n.own(random.choice(maxPlayers))  # Don't favor lower/higher player IDs - TODO Update the wiki to say "ties will be broken RANDOMLY, not ARBITRARILY"
 

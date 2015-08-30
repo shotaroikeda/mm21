@@ -93,20 +93,21 @@ class Game(object):
                         target.targeterId = playerId
                         target.supplierIds = supplierIds
 
+                    powerSources = []
                     if action == "ddos":
-                        target.doDDoS()
+                        powerSources = target.doDDoS()
                     elif action == "control":
-                        target.doControl(multiplier)
+                        powerSources = target.doControl(multiplier)
                     elif action == "upgrade":
-                        target.doUpgrade()
+                        powerSources = target.doUpgrade()
                     elif action == "clean":
-                        target.doClean()
+                        powerSources = target.doClean()
                     elif action == "scan":
-                        target.doScan()
+                        powerSources = target.doScan()
                     elif action == "rootkit":
-                        target.doRootkit()
+                        powerSources = target.doRootkit()
                     elif action == "portScan":
-                        map.doPortScan()
+                        powerSources = target.doPortScan()
                     elif action == "ips":
                         target.doIPS()
                     else:
@@ -130,6 +131,8 @@ class Game(object):
                     actionResult["message"] = "Unknown exception: " + str(e)
 
                 actionResult["status"] = "fail" if "message" in actionResult else "ok"
+                if message not in actionResult:
+                    actionResult["powerSources"] = powerSourceNodes
 
                 # Record results
                 self.turnResults[playerId].append(actionResult)
@@ -167,7 +170,7 @@ class Game(object):
         return {
             "playerInfo": self.playerInfos[playerId],
             "turnResult": self.turnResults.get(playerId, [{"status": "fail"}, {"message": "No turn executed."}]),
-            "map":  [x.toPlayerDict(False) for x in list(visibleNodes)]
+            "map":  [x.toPlayerDict(x.scanPending) for x in list(visibleNodes)]
         }
 
     # Return the entire state of the map
