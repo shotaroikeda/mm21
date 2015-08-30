@@ -8,7 +8,7 @@ class Graph(object):
     def add_vertex(self, vertex):
         if vertex not in self.vertex_list:
             self.vertex_list.append(vertex)
-            return len(self.vertex_list)
+            return len(self.vertex_list) - 1
         else:
             return self.vertex_list.index(vertex)
 

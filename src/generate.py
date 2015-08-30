@@ -22,7 +22,7 @@ if __name__ == "__main__":
     # Generate Map
     # m = Map(7, 5, 6)  # Original settings
     # m = Map(2, 3, 2)  # Ace's test settings
-    m = Map(args.num_continents, args.isp_per_continents, args.cities_per_isp)
+    m = Map(int(args.num_continents), int(args.isp_per_continents), int(args.cities_per_isp))
 
     # Convert to JSON
     load_json.save_map_to_file("gamerunner/map.json", m.convert_to_json())

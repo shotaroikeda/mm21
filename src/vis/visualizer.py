@@ -166,8 +166,8 @@ class Visualizer(object):
             if (self.debug):
                 print("Processing turn " + str(self.ticks / self.ticks_per_turn))
             for node in self.turn_json[self.ticks / self.ticks_per_turn]['map']:
-                if node['id'] == 0:
-                    continue
+                print node['id']
+                print self.draw_json[node['id']]
                 self.draw_json[node['id']].owner_id = node['owner']
                 for prev_node in self.turn_json[(self.ticks / self.ticks_per_turn) - 1]['map']:
                     if node['id'] == prev_node['id']:
