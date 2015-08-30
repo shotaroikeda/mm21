@@ -226,6 +226,7 @@ def main():
 
 
 class Scoreboard(object):
+
     def __init__(self, url=None):
         self.lunched = False
         self.url = url
@@ -266,6 +267,7 @@ class Scoreboard(object):
 
 
 class Client_program(object):
+
     """
     This object holds and manages the processes for the
     connecting teams
@@ -316,6 +318,7 @@ class Client_program(object):
 
 
 class ClientFailedToRun(Exception):
+
     def __init__(self, msg):
         self.msg = msg
 
