@@ -15,22 +15,40 @@ misc.
 """
 
 
-# (Quick n' dirty) no-mans-land filtering helper
-def __clusterFilterHelper(cluster, notCluster):
+# Debug function
+def __prettify(n):
+    print sorted([x.id for x in n])
 
-    clusterFinal = []
-    for n in cluster:
-        ok = False
+
+# (Quick n' dirty) no-mans-land filtering helpers
+def __cfhRecurse(allNodes, cluster, notCluster, nodeStack, n, i):
+    if n in notCluster or n in nodeStack:
+        return False
+    if n in cluster:
+        return True
+
+    ok = False
+    if i != 0:
+        nodeStack[i] = n
         for n2 in n.getAdjacentNodes():
-            if n2 not in notCluster:
-                for n3 in n2.getAdjacentNodes():
-                    if n3 not in notCluster:
-                        for n4 in n2.getAdjacentNodes():
-                            if n4 not in notCluster and n3 != n:  # TODO This goes 4 nodes deep - if this test fails, push it deeper
-                                ok = True
-        if ok and n not in clusterFinal:
-            clusterFinal.append(n)
-    return clusterFinal
+            if not ok and n2 not in notCluster:
+                ok = __cfhRecurse(allNodes, cluster, notCluster, nodeStack, n2, i - 1)
+                if ok:
+                    break
+        nodeStack[i] = None
+    
+    return ok
+
+
+def __clusterFilterHelper(allNodes, cluster, notCluster):
+
+    nodeStack = [None] * 13
+
+    for n in allNodes:
+        if n not in notCluster and n not in cluster and __cfhRecurse(allNodes, cluster, notCluster, nodeStack, n, 12):
+            cluster.append(n)
+    print "NC {}".format(notCluster)
+    return cluster
 
 
 # Test toPlayerDict
@@ -287,25 +305,14 @@ def test_getClusteredNodes_twoClusters():
         n.own(2)
 
     # -- Build cluster 2 --
-    # Part 1: Initial cluster
+    # Part 1: Build cluster
     _notCluster2 = _noMansLand + _cluster1
-    _cluster2 = []
-    _cluster2.extend(_noMansLand)
-    _len2 = 0
-    while _len2 != len(_cluster2):
-        _len2 = len(_cluster2)
-        _cluster2_new = []
-        for n in _cluster2:
-            _cluster2_new.extend(n.getAdjacentNodes())
-        _cluster2.extend(_cluster2_new)
-        _cluster2 = list(set([n for n in _cluster2 if n not in _notCluster2]))
+    _cluster2 = [[x for x in _map.nodes if x not in _notCluster2][0]]
+    _cluster2 = __clusterFilterHelper(_map.nodes.values(), _cluster2, _notCluster2)
 
-    # Part 2: remove nodes not reachable from cluster 2
-    _cluster2 = __clusterFilterHelper(_cluster2, _notCluster2)
-
-    # Part 3: owning
+    # Part 2: owning
     for n in _cluster2:
-        n.own(1)
+        _map.nodes[n].own(1)
 
     # Check cluster sizes
     assert len(_cluster1) > 1
@@ -411,25 +418,14 @@ def test_getVisibleNodes_twoClusters():
         n.own(2)
 
     # -- Build cluster 2 --
-    # Part 1: Initial cluster
+    # Part 1: Build cluster
     _notCluster2 = _noMansLand + _cluster1
-    _cluster2 = []
-    _cluster2.extend(_noMansLand)
-    _len2 = 0
-    while _len2 != len(_cluster2):
-        _len2 = len(_cluster2)
-        _cluster2_new = []
-        for n in _cluster2:
-            _cluster2_new.extend(n.getAdjacentNodes())
-        _cluster2.extend(_cluster2_new)
-        _cluster2 = list(set([n for n in _cluster2 if n not in _notCluster2]))
+    _cluster2 = [[x for x in _map.nodes if x not in _notCluster2][0]]
+    _cluster2 = __clusterFilterHelper(_map.nodes.values(), _cluster2, _notCluster2)
 
-    # Part 2: remove nodes not reachable from cluster 2
-    _cluster2 = __clusterFilterHelper(_cluster2, _notCluster2)
-
-    # Part 3: owning
+    # Part 2: owning
     for n in _cluster2:
-        n.own(1)
+        _map.nodes[n].own(1)
 
     # Check cluster sizes
     assert len(_cluster1) > 1
@@ -518,25 +514,14 @@ def test_getVisibleNodes_severedRootkitChain():
         n.rootkitIds = []
 
     # -- Build cluster 2 --
-    # Part 1: Initial cluster
+    # Part 1: Build cluster
     _notCluster2 = _noMansLand + _cluster1
-    _cluster2 = []
-    _cluster2.extend(_noMansLand)
-    _len2 = 0
-    while _len2 != len(_cluster2):
-        _len2 = len(_cluster2)
-        _cluster2_new = []
-        for n in _cluster2:
-            _cluster2_new.extend(n.getAdjacentNodes())
-        _cluster2.extend(_cluster2_new)
-        _cluster2 = list(set([n for n in _cluster2 if n not in _notCluster2]))
+    _cluster2 = [[x for x in _map.nodes if x not in _notCluster2][0]]
+    _cluster2 = __clusterFilterHelper(_map.nodes.values(), _cluster2, _notCluster2)
 
-    # Part 2: remove nodes not reachable from cluster 2
-    _cluster2 = __clusterFilterHelper(_cluster2, _notCluster2)
-
-    # Part 3: owning
+    # Part 2: owning
     for n in _cluster2:
-        n.rootkitIds = [1]
+        _map.nodes[n].rootkitIds = [1]
 
     # Check cluster sizes
     assert len(_cluster1) > 1
@@ -558,6 +543,10 @@ def test_getVisibleNodes_severedRootkitChain():
     _result2 = []
     _node.getVisibleNodes(_result1, 1)
     _anchor2.getVisibleNodes(_result2, 1)
+    print _anchor2.id
+    __prettify(_noMansLand)
+    __prettify(_cluster2)
+    __prettify(_result2)
     assert sorted(_cluster1) == sorted(_result1)
     assert sorted(_cluster2) == sorted(_result2)
 

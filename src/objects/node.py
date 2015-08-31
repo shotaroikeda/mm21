@@ -165,13 +165,16 @@ class Node(object):
     def getVisibleNodes(self, visibleNodes, ownerId=None, start=True):
         if ownerId is None:
             ownerId = self.ownerId or 0
-        if self not in visibleNodes:
-            branchable = self.ownerId == ownerId or ownerId in self.rootkitIds
-            if not start or branchable:
-                visibleNodes.append(self)
-            if branchable: 
-                for adjacent in self.getAdjacentNodes():
-                    adjacent.getVisibleNodes(visibleNodes, ownerId, False)
+        if self in visibleNodes:
+            return
+
+        branchable = self.ownerId == ownerId or ownerId in self.rootkitIds
+        if branchable:
+            visibleNodes.append(self)
+            for adjacent in self.getAdjacentNodes():
+                adjacent.getVisibleNodes(visibleNodes, ownerId, False)
+        elif not start and not branchable:
+            visibleNodes.append(self)
 
     # Determine whether a player can move through a node
     # @param playerId The ID of the player
