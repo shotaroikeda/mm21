@@ -136,13 +136,13 @@ class Node(object):
                 node.remainingProcessing -= difference
                 processing -= difference
                 if difference != 0:
-                    powerSourceNodes.append(node)
+                    powerSourceNodes.append(node.id)
 
                 difference = min(networking, node.remainingNetworking)
                 node.remainingNetworking -= difference
                 networking -= difference
                 if difference != 0:
-                    powerSourceNodes.append(node)
+                    powerSourceNodes.append(node.id)
 
         # Done!
         return powerSourceNodes

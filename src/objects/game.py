@@ -131,8 +131,8 @@ class Game(object):
                     actionResult["message"] = "Unknown exception: " + str(e)
 
                 actionResult["status"] = "fail" if "message" in actionResult else "ok"
-                if message not in actionResult:
-                    actionResult["powerSources"] = powerSourceNodes
+                if "message" not in actionResult:
+                    actionResult["powerSources"] = powerSources
 
                 # Record results
                 self.turnResults[playerId].append(actionResult)
