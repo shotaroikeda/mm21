@@ -34,7 +34,6 @@ def launch_clients():
     else:
         numberOfClients = 0
     for x in xrange(numberOfClients, parameters.teams):
-        print parameters.defaultClient
         launch_client(os.path.join(os.getcwd(), parameters.defaultClient))
 
 
@@ -93,7 +92,7 @@ def parse_args():
     parser.add_argument(
         "-c", "--client",
         help="Specifies one or more clients to run. " +
-        "Example: ./gamerunner.py -p 3 -c myClient -c test_clients/python " +
+        "Example: ./gamerunner.py -p 3 -c myClient -c python " +
         "The gamerunner will run a number of default clients (location optionally"
         "specified with -d) equal to players - specified clients",
         action="append")
