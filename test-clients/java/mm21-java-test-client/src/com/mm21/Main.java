@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * @competitors You'll probably need to modify this file, unless you're happy with our dumb test client
+ * @competitors You'll probably need to modify this parts of this file
  */
 
 public class Main {
@@ -26,7 +26,6 @@ public class Main {
         ArrayList<Action> actions = new ArrayList<Action>();
 
         // @competitors Put your AI here.
-        // NOTE: result is NULL on the first turn, so don't forget to null check!
 
 
         // Done!
