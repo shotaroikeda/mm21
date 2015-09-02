@@ -3,6 +3,8 @@ package com.mm21;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.util.Iterator;
+import java.util.ArrayList;
+
 /**
  * Represents a node in the game
  * @competitors You may modify this file, but you shouldn't need to.
@@ -29,6 +31,7 @@ public class Node {
     private int[] m_infiltration;
     private int[] m_rootkitIds;
     private NodeType m_nodeType;
+    private ArrayList<Node> m_adjacentNodes = null; // Must be initialized by initAdjacentNodes in TurnResult.java
 
     // Property getters
     public int id() { return m_id; }
@@ -41,6 +44,7 @@ public class Node {
     public int[] infiltration() { return m_infiltration; }
     public int[] rootkitIds() { return m_rootkitIds; }
     public NodeType nodeType() { return m_nodeType; }
+    public ArrayList<Node> adjacentNodes() { return m_adjacentNodes; }
 
     // Helper methods
     public int totalPower() {
@@ -75,5 +79,43 @@ public class Node {
         for (int i = 0; i < rArr.length(); i++) {
             m_rootkitIds[i] = rArr.getInt(i);
         }
+    }
+
+    // Delayed property initializers - must not be used until all nodes have been parsed
+    public void initAdjacentNodes(Node[] map, JSONObject o) {
+        m_adjacentNodes = new ArrayList<Node>();
+        JSONArray adjacentIds = o.getJSONArray("adjacentIds");
+        for (int i = 0; i < adjacentIds.length(); i++) {
+            m_adjacentNodes.add(map[adjacentIds.getInt(i)]);
+        }
+    }
+
+    // Player actions
+    public Action doClean() {
+        return new Action(Action.ActionType.CLEAN, 1, m_id);
+    }
+    public Action doControl() {
+        return doControl(1);
+    }
+    public Action doControl(int multiplier) {
+        return new Action(Action.ActionType.CONTROL, multiplier, m_id);
+    }
+    public Action doDDoS() {
+        return new Action(Action.ActionType.DDOS, 1, m_id);
+    }
+    public Action doIPS() {
+        return new Action(Action.ActionType.IPS, 1, m_id);
+    }
+    public Action doPortScan() {
+        return new Action(Action.ActionType.PORTSCAN, 1, m_id);
+    }
+    public Action doRootkit() {
+        return new Action(Action.ActionType.ROOTKIT, 1, m_id);
+    }
+    public Action doScan() {
+        return new Action(Action.ActionType.SCAN, 1, m_id);
+    }
+    public Action doUpgrade() {
+        return new Action(Action.ActionType.UPGRADE, 1, m_id);
     }
 }

@@ -3,8 +3,6 @@ package com.mm21;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import javax.swing.plaf.ActionMapUIResource;
-
 /**
  * Represents the results of a game turn
  * @competitors You may modify this file, but you shouldn't need to
@@ -12,12 +10,12 @@ import javax.swing.plaf.ActionMapUIResource;
 public class TurnResult {
 
     // Property values (private to prevent unintentional writing)
-    private Node[] m_map;
+    private Node[] m_nodes;
     private String[] m_players;
     private ActionResult[] m_actionResults;
 
     // Property getters
-    public Node[] map() { return m_map; }
+    public Node[] nodes() { return m_nodes; }
     public String[] players() { return m_players; }
     public ActionResult[] actionResults() { return m_actionResults; }
 
@@ -26,9 +24,14 @@ public class TurnResult {
 
         // Serialize map
         JSONArray mapNodes = serverResponse.getJSONArray("map");
-        this.m_map = new Node[mapNodes.length()];
+        this.m_nodes = new Node[mapNodes.length()];
         for (int i = 0; i < mapNodes.length(); i++) {
-            this.m_map[i] = new Node(mapNodes.getJSONObject(i));
+            this.m_nodes[i] = new Node(mapNodes.getJSONObject(i));
+        }
+
+        // Initialize adjacent nodes
+        for (int i = 0; i < mapNodes.length(); i++) {
+            this.m_nodes[i].initAdjacentNodes(this.m_nodes, mapNodes.getJSONObject(i));
         }
 
         // Serialize player list
@@ -41,6 +44,11 @@ public class TurnResult {
         JSONArray actionResults = serverResponse.getJSONArray("turnResults");
         for (int i = 0; i < actionResults.length(); i++) {
             this.m_actionResults[i] = new ActionResult(actionResults.getJSONObject(i));
+        }
+
+        // Initialize power source nodes
+        for (int i = 0; i < actionResults.length(); i++) {
+            this.m_actionResults[i].initPowerSourceNodes(this.m_nodes, actionResults.getJSONObject(i));
         }
     }
 }

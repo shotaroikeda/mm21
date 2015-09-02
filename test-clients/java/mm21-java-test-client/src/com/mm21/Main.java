@@ -4,33 +4,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * @competitors You'll probably need to modify this parts of this file
+ * The entry-point class of the test client
+ * @competitors Add your team name, but don't modify anything else
+ * @competitors Your AI itself should go in AI.java
  */
 
 public class Main {
 
-    /**
-     * @competitors Modify me
-     * User settings (team name + any global variables your test client needs)
-     */
+    // @competitors Modify me
     private static final String TEAM_NAME = "YOUR_TEAM_NAME_HERE";
-    // @competitors Put any additional variables here.
-
-    /***
-     * @competitors Modify me
-     * Determine what actions to do, given the server response
-     */
-    private static ArrayList<Action> processTurn(TurnResult result) {
-
-        // List of actions to execute
-        ArrayList<Action> actions = new ArrayList<Action>();
-
-        // @competitors Put your AI here.
-
-
-        // Done!
-        return actions;
-    }
 
     /**
      * Run the game
@@ -55,9 +37,10 @@ public class Main {
             try {
 
                 // Execute turn
+                // @competitors DO NOT PUT YOUR AI HERE - use AI.java instead!
                 TurnResult serverResponse = ServerConnection.readTurn();
                 System.out.println("Received turn.");
-                ArrayList<Action> clientActions = processTurn(serverResponse);
+                ArrayList<Action> clientActions = AI.processTurn(serverResponse);
                 System.out.println("Computed turn.");
                 ServerConnection.sendTurn(clientActions);
                 System.out.println("Sent turn.");
