@@ -48,15 +48,26 @@ class Scoreboard(object):
         self.screen.fill(const.WHITE)
         x, y = 10, 10
         for c in range(len(self.CATEGORY)):
-            label = self.myfont.render(self.CATEGORY[c], 1, (0, 0, 0))
+            label = self.myfont.render(self.CATEGORY[c], 1, const.BLACK)
             self.screen.blit(label, (x, y))
             x += self.SPACING[c]
         x = 10
         y += 20
-        pygame.draw.line(self.screen, (0, 0, 0), (x, y), (self.screenWidth - x, y))
+        pygame.draw.line(self.screen, const.BLACK, (x, y), (self.screenWidth - x, y))
+        y += 5
+
+
+        # assuming there are 10 entries
+        for j in range(10):
+            for i in range(len(self.CATEGORY)):
+                num = self.myfont.render(str(i) + ", "+ str(j), 1, const.BLACK)
+                self.screen.blit(num, (x,y))
+                x += self.SPACING[i]
+            x = 10
+            y += 20
         x = 100
         y = 10
-        pygame.draw.line(self.screen, (0, 0, 0), (x, y), (x, self.screenHeight - y))
+        pygame.draw.line(self.screen, const.BLACK, (x, y), (x, self.screenHeight - y))
 
         pygame.display.update()
         pygame.display.flip()
