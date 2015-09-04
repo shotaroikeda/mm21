@@ -47,7 +47,7 @@ class Node(object):
         self.remainingProcessing = self.processing
         self.remainingNetworking = self.networking
         self.totalPower = self.processing + self.networking
-        self.ownerId = None
+        self.ownerId = -1
         self.targeterId = None
         self.upgradeLevel = 0
         self.upgradePending = False

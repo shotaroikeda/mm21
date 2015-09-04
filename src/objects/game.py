@@ -169,7 +169,7 @@ class Game(object):
         # TODO document my format!
         return {
             "playerInfo": self.playerInfos[playerId],
-            "turnResult": self.turnResults.get(playerId, [{"status": "fail"}, {"message": "No turn executed."}]),
+            "turnResult": self.turnResults.get(playerId, [{"status": "fail", "message": "No turn executed."}]),
             "map":  [x.toPlayerDict(x.scanPending) for x in list(visibleNodes)]
         }
 
@@ -177,6 +177,6 @@ class Game(object):
     def get_all_info(self):
         return {
             "playerInfos": self.playerInfos,
-            "turnResults": [self.turnResults.get(pId, [{"status": "fail"}, {"message": "No turn executed."}]) for pId in self.playerInfos],
+            "turnResults": [self.turnResults.get(pId, [{"status": "fail", "message": "No turn executed."}]) for pId in self.playerInfos],
             "map":  [x.toPlayerDict(True) for x in self.map.nodes.values()]
         }

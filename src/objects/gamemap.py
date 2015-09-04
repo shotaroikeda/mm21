@@ -71,7 +71,7 @@ class GameMap(object):
 
         # Assign starting node
         freeNodes = self.getNodesOfType("Large City")  # TODO make this "fairer"
-        freeNodes = [x for x in freeNodes if x.ownerId is None]
+        freeNodes = [x for x in freeNodes if x.ownerId == -1]
         startNode = random.choice(freeNodes)
         startNode.own(playerId)
         startNode.isIPSed = True
