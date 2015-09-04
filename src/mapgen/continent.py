@@ -34,7 +34,7 @@ class Continent():
     # Generates a ISP and its cities
     # ARGS - Graph Object, Number of cities per ISP
     # TODO Add arguement for resource value and gen cities based on that
-    def generate_ISP(self, graph, cities_per_ISP):
+    def generate_ISP(self, graph, cities_per_ISP, total_power_per_ISP):
         isp = Node.get_ISP_node(graph)  # Create a ISP
         isp_city_list = []  # Init city list for ISPs
         for _ in range(cities_per_ISP):

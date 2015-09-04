@@ -14,8 +14,10 @@ class Node(object):
 
     def update_city_sprite(self):
         try:
-            self.sprite = pygame.image.load("vis/sprites/" + self.node_type + ".png")
+            self.sprite = pygame.image.load("src/vis/sprites/" + self.node_type + ".png")
             self.sprite_rect = self.sprite.get_rect()
+            self.sprite_rect[2] = 20
+            self.sprite_rect[3] = 20
             self.sprite_rect[0] = self.x - int(self.sprite_rect[2] / 2.0)
             self.sprite_rect[1] = self.y - int(self.sprite_rect[3] / 2.0)
         except IOError:  # TODO what is the exact exception?

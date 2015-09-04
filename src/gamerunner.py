@@ -10,12 +10,13 @@ from subprocess import Popen
 import argparse
 from objects import game
 # import pickle
-import vis.visualizer
+from vis.visualizer import Visualizer
+import threading
 from load_json import load_map_from_file as loadJson
-import json
+# import json
 from urllib2 import urlopen, URLError
 import time
-from functools import partial
+# from functools import partial
 
 import misc_constants as miscConstants
 import game_constants as gameConstants
@@ -168,12 +169,12 @@ class FileLogger(object):
         with open(self.file, 'a') as f:
             f.write(stuff + '\n')
         if self.vis:
-            self.vis.add_turn(stuff)
+            self.vis.turn(stuff)
         if self.score:
             self.score.turn(stuff)
 
 
-def test_game(team, team_dir, port):
+''' def test_game(team, team_dir, port):
     client_list = list()
     global parameters
     parameters = parse_args()
@@ -185,7 +186,7 @@ def test_game(team, team_dir, port):
                     my_game,
                     logger=fileLog) 
     serv.run(port, partial(launch_client_test_game, team_dir, port), time_out=60)
-    return True
+    return True '''
 
 
 def main():
@@ -199,33 +200,69 @@ def main():
     with open(parameters.log, 'w'):
         pass
     fileLog = FileLogger(parameters.log)
-    my_game = game.Game(parameters.map, parameters.turnsinhour)
     if parameters.show:
+        fileLog.vis = VisualizerThread("src/gamerunner/map.json", parameters.debug_view)
+        fileLog.vis.start()
+    if parameters.scoreboard:
+        fileLog.score = Scoreboard(parameters.scoreboard_url)
+    print "Starting Game"
+    my_game = game.Game(parameters.map, parameters.turnsinhour)
+    serv = MMServer(parameters.teams,
+                    my_game,
+                    logger=fileLog)
+    serv.run(parameters.port, launch_clients)
+    if parameters.show:
+        fileLog.vis.join()
+    if parameters.scoreboard:
+        fileLog.score.stop()
+
+
+class VisualizerThread(threading):
+
+    def __init__(self, _mapJsonFileName, _debug=False):
+        self.running = True
+        self.mapJsonFileName = _mapJsonFileName
+        self.debug = _debug
+
+    def run(self):
         try:
-            with open(parameters.map) as json_file:
+            with open(self.mapJsonFileName) as json_file:
                 mapJsonObject = loadJson(json_file)
             if(mapJsonObject is None):
                 raise Exception
         except IOError:
-            print("File " + parameters.map + " does not exist")
+            print("File " + self.mapJsonFileName + " does not exist")
             raise
             exit(1)
         except Exception:
             print("Failed to parse map json data")
             raise
             exit(1)
-        fileLog.vis = vis.visualizer.Visualizer(mapJsonObject, parameters.debug_view)
-    if parameters.scoreboard:
-        fileLog.score = Scoreboard(parameters.scoreboard_url)
-    serv = MMServer(parameters.teams,
-                    my_game,
-                    logger=fileLog)
-    serv.run(parameters.port, launch_clients)
-    if parameters.scoreboard:
-        fileLog.score.stop()
 
+        self.visualizer = Visualizer(mapJsonObject, self.debug)
+        self.visualizer.run()
 
-class Scoreboard(object):
+    def turn(self, turn):
+        self.visualizer.add_turn(turn)
+
+    def kill(self):
+        if (self.launched and not self.board.poll()):
+            try:
+                self.board.kill()
+            except OSError:
+                pass
+
+    def stop(self):
+        if self.launched:
+            try:
+                self.board.terminate()
+            except OSError:
+                pass
+
+    def __del__(self):
+        self.kill()
+
+''' class Scoreboard(object):
 
     def __init__(self, url=None):
         self.lunched = False
@@ -263,7 +300,7 @@ class Scoreboard(object):
                 pass
 
     def __del__(self):
-        self.kill()
+        self.kill()'''
 
 
 class Client_program(object):

@@ -4,7 +4,7 @@ import sys
 import math
 import random
 from node import Node
-from animation import Upgrade, ChangeOwner, AddRootkit, CleanRootkit, IPS, Infiltration, Heal, DDOS, PortScan
+from animation import Upgrade, ChangeOwner, AddRootkit, CleanRootkit, IPS, Infiltration, InfiltrationLines, Heal, DDOS, PortScan
 import vis_constants as const
 # import animate as ani
 
@@ -35,8 +35,6 @@ class Visualizer(object):
         self.setup_pygame()
         # process map json to visual data
         self.process_json()
-        # START!!!
-        self.run()
 
     # Sets up pygame
     def setup_pygame(self):
@@ -89,7 +87,9 @@ class Visualizer(object):
                     y_offset = random.randint(-math.floor(y_blockSize * const.city_offset), math.floor(y_blockSize * const.city_offset))
                     x = int(self.draw_json[isp['id']].x + (const.city_radius * x_blockSize / 2) * math.cos((2 * math.pi / city_amount) * k)) + x_offset
                     y = int(self.draw_json[isp['id']].y + (const.city_radius * y_blockSize / 2) * math.sin((2 * math.pi / city_amount) * k)) + y_offset
-                    self.draw_json[city] = Node(x, y, 'small_city')
+                    for node in self.json_data['nodes']:
+                        if node['id'] == city:
+                            self.draw_json[city] = Node(x, y, node['type'])
                     k += 1
                 i += 1
 
@@ -142,7 +142,7 @@ class Visualizer(object):
                 self.game_animations.remove(anim)
 
     def draw(self):
-        self.screen.fill(const.WHITE)  # Background color
+        self.screen.fill(const.SEA_BLUE)  # Background color
         if self.debug:
             for edge in self.json_data['edges']:
                 v1, v2 = edge
@@ -154,7 +154,7 @@ class Visualizer(object):
                 self.screen.blit(node_id, (value.x - 7, value.y - 7))
 
         for anim in self.game_animations:
-            anim.draw()  # draw global animations
+            anim.draw(self.screen)  # draw global animations
         pygame.display.update()
         pygame.display.flip()
 
@@ -166,8 +166,6 @@ class Visualizer(object):
             if (self.debug):
                 print("Processing turn " + str(self.ticks / self.ticks_per_turn))
             for node in self.turn_json[self.ticks / self.ticks_per_turn]['map']:
-                print node['id']
-                print self.draw_json[node['id']]
                 self.draw_json[node['id']].owner_id = node['owner']
                 for prev_node in self.turn_json[(self.ticks / self.ticks_per_turn) - 1]['map']:
                     if node['id'] == prev_node['id']:
@@ -232,11 +230,16 @@ class Visualizer(object):
 
     def add_player_animations(self, actions):
         for action in actions:
-            if action['action'] == 'portscanned':  # TODO IS THIS RIGHT?
+            if action['action'] == 'portScanned':  # TODO IS THIS RIGHT?
                 self.game_animations.append(PortScan())
+                continue
 
             if action['action'] == 'control':
-                pass
+                sourceNodes = []
+                for nodeId in action['powerSources']:
+                    sourceNodes.append(self.draw_json[nodeId])
+                self.game_animations.append(InfiltrationLines(self.draw_json[action['targetId']], sourceNodes))
+                continue
 
     def found_anim(self, node, animation_type):
         for animation in self.draw_json[node['id']].animations:

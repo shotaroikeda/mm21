@@ -35,7 +35,7 @@ class Upgrade(Animation):
     def setup_animation(self):
         # Add the images to the images
         for i in range(1, 6):
-            self.images.append(pygame.image.load("vis/sprites/upgrade_" + str(i) + ".png"))
+            self.images.append(pygame.image.load("src/vis/sprites/upgrade_" + str(i) + ".png"))
         for i in range(12):
             self.image_tick.append(0)
         for i in range(12):
@@ -59,7 +59,7 @@ class ChangeOwner(Animation):
     def setup_animation(self):
         # Add the images to the images
         for i in range(1, 2):
-            self.images.append(pygame.image.load("vis/sprites/change_owner_" + str(i) + ".png"))
+            self.images.append(pygame.image.load("src/vis/sprites/change_owner_" + str(i) + ".png"))
         for i in range(60):
             self.image_tick.append(0)
         for i in range(len(self.images)):
@@ -76,7 +76,7 @@ class AddRootkit(Animation):
     def setup_animation(self):
         # Add the images to the images
         for i in range(1, 2):
-            self.images.append(pygame.image.load("vis/sprites/add_rootkit_" + str(i) + ".png"))
+            self.images.append(pygame.image.load("src/vis/sprites/add_rootkit_" + str(i) + ".png"))
         for i in range(60):
             self.image_tick.append(0)
         for i in range(len(self.images)):
@@ -92,7 +92,7 @@ class CleanRootkit(Animation):
     def setup_animation(self):
         # Add the images to the images
         for i in range(1, 2):
-            self.images.append(pygame.image.load("vis/sprites/clean_rootkit_" + str(i) + ".png"))
+            self.images.append(pygame.image.load("src/vis/sprites/clean_rootkit_" + str(i) + ".png"))
         for i in range(60):
             self.image_tick.append(0)
         for i in range(len(self.images)):
@@ -109,7 +109,7 @@ class IPS(Animation):
     def setup_animation(self):
         # Add the images to the images
         for i in range(1, 2):
-            self.images.append(pygame.image.load("vis/sprites/ips_" + str(i) + ".png"))
+            self.images.append(pygame.image.load("src/vis/sprites/ips_" + str(i) + ".png"))
         for i in range(60):
             self.image_tick.append(0)
         for i in range(len(self.images)):
@@ -125,7 +125,7 @@ class Infiltration(Animation):
     def setup_animation(self):
         # Add the images to the images
         for i in range(1, 2):
-            self.images.append(pygame.image.load("vis/sprites/infiltration_" + str(i) + ".png"))
+            self.images.append(pygame.image.load("src/vis/sprites/infiltration_" + str(i) + ".png"))
         for i in range(60):
             self.image_tick.append(0)
         for i in range(len(self.images)):
@@ -141,7 +141,7 @@ class Heal(Animation):
     def setup_animation(self):
         # Add the images to the images
         for i in range(1, 2):
-            self.images.append(pygame.image.load("vis/sprites/heal_" + str(i) + ".png"))
+            self.images.append(pygame.image.load("src/vis/sprites/heal_" + str(i) + ".png"))
         for i in range(60):
             self.image_tick.append(0)
         for i in range(len(self.images)):
@@ -157,7 +157,7 @@ class DDOS(Animation):
     def setup_animation(self):
         # Add the images to the images
         for i in range(1, 2):
-            self.images.append(pygame.image.load("vis/sprites/ddos_" + str(i) + ".png"))
+            self.images.append(pygame.image.load("src/vis/sprites/ddos_" + str(i) + ".png"))
         for i in range(60):
             self.image_tick.append(0)
         for i in range(len(self.images)):
@@ -173,7 +173,7 @@ class Scan(Animation):
     def setup_animation(self):
         # Add the images to the images
         for i in range(1, 2):
-            self.images.append(pygame.image.load("vis/sprites/scan_" + str(i) + ".png"))
+            self.images.append(pygame.image.load("src/vis/sprites/scan_" + str(i) + ".png"))
         for i in range(60):
             self.image_tick.append(0)
         for i in range(len(self.images)):
@@ -194,4 +194,22 @@ class PortScan(object):
             return True
 
     def draw(self, screen):
-        pygame.draw.line(screen, (0, 255, 0), (self.x, 0), (self.x, const.screenHeight), width=3)
+        pygame.draw.line(screen, (0, 255, 0), (self.x, 0), (self.x, const.screenHeight), 3)
+
+
+class InfiltrationLines(object):
+
+    def __init__(self, _target_node, _source_nodes):
+        self.target_node = _target_node
+        self.source_nodes = _source_nodes
+        self.ticks = 0
+
+    def update(self):
+        self.ticks += 1
+        if (self.ticks > 60):
+            return True
+
+    def draw(self, screen):
+        if(self.ticks % 20 > 3):
+            for node in self.source_nodes:
+                pygame.draw.line(screen, const.TEAM_COLORS[node.owner_id], (node.x, node.y), (self.target_node.x, self.target_node.y), 1)
