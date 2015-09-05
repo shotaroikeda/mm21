@@ -54,7 +54,6 @@ class Scoreboard(object):
         y += 20
         pygame.draw.line(self.screen, const.lineColor, (x, y), (self.screenWidth - x, y))
         y += 5
-        
         if self.scores is not None:
             for j in range(len(self.scores)):
                 for i in range(len(self.CATEGORY)):
