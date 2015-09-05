@@ -85,7 +85,7 @@ class Game(object):
                 targetId = actionJson.get("target", -1)
                 multiplier = actionJson.get("multiplier", 1)
                 supplierIds = actionJson.get("supplierIds", [])
-                actionResult = {"teamId": playerId, "action": action, "targetId": targetId, "multiplier": multiplier}
+                actionResult = {"teamId": playerId, "action": action, "target": targetId, "multiplier": multiplier}
 
                 try:
                     target = self.map.nodes.get(int(targetId), None)
@@ -93,27 +93,27 @@ class Game(object):
                         target.targeterId = playerId
                         target.supplierIds = supplierIds
 
-                    powerSources = []
-                    if action == "ddos":
-                        powerSources = target.doDDoS()
-                    elif action == "control":
-                        powerSources = target.doControl(multiplier)
-                    elif action == "upgrade":
-                        powerSources = target.doUpgrade()
-                    elif action == "clean":
-                        powerSources = target.doClean()
-                    elif action == "scan":
-                        powerSources = target.doScan()
-                    elif action == "rootkit":
-                        powerSources = target.doRootkit()
-                    elif action == "portScan":
-                        powerSources = target.doPortScan()
-                    elif action == "ips":
-                        target.doIPS()
+                        powerSources = []
+                        if action == "ddos":
+                            powerSources = target.doDDoS()
+                        elif action == "control":
+                            powerSources = target.doControl(multiplier)
+                        elif action == "upgrade":
+                            powerSources = target.doUpgrade()
+                        elif action == "clean":
+                            powerSources = target.doClean()
+                        elif action == "scan":
+                            powerSources = target.doScan()
+                        elif action == "rootkit":
+                            powerSources = target.doRootkit()
+                        elif action == "portScan":
+                            powerSources = target.doPortScan()
+                        elif action == "ips":
+                            target.doIPS()
+                        else:
+                            actionResult["message"] = "Invalid action type."
                     else:
-                        actionResult["message"] = "Invalid action type."
-                except KeyError:
-                    actionResult["message"] = "Invalid node."
+                        actionResult["message"] = "Invalid node."
                 except AttemptToMultipleDDoSException:
                     actionResult["message"] = "Node is already DDoSed."
                 except AttemptToMultipleRootkitException:

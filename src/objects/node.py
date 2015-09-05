@@ -19,6 +19,10 @@ class AttemptToMultipleUpgradeException(Exception):
     pass
 
 
+class MultiplierMustBePositiveException(Exception):
+    pass
+
+
 class NodeIsDDoSedException(Exception):
     pass
 
