@@ -2,7 +2,7 @@
 import sys
 # import os
 import BaseHTTPServer
-# import json
+import json
 from vis.scoreboard import Scoreboard
 # from SimpleHTTPServer import SimpleHTTPRequestHandler
 
@@ -24,7 +24,7 @@ class mmVisRequstHandler(BaseHTTPServer.BaseHTTPRequestHandler, object):
                 self.end_headers()
         else:
             try:
-                my_scoreboard.add_turn(post_body)
+                my_scoreboard.add_turn(json.loads(post_body))
                 self.send_response(200)
                 self.end_headers()
             except ValueError, TypeError:

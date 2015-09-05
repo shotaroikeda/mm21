@@ -3,6 +3,7 @@ import pygame
 import sys
 import vis_constants as vis_const
 import scoreboard_constants as const
+import json as JSON
 
 
 class Scoreboard(object):
@@ -57,7 +58,8 @@ class Scoreboard(object):
         if self.scores is not None:
             for j in range(len(self.scores)):
                 for i in range(len(self.CATEGORY)):
-                    num = self.myfont.render(self.scores[i], 1, vis_const.TEAM_COLORS[j])
+                    print self.scores[j]
+                    num = self.myfont.render(str(self.scores[j][i]), 1, vis_const.TEAM_COLORS[j])
                     self.screen.blit(num, (x, y))
                     x += self.SPACING[i]
                 x = 10
@@ -69,23 +71,50 @@ class Scoreboard(object):
         pygame.display.update()
         pygame.display.flip()
 
-    def add_turn(self, json):
+    def add_turn(self, json):  # TODO FIX IT
         if self.scores is None:
             self.scores = {}
-            for player in json:
-                print player
-                for key, player_id in player:
-                    print key
-                    self.add_new_player(player_id, None)
-            print self.scores
+            for player in range(0, len(json)):
+                self.add_new_player(player, None)
         else:
             self.turns.append(json)
 
     def change_turn(self, turnNum):
+        self.update_scores(int(turnNum))
         self.run()
 
+    def update_scores(self, turnNum):
+        # Reset scores
+        for player in self.scores:
+            self.scores[player][1] = 0
+            self.scores[player][2] = 0
+            self.scores[player][3] = 0
+            self.scores[player][4] = 0
+            self.scores[player][5] = 0
+            self.scores[player][6] = 0
+            self.scores[player][7] = 0
+            self.scores[player][8] = 0
+
+        # update
+        for node in self.turns[turnNum]['map']:
+            if node['owner'] != -1:
+                self.scores[node['owner']][1] += node['processingPower']
+                self.scores[node['owner']][2] += node['networkingPower']
+                self.scores[node['owner']][3] += node['totalPower']
+                if node['nodetype'] == "Small City":
+                    self.scores[node['owner']][4] += 1
+                if node['nodetype'] == "Medium City":
+                    self.scores[node['owner']][5] += 1
+                if node['nodetype'] == "Large City":
+                    self.scores[node['owner']][6] += 1
+                if node['nodetype'] == "ISP":
+                    self.scores[node['owner']][7] += 1
+                if node['nodetype'] == "Data Center":
+                    self.scores[node['owner']][8] += 1
+        print self.scores
+
     def add_new_player(self, player_id, player_name):
-        self.scores[int(player_id)] = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+        self.scores[player_id] = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 
 if __name__ == '__main__':
