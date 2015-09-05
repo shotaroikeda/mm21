@@ -11,11 +11,12 @@ import argparse
 from objects import game
 # import pickle
 from vis.visualizer import Visualizer
+from vis.scoreboard import Scoreboard
 import threading
 from load_json import load_map_from_file as loadJson
 import json
-from urllib2 import urlopen, URLError
-import time
+# from urllib2 import urlopen, URLError
+# import time
 # from functools import partial
 
 import misc_constants as miscConstants
@@ -159,7 +160,7 @@ class FileLogger(object):
     def __init__(self, fileName):
         self.file = fileName
         self.vis = False
-        self.score = False
+        self.scoreboard = False
 
     # The function that logs will be sent to
     # @param stuff
@@ -169,8 +170,6 @@ class FileLogger(object):
             f.write(stuff + '\n')
         if self.vis:
             self.vis.add_turn(json.loads(stuff))
-        if self.score:
-            self.score.turn(stuff)
 
 
 ''' def test_game(team, team_dir, port):
@@ -200,10 +199,8 @@ def main():
         pass
     fileLog = FileLogger(parameters.log)
     if parameters.show:
-        fileLog.vis = VisualizerThread("src/gamerunner/map.json", parameters.debug_view)
+        fileLog.vis = VisualizerThread("src/gamerunner/map.json", parameters.debug_view, parameters.scoreboard)
         fileLog.vis.start()
-    if parameters.scoreboard:
-        fileLog.score = Scoreboard(parameters.scoreboard_url)
     print "Starting Game"
     my_game = game.Game(parameters.map, parameters.turnsinhour)
     serv = MMServer(parameters.teams,
@@ -218,11 +215,12 @@ def main():
 
 class VisualizerThread(threading.Thread):
 
-    def __init__(self, _mapJsonFileName, _debug=False):
+    def __init__(self, _mapJsonFileName, _debug=False, _scoreboard=False):
         super(VisualizerThread, self).__init__()
         self.running = False
         self.mapJsonFileName = _mapJsonFileName
         self.debug = _debug
+        self.scoreboard = _scoreboard
         self.append_turn = []
 
     def run(self):
@@ -241,13 +239,22 @@ class VisualizerThread(threading.Thread):
             exit(1)
 
         self.visualizer = Visualizer(mapJsonObject, self.debug)
+        if self.scoreboard:
+            self.scoreboard = ScoreboardThread(self.debug)
+            self.scoreboard.run()
+
         while 1:
             if len(self.append_turn) != 0:
                 self.visualizer.add_turn(self.append_turn.pop())
-            self.visualizer.run()
+            turn = self.visualizer.run()
+            if turn is not None:
+                if self.scoreboard:
+                    self.scoreboard.change_turn(turn)
 
     def add_turn(self, json):
         self.append_turn.append(json)
+        if self.scoreboard:
+            self.scoreboard.add_turn(json)
 
     def kill(self):
         pass
@@ -258,45 +265,41 @@ class VisualizerThread(threading.Thread):
     def __del__(self):
         self.kill()
 
-''' class Scoreboard(object):
 
-    def __init__(self, url=None):
-        self.lunched = False
-        self.url = url
-        if url is None:
-            self.url = "http://localhost:7000"
-            self.lunched = True
-            self.board = self.bot = Popen([sys.executable, "scoreServer.py"],
-                                          stdout=FNULL, stderr=FNULL)
-            time.sleep(1)
+class ScoreboardThread(threading.Thread):
 
-    def turn(self, turn):
-        try:
-            r = urlopen(self.url, turn)
-            if(r.getcode() != 200):
-                raise Exception("Scoreboard update failed!")
+    def __init__(self, _debug=False):
+        super(ScoreboardThread, self).__init__()
+        self.running = False
+        self.debug = _debug
+        self.append_turn = []
+        self.turn = 0
 
-        except URLError:
-            if not self.lunched:
-                self.stop()
-                raise  # Exception("Scoreboard update failed!")
+    def run(self):
+        self.scoreboard = Scoreboard(self.debug)
+        last_turn = 0
+        while 1:
+            if len(self.append_turn) != 0:
+                self.scoreboard.add_turn(self.append_turn.pop())
+            if last_turn != self.turn:
+                self.scoreboard.change_turn(self.turn)
+                last_turn = self.turn
+            self.scoreboard.run()
+
+    def add_turn(self, json):
+        self.append_turn.append(json)
+
+    def change_turn(self, turn_number):
+        self.turn = turn_number
 
     def kill(self):
-        if (self.lunched and not self.board.poll()):
-            try:
-                self.board.kill()
-            except OSError:
-                pass
+        pass
 
     def stop(self):
-        if self.lunched:
-            try:
-                self.board.terminate()
-            except OSError:
-                pass
+        pass
 
     def __del__(self):
-        self.kill()'''
+        self.kill()
 
 
 class Client_program(object):

@@ -21,10 +21,12 @@ class Visualizer(object):
         self.debug = _debug
         self.json_data = _map_json_data
         self.ticks = 0
-        self.ticks_per_turn = 60
+        self.ticks_per_turn = const.ticksPerTurn
         self.team_json = None
         self.turn_json = []
         self.game_animations = []  # Used to for global animations like portscan
+
+        self.backgroundImage = pygame.image.load("src/vis/sprites/grass.png")
 
         # If a log file is given, add all turns first
         if (_log_json_data is not None):
@@ -134,6 +136,10 @@ class Visualizer(object):
             self.update()
             self.draw()
             self.ticks += 1
+        if((self.ticks - 1) % self.ticks_per_turn == 0 and self.ticks > 0):
+            return ((self.ticks - 1) / self.ticks_per_turn)
+        else:
+            return None
 
     def update(self):
         for key, value in self.draw_json.iteritems():
@@ -143,7 +149,8 @@ class Visualizer(object):
                 self.game_animations.remove(anim)
 
     def draw(self):
-        self.screen.fill(const.SEA_BLUE)  # Background color
+        self.screen.fill(const.WHITE)  # Background color
+        self.screen.blit(self.backgroundImage, (0, 0))
         if self.debug:
             for edge in self.json_data['edges']:
                 v1, v2 = edge
@@ -170,7 +177,8 @@ class Visualizer(object):
             if (self.debug):
                 print("Processing turn " + str(turn))
             for node in self.turn_json[turn]['map']:
-                self.draw_json[node['id']].owner_id = node['owner']
+                if node['owner'] != self.draw_json[node['id']].owner_id:
+                    self.draw_json[node['id']].change_owner(node['owner'])
                 for prev_node in self.turn_json[(turn) - 1]['map']:
                     if node['id'] == prev_node['id']:
                         self.add_node_animations(node, prev_node)
@@ -183,9 +191,9 @@ class Visualizer(object):
     def add_node_animations(self, node, prev_node):
         # Not implemented in game yet
         # Upgrade has occured
-        # if (node['softwareLevel'] != prev_node['softwareLevel']):
-        #    if (not self.found_anim(node, Upgrade)):
-        #        self.draw_json[node['id']].animations.append(Upgrade())
+        if (node['upgradeLevel'] != prev_node['upgradeLevel']):
+            if (not self.found_anim(node, Upgrade)):
+                self.draw_json[node['id']].animations.append(Upgrade())
 
         # Owner has changed, do CONTROL animation
         if node['owner'] != prev_node['owner']:
@@ -215,17 +223,18 @@ class Visualizer(object):
         for i in range(5):
             curr_infrat_num = node['infiltration'][str(i)]
             prev_infrat_num = prev_node['infiltration'][str(i)]
-            if curr_infrat_num != prev_infrat_num:
-                if curr_infrat_num > prev_infrat_num:
-                    if (not self.found_anim(node, Infiltration)):
-                        # Being infiltrated, An attack has occured
-                        self.draw_json[node['id']].animations.append(Infiltration())
-                    break
-                else:
-                    if (not self.found_anim(node, Heal)):
-                        # Is currently healing
-                        self.draw_json[node['id']].animations.append(Heal())
-                    break
+            if node['owner'] == prev_node['owner']:
+                if curr_infrat_num != prev_infrat_num:
+                    if curr_infrat_num > prev_infrat_num:
+                        if (not self.found_anim(node, Infiltration)):
+                            # Being infiltrated, An attack has occured
+                            self.draw_json[node['id']].animations.append(Infiltration())
+                        break
+                    else:
+                        if (not self.found_anim(node, Heal)):
+                            # Is currently healing
+                            self.draw_json[node['id']].animations.append(Heal())
+                        break
 
         # DDoS
         if node['isDDoSed']:
@@ -234,16 +243,17 @@ class Visualizer(object):
 
     def add_player_animations(self, actions):
         for action in actions:
-            if action['action'] == 'portScanned':  # TODO IS THIS RIGHT?
-                self.game_animations.append(PortScan())
-                continue
+            if action['status'] != 'fail':
+                if action['action'] == 'portScanned':  # TODO IS THIS RIGHT?
+                    self.game_animations.append(PortScan())
+                    continue
 
-            if action['action'] == 'control':
-                sourceNodes = []
-                for nodeId in action['powerSources']:
-                    sourceNodes.append(self.draw_json[nodeId])
-                self.game_animations.append(InfiltrationLines(self.draw_json[action['targetId']], sourceNodes))
-                continue
+                if action['action'] == 'control':
+                    sourceNodes = []
+                    for nodeId in action['powerSources']:
+                        sourceNodes.append(self.draw_json[nodeId])
+                    self.game_animations.append(InfiltrationLines(self.draw_json[action['targetId']], sourceNodes))
+                    continue
 
     def found_anim(self, node, animation_type):
         for animation in self.draw_json[node['id']].animations:

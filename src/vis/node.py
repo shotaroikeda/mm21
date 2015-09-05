@@ -10,7 +10,7 @@ class Node(object):
         self.node_type = _node_type
         self.animations = []
         self.update_city_sprite()
-        self.owner_id = None
+        self.owner_id = -1
 
     def update_city_sprite(self):
         try:
@@ -28,9 +28,22 @@ class Node(object):
             if(animation.update()):
                 self.animations.remove(animation)
 
+    def change_owner(self, _owner_id):
+        if self.owner_id != -1: 
+            for x in range(0, self.sprite_rect[2]):
+                for y in range(0, self.sprite_rect[3]):
+                    if self.sprite.get_at([x, y]) == const.TEAM_COLORS[self.owner_id]:
+                        self.sprite.set_at([x, y], const.TEAM_COLORS[_owner_id])
+        else: 
+            for x in range(0, self.sprite_rect[2]):
+                for y in range(0, self.sprite_rect[3]):
+                    if self.sprite.get_at([x, y]) == const.WHITE:
+                        self.sprite.set_at([x, y], const.TEAM_COLORS[_owner_id])
+        self.owner_id = _owner_id
+
     def draw(self, screen):
-        if (self.owner_id is not None):
-            pygame.draw.circle(screen, const.TEAM_COLORS[self.owner_id], (self.x, self.y), int(self.sprite_rect[2] / 2.0) + 4, 0)
+        # if (self.owner_id != -1):
+        #    pygame.draw.circle(screen, const.TEAM_COLORS[self.owner_id], (self.x, self.y), int(self.sprite_rect[2] / 2.0) + 4, 0)
         screen.blit(self.sprite, self.sprite_rect)
         for animation in self.animations:
             animation.draw(screen, self.sprite_rect[0], self.sprite_rect[1])

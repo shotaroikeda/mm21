@@ -3,7 +3,8 @@
 screenHeight = 700
 screenWidth = 700
 FPStgt = 60
-title = "DA ONE AND ONLY VISUALIZER"
+title = "MechMania Visualizer"
+ticksPerTurn = 60
 
 # BUILDING CONSTANTS
 
@@ -25,6 +26,6 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 BLACK = (0, 0, 0)
-SEA_BLUE = (25, 25, 100)
+SEA_BLUE = (120, 120, 120)
 
 TEAM_COLORS = [(255, 0, 0), (255, 255, 0), (0, 0, 255), (0, 255, 255), (127, 0, 255), (255, 0, 127), (0, 100, 255)]
