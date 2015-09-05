@@ -61,7 +61,7 @@ class Scoreboard(object):
 
         for j in range(len(self.scores)):
             for i in range(len(self.CATEGORY)):
-                num = self.myfont.render(str(i) + ", " + str(j), 1, vis_const.TEAM_COLORS[j])
+                num = self.myfont.render("{}, {}".format(i, j), 1, vis_const.TEAM_COLORS[j])
                 self.screen.blit(num, (x, y))
                 x += self.SPACING[i]
             x = 10
