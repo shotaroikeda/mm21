@@ -13,6 +13,8 @@ public class Main {
 
     // @competitors Modify me
     private static final String TEAM_NAME = "YOUR_TEAM_NAME_HERE";
+    private static final boolean DEBUG_CONNECTION = false;
+    private static int TEAM_ID; // Assigned by the server
 
     /**
      * Run the game
@@ -21,14 +23,16 @@ public class Main {
     public static void main(String[] args) {
 
         // Connect
-        System.out.println("Connecting to server...");
+        if (DEBUG_CONNECTION)
+            System.out.println("Connecting to server...");
         try {
-            ServerConnection.connect(TEAM_NAME);
+            AI.MY_PLAYER_ID = ServerConnection.connect(TEAM_NAME);
         } catch (IOException e) {
             System.out.println("!!! CONNECTION FAILED !!!");
             e.printStackTrace(System.out);
         }
-        System.out.println("Successfully connected to server.");
+        if (DEBUG_CONNECTION)
+            System.out.println("Successfully connected to server.");
 
         // Main game loop
         boolean gameOver = false;
@@ -39,11 +43,10 @@ public class Main {
                 // Execute turn
                 // @competitors DO NOT PUT YOUR AI HERE - use AI.java instead!
                 TurnResult serverResponse = ServerConnection.readTurn();
-                System.out.println("Received turn.");
                 ArrayList<Action> clientActions = AI.processTurn(serverResponse);
-                System.out.println("Computed turn.");
                 ServerConnection.sendTurn(clientActions);
-                System.out.println("Sent turn.");
+                if (DEBUG_CONNECTION)
+                    System.out.println("Turn sent...");
 
                 // Update variables
                 turnCounter++;

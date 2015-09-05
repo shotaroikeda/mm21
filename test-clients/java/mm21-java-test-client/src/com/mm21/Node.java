@@ -3,7 +3,7 @@ package com.mm21;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.util.Iterator;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Represents a node in the game
@@ -12,13 +12,7 @@ import java.util.ArrayList;
 public class Node {
 
     // Enum
-    public class NodeType {
-        public static final int SMALL_CITY = 0;
-        public static final int MEDIUM_CITY = 1;
-        public static final int LARGE_CITY = 2;
-        public static final int ISP = 3;
-        public static final int DATACENTER = 5;
-    }
+    public enum NodeType { SMALL_CITY, MEDIUM_CITY, LARGE_CITY, ISP, DATA_CENTER }
 
     // Property values (private to prevent unintentional writing)
     private int m_id;
@@ -31,7 +25,7 @@ public class Node {
     private int[] m_infiltration;
     private int[] m_rootkitIds;
     private NodeType m_nodeType;
-    private ArrayList<Node> m_adjacentNodes = null; // Must be initialized by initAdjacentNodes in TurnResult.java
+    private HashMap<Integer, Node> m_adjacentNodes = null; // Must be initialized by initAdjacentNodes in TurnResult.java
 
     // Property getters
     public int id() { return m_id; }
@@ -44,7 +38,7 @@ public class Node {
     public int[] infiltration() { return m_infiltration; }
     public int[] rootkitIds() { return m_rootkitIds; }
     public NodeType nodeType() { return m_nodeType; }
-    public ArrayList<Node> adjacentNodes() { return m_adjacentNodes; }
+    public HashMap<Integer, Node> adjacentNodes() { return m_adjacentNodes; }
 
     // Helper methods
     public int totalPower() {
@@ -56,13 +50,13 @@ public class Node {
 
         // Simple properties
         this.m_id = o.getInt("id");
-        this.m_ownerId = o.getInt("ownerId");
+        this.m_ownerId = o.getInt("owner");
         this.m_processing = o.getInt("processingPower");
         this.m_networking = o.getInt("networkingPower");
         this.m_upgradeLevel = o.getInt("upgradeLevel");
         this.m_isDDoSed = o.getBoolean("isDDoSed");
         this.m_isIPSed = o.getBoolean("isIPSed");
-        this.m_nodeType = (NodeType) o.get("nodetype");
+        this.m_nodeType = NodeType.valueOf(o.getString("nodetype").replace(' ', '_').toUpperCase());
 
         // Complex property #1 (Infiltration)
         JSONObject iObj = o.getJSONObject("infiltration");
@@ -74,7 +68,7 @@ public class Node {
         }
 
         // Complex property #2 (Rootkit IDs)
-        JSONArray rArr = o.getJSONArray("rootkitIds");
+        JSONArray rArr = o.getJSONArray("rootkits");
         m_rootkitIds = new int[rArr.length()];
         for (int i = 0; i < rArr.length(); i++) {
             m_rootkitIds[i] = rArr.getInt(i);
@@ -82,11 +76,13 @@ public class Node {
     }
 
     // Delayed property initializers - must not be used until all nodes have been parsed
-    public void initAdjacentNodes(Node[] map, JSONObject o) {
-        m_adjacentNodes = new ArrayList<Node>();
+    public void initAdjacentNodes(HashMap<Integer, Node> map, JSONObject o) {
+        m_adjacentNodes = new HashMap<Integer, Node>();
         JSONArray adjacentIds = o.getJSONArray("adjacentIds");
         for (int i = 0; i < adjacentIds.length(); i++) {
-            m_adjacentNodes.add(map[adjacentIds.getInt(i)]);
+            int n_id = adjacentIds.getInt(i);
+
+            m_adjacentNodes.put(n_id, map.get(n_id));
         }
     }
 

@@ -34,7 +34,7 @@ public class Action {
         // Simple properties
         o.put("action", this.actionType.toString());
         o.put("multiplier", this.multiplier);
-        o.put("targetId", this.targetId);
+        o.put("target", this.targetId);
 
         // Complex property #1 (Supplier IDs)
         JSONArray supplierIds = new JSONArray();

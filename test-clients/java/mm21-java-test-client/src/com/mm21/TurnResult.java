@@ -2,6 +2,7 @@ package com.mm21;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import java.util.HashMap;
 
 /**
  * Represents the results of a game turn
@@ -10,13 +11,11 @@ import org.json.JSONObject;
 public class TurnResult {
 
     // Property values (private to prevent unintentional writing)
-    private Node[] m_nodes;
-    private String[] m_players;
+    private HashMap<Integer, Node> m_nodes;
     private ActionResult[] m_actionResults;
 
     // Property getters
-    public Node[] nodes() { return m_nodes; }
-    public String[] players() { return m_players; }
+    public HashMap<Integer, Node> nodes() { return m_nodes; }
     public ActionResult[] actionResults() { return m_actionResults; }
 
     // Constructor
@@ -24,31 +23,32 @@ public class TurnResult {
 
         // Serialize map
         JSONArray mapNodes = serverResponse.getJSONArray("map");
-        this.m_nodes = new Node[mapNodes.length()];
+        this.m_nodes = new HashMap<Integer, Node>();
         for (int i = 0; i < mapNodes.length(); i++) {
-            this.m_nodes[i] = new Node(mapNodes.getJSONObject(i));
+            JSONObject o = mapNodes.getJSONObject(i);
+            this.m_nodes.put(o.getInt("id"), new Node(o));
         }
 
         // Initialize adjacent nodes
         for (int i = 0; i < mapNodes.length(); i++) {
-            this.m_nodes[i].initAdjacentNodes(this.m_nodes, mapNodes.getJSONObject(i));
-        }
-
-        // Serialize player list
-        JSONObject playerInfos = serverResponse.getJSONObject("playerInfos");
-        for (int i = 0; i < playerInfos.length(); i++) {
-            this.m_players[i] = playerInfos.getString(Integer.toString(i));
+            JSONObject o = mapNodes.getJSONObject(i);
+            this.m_nodes.get(o.getInt("id")).initAdjacentNodes(this.m_nodes, o);
         }
 
         // Serialize action results
-        JSONArray actionResults = serverResponse.getJSONArray("turnResults");
+        JSONArray actionResults = serverResponse.getJSONArray("turnResult");
+        this.m_actionResults = new ActionResult[actionResults.length()];
         for (int i = 0; i < actionResults.length(); i++) {
-            this.m_actionResults[i] = new ActionResult(actionResults.getJSONObject(i));
+            JSONObject o = actionResults.getJSONObject(i);
+            this.m_actionResults[i] = new ActionResult(o);
         }
 
         // Initialize power source nodes
         for (int i = 0; i < actionResults.length(); i++) {
-            this.m_actionResults[i].initPowerSourceNodes(this.m_nodes, actionResults.getJSONObject(i));
+            JSONObject o = actionResults.getJSONObject(i);
+            if (o.has("powerSources")) {
+                this.m_actionResults[i].initPowerSourceNodes(this.m_nodes, o);
+            }
         }
     }
 }
