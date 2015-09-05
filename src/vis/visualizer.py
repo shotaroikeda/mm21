@@ -11,7 +11,7 @@ import vis_constants as const
 
 class Visualizer(object):
 
-    def __init__(self, _map_json_data, _debug=False, _log_json_data=None):
+    def __init__(self, _map_json_data, _debug=False, _log_json_data=None, alone=False):
         # Check and init vis
         self.screenHeight = const.screenWidth
         self.screenWidth = const.screenHeight
@@ -38,6 +38,9 @@ class Visualizer(object):
         self.setup_pygame()
         # process map json to visual data
         self.process_json()
+        if alone:
+            while 1:
+                self.run()
 
     # Sets up pygame
     def setup_pygame(self):
@@ -252,7 +255,7 @@ class Visualizer(object):
                     sourceNodes = []
                     for nodeId in action['powerSources']:
                         sourceNodes.append(self.draw_json[nodeId])
-                    self.game_animations.append(InfiltrationLines(self.draw_json[action['targetId']], sourceNodes))
+                    self.game_animations.append(InfiltrationLines(self.draw_json[action['target']], sourceNodes))
                     continue
 
     def found_anim(self, node, animation_type):

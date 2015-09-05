@@ -7,15 +7,14 @@ import scoreboard_constants as const
 
 class Scoreboard(object):
 
-    def __init__(self, _debug):
+    def __init__(self):
         # Check and init vis
         self.screenHeight = const.screenHeight
         self.screenWidth = const.screenWidth
         self.title = const.title
-        self.fps = const.FPStgt
-        self.debug = _debug
+        self.debug = False
         self.running = True
-        self.scores = {}
+        self.scores = None
         self.turns = []
         self.CATEGORY = ['Team', 'Processing', 'Networking', 'Total', 'S. City', 'M. City', 'L. City', 'ISP', 'DC']
         self.SPACING = [100, 100, 100, 60, 75, 75, 75, 50, 0]
@@ -31,21 +30,18 @@ class Scoreboard(object):
         self.gameClock = pygame.time.Clock()
 
     def run(self):
-        while 1:  # Run game forever till exit
-            self.gameClock.tick(self.fps)  # Make sure game is on 60 FPS
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.display.quit()
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
                     pygame.display.quit()
                     pygame.quit()
                     sys.exit()
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        pygame.display.quit()
-                        pygame.quit()
-                        sys.exit()
-            if self.running:
-                self.draw()
+        if self.running:
+            self.draw()
 
     def draw(self):
         self.screen.fill(const.backgroundColor)
@@ -58,14 +54,15 @@ class Scoreboard(object):
         y += 20
         pygame.draw.line(self.screen, const.lineColor, (x, y), (self.screenWidth - x, y))
         y += 5
-
-        for j in range(len(self.scores)):
-            for i in range(len(self.CATEGORY)):
-                num = self.myfont.render(str(i) + ", " + str(j), 1, vis_const.TEAM_COLORS[j])
-                self.screen.blit(num, (x, y))
-                x += self.SPACING[i]
-            x = 10
-            y += 20
+        
+        if self.scores is not None:
+            for j in range(len(self.scores)):
+                for i in range(len(self.CATEGORY)):
+                    num = self.myfont.render(self.scores[i], 1, vis_const.TEAM_COLORS[j])
+                    self.screen.blit(num, (x, y))
+                    x += self.SPACING[i]
+                x = 10
+                y += 20
         x = 100
         y = 10
         pygame.draw.line(self.screen, const.lineColor, (x, y), (x, self.screenHeight - y))
@@ -74,17 +71,22 @@ class Scoreboard(object):
         pygame.display.flip()
 
     def add_turn(self, json):
-        if len(self.scores) == 0:
-            for player_id in json:
-                self.add_new_player(player_id, None)
+        if self.scores is None:
+            self.scores = {}
+            for player in json:
+                print player
+                for key, player_id in player:
+                    print key
+                    self.add_new_player(player_id, None)
+            print self.scores
         else:
             self.turns.append(json)
 
     def change_turn(self, turnNum):
-        print turnNum
+        self.run()
 
     def add_new_player(self, player_id, player_name):
-        self.scores[player_id] = {'Team': player_id, 'P': 0, 'N': 0, 'T': 0, 'S': 0, 'M': 0, 'L': 0, 'ISP': 0, 'DC': 0}
+        self.scores[int(player_id)] = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 
 if __name__ == '__main__':

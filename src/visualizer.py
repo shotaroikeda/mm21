@@ -10,11 +10,11 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     "-f", "--logFile",
     help="Specifies a log file to use",
-    default="gamerunner/log.json")
+    default="src/gamerunner/log.json")
 parser.add_argument(
     "-m", "--mapJson",
     help="The map file for the visualizer",
-    default="gamerunner/map.json")
+    default="src/gamerunner/map.json")
 parser.add_argument("-d", "--debug", help="Turn on Debug", dest='debug', action='store_true')
 parser.set_defaults(debug=False)
 args = parser.parse_args()  # parse args
@@ -54,8 +54,9 @@ if (args.logFile is not None):
         raise
         exit(1)
 
+print "Starting Visualizer"
 # Initialize Visualizer
 if (args.logFile is not None):
-    visualizer = vis.Visualizer(mapJsonObject, args.debug, logJsonObject)
+    visualizer = vis.Visualizer(mapJsonObject, args.debug, logJsonObject, alone=True)
 else:
-    visualizer = vis.Visualizer(mapJsonObject, args.debug)
+    visualizer = vis.Visualizer(mapJsonObject, args.debug, alone=True)

@@ -11,12 +11,11 @@ import argparse
 from objects import game
 # import pickle
 from vis.visualizer import Visualizer
-from vis.scoreboard import Scoreboard
 import threading
 from load_json import load_map_from_file as loadJson
 import json
-# from urllib2 import urlopen, URLError
-# import time
+from urllib2 import urlopen, URLError
+import time
 # from functools import partial
 
 import misc_constants as miscConstants
@@ -170,6 +169,8 @@ class FileLogger(object):
             f.write(stuff + '\n')
         if self.vis:
             self.vis.add_turn(json.loads(stuff))
+        if self.vis.scoreboard:
+            self.vis.scoreboard.add_turn(stuff)
 
 
 ''' def test_game(team, team_dir, port):
@@ -185,6 +186,7 @@ class FileLogger(object):
                     logger=fileLog) 
     serv.run(port, partial(launch_client_test_game, team_dir, port), time_out=60)
     return True '''
+
 
 
 def main():
@@ -223,6 +225,9 @@ class VisualizerThread(threading.Thread):
         self.scoreboard = _scoreboard
         self.append_turn = []
 
+        if _scoreboard:
+            self.scoreboard = Scoreboard(parameters.scoreboard_url)
+
     def run(self):
         try:
             with open(self.mapJsonFileName) as json_file:
@@ -239,22 +244,16 @@ class VisualizerThread(threading.Thread):
             exit(1)
 
         self.visualizer = Visualizer(mapJsonObject, self.debug)
-        if self.scoreboard:
-            self.scoreboard = ScoreboardThread(self.debug)
-            self.scoreboard.run()
 
         while 1:
-            if len(self.append_turn) != 0:
-                self.visualizer.add_turn(self.append_turn.pop())
+            while len(self.append_turn) != 0:
+                self.visualizer.add_turn(self.append_turn.pop(0))
             turn = self.visualizer.run()
             if turn is not None:
-                if self.scoreboard:
-                    self.scoreboard.change_turn(turn)
+                self.scoreboard.change_turn(turn)
 
     def add_turn(self, json):
         self.append_turn.append(json)
-        if self.scoreboard:
-            self.scoreboard.add_turn(json)
 
     def kill(self):
         pass
@@ -266,38 +265,56 @@ class VisualizerThread(threading.Thread):
         self.kill()
 
 
-class ScoreboardThread(threading.Thread):
+class Scoreboard(object):
 
-    def __init__(self, _debug=False):
-        super(ScoreboardThread, self).__init__()
-        self.running = False
-        self.debug = _debug
-        self.append_turn = []
-        self.turn = 0
+    def __init__(self, url=None):
+        self.lunched = False
+        self.url = url
+        if url is None:
+            self.url = "http://localhost:7000"
+            self.lunched = True
+            self.board = self.bot = Popen([sys.executable, "scoreServer.py"],
+                                          stdout=FNULL, stderr=FNULL)
+            time.sleep(1)
+        
+    def add_turn(self, turn):
+        try:
+            r = urlopen(self.url, turn)
+            if(r.getcode() != 200):
+                raise Exception("Scoreboard update failed!")
 
-    def run(self):
-        self.scoreboard = Scoreboard(self.debug)
-        last_turn = 0
-        while 1:
-            if len(self.append_turn) != 0:
-                self.scoreboard.add_turn(self.append_turn.pop())
-            if last_turn != self.turn:
-                self.scoreboard.change_turn(self.turn)
-                last_turn = self.turn
-            self.scoreboard.run()
+        except URLError:
+            if not self.lunched:
+                self.stop()
+                raise  # Exception("Scoreboard update failed!")
 
-    def add_turn(self, json):
-        self.append_turn.append(json)
+    def change_turn(self, _turnNum):
+        try:
+            r = urlopen(self.url, str(_turnNum))
+            if(r.getcode() != 200):
+                raise Exception("Scoreboard update failed!")
 
-    def change_turn(self, turn_number):
-        self.turn = turn_number
+        except URLError:
+            if not self.lunched:
+                self.stop()
+                raise  # Exception("Scoreboard update failed!")
 
     def kill(self):
-        pass
+        if (self.lunched and not self.board.poll()):
+            try:
+                self.board.kill()
+            except OSError:
+                pass
 
     def stop(self):
-        pass
-
+        """
+        """
+        if self.lunched:
+            try:
+                self.board.terminate()
+            except OSError:
+                pass
+                
     def __del__(self):
         self.kill()
 
