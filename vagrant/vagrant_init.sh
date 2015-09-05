@@ -11,7 +11,6 @@ apt-get -y install openjdk-7-jre
 
 # Game dependencies
 apt-get -y install git
-apt-get -y install mercurial
 apt-get -y install python-pygame
 
 # Desktop + Editors/IDEs
