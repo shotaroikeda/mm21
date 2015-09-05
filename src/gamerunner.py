@@ -162,8 +162,8 @@ class FileLogger(object):
             f.write(stuff + '\n')
         if self.vis:
             self.vis.add_turn(json.loads(stuff))
-        if self.vis.scoreboard:
-            self.vis.scoreboard.add_turn(stuff)
+            if self.vis.scoreboard:
+                self.vis.scoreboard.add_turn(stuff)
 
 
 ''' def test_game(team, team_dir, port):
