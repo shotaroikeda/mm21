@@ -71,13 +71,6 @@ def parse_args():
         help="Specify the map file the game should use. " +
         "Default: {0}".format(miscConstants.mapFile),
         default=miscConstants.mapFile)
-    """
-    parser.add_argument(
-        "-o", "--mapBackground",
-        help="Specify map image to show the game on. " +
-        "Default: {0}".format(miscConstants.mapBackground),
-        default=miscConstants.mapBackground)
-    """
     parser.add_argument(
         "-l", "--log",
         help="Specify where the game log will be written to. " +
@@ -188,7 +181,6 @@ class FileLogger(object):
     return True '''
 
 
-
 def main():
     global parameters
     parameters = parse_args()
@@ -250,7 +242,8 @@ class VisualizerThread(threading.Thread):
                 self.visualizer.add_turn(self.append_turn.pop(0))
             turn = self.visualizer.run()
             if turn is not None:
-                self.scoreboard.change_turn(turn)
+                if self.scoreboard:
+                    self.scoreboard.change_turn(turn)
 
     def add_turn(self, json):
         self.append_turn.append(json)

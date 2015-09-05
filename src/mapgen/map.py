@@ -6,11 +6,11 @@ from graph import Graph
 
 class Map():
 
-    def __init__(self, num_continents, isp_per_continents, cities_per_isp):
+    def __init__(self, num_continents, isp_per_continents, cities_per_isp, total_power_per_isp):
         self.continent_list = []
         self.graph = Graph()
         for i in range(num_continents):
-            self.continent_list.append(Continent(self.graph, isp_per_continents, cities_per_isp))
+            self.continent_list.append(Continent(self.graph, isp_per_continents, cities_per_isp, total_power_per_isp))
             if i != 0:
                 self.continent_list[i].connect_continent(self.graph, self.continent_list[i - 1], 2, 2, 2, 2)
 
