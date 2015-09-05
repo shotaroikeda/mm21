@@ -22,6 +22,7 @@ class Visualizer(object):
         self.json_data = _map_json_data
         self.ticks = 0
         self.ticks_per_turn = 60
+        self.team_json = None
         self.turn_json = []
         self.game_animations = []  # Used to for global animations like portscan
 
@@ -106,33 +107,33 @@ class Visualizer(object):
 
     # Game inf loop
     def run(self):
-        while 1:  # Run game forever till exit
-            self.gameClock.tick(self.fps)  # Make sure game is on 60 FPS
+        # while 1:  # Run game forever till exit -- commented out when changed to run in gamerunner
+        self.gameClock.tick(self.fps)  # Make sure game is on 60 FPS
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.display.quit()
-                    pygame.quit()
-                    sys.exit()
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE:  # Space pauses the game
-                        self.running = False if self.running else True
-                    if (self.debug):  # If debugging, then allow going back in time!
-                        if event.key == pygame.K_LEFT:
-                            self.ticks -= self.ticks_per_turn + self.ticks % self.ticks_per_turn
-                            if (self.ticks < 0):
-                                self.ticks = 0
-                            print("Changed to turn " + str(self.ticks / self.ticks_per_turn))
-                        if event.key == pygame.K_ESCAPE:
-                            pygame.display.quit()
-                            pygame.quit()
-                            sys.exit()
-            if self.running:
-                if(self.ticks % self.ticks_per_turn == 0 and self.ticks > 0):
-                    self.change_turn(self.ticks / self.ticks_per_turn)
-                self.update()
-                self.draw()
-                self.ticks += 1
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.display.quit()
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:  # Space pauses the game
+                    self.running = False if self.running else True
+                if (self.debug):  # If debugging, then allow going back in time!
+                    if event.key == pygame.K_LEFT:
+                        self.ticks -= self.ticks_per_turn + self.ticks % self.ticks_per_turn
+                        if (self.ticks < 0):
+                            self.ticks = 0
+                        print("Changed to turn " + str(self.ticks / self.ticks_per_turn))
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.display.quit()
+                        pygame.quit()
+                        sys.exit()
+        if self.running:
+            if(self.ticks % self.ticks_per_turn == 0 and self.ticks > 0):
+                self.change_turn(self.ticks / self.ticks_per_turn)
+            self.update()
+            self.draw()
+            self.ticks += 1
 
     def update(self):
         for key, value in self.draw_json.iteritems():
@@ -159,18 +160,21 @@ class Visualizer(object):
         pygame.display.flip()
 
     def add_turn(self, json):
-        self.turn_json.append(json)
+        if self.team_json is None:
+            self.team_json = json
+        else:
+            self.turn_json.append(json)
 
     def change_turn(self, turn):
         if(len(self.turn_json) > turn):
             if (self.debug):
-                print("Processing turn " + str(self.ticks / self.ticks_per_turn))
-            for node in self.turn_json[self.ticks / self.ticks_per_turn]['map']:
+                print("Processing turn " + str(turn))
+            for node in self.turn_json[turn]['map']:
                 self.draw_json[node['id']].owner_id = node['owner']
-                for prev_node in self.turn_json[(self.ticks / self.ticks_per_turn) - 1]['map']:
+                for prev_node in self.turn_json[(turn) - 1]['map']:
                     if node['id'] == prev_node['id']:
                         self.add_node_animations(node, prev_node)
-            for actions in self.turn_json[self.ticks / self.ticks_per_turn]['turnResults']:
+            for actions in self.turn_json[turn]['turnResults']:
                 self.add_player_animations(actions)
         else:
             print("Next turn does not exist")

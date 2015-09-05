@@ -13,7 +13,7 @@ from objects import game
 from vis.visualizer import Visualizer
 import threading
 from load_json import load_map_from_file as loadJson
-# import json
+import json
 from urllib2 import urlopen, URLError
 import time
 # from functools import partial
@@ -168,7 +168,7 @@ class FileLogger(object):
         with open(self.file, 'a') as f:
             f.write(stuff + '\n')
         if self.vis:
-            self.vis.turn(stuff)
+            self.vis.add_turn(json.loads(stuff))
         if self.score:
             self.score.turn(stuff)
 
@@ -216,12 +216,14 @@ def main():
         fileLog.score.stop()
 
 
-class VisualizerThread(threading):
+class VisualizerThread(threading.Thread):
 
     def __init__(self, _mapJsonFileName, _debug=False):
-        self.running = True
+        super(VisualizerThread, self).__init__()
+        self.running = False
         self.mapJsonFileName = _mapJsonFileName
         self.debug = _debug
+        self.append_turn = []
 
     def run(self):
         try:
@@ -239,24 +241,19 @@ class VisualizerThread(threading):
             exit(1)
 
         self.visualizer = Visualizer(mapJsonObject, self.debug)
-        self.visualizer.run()
+        while 1:
+            if len(self.append_turn) != 0:
+                self.visualizer.add_turn(self.append_turn.pop())
+            self.visualizer.run()
 
-    def turn(self, turn):
-        self.visualizer.add_turn(turn)
+    def add_turn(self, json):
+        self.append_turn.append(json)
 
     def kill(self):
-        if (self.launched and not self.board.poll()):
-            try:
-                self.board.kill()
-            except OSError:
-                pass
+        pass
 
     def stop(self):
-        if self.launched:
-            try:
-                self.board.terminate()
-            except OSError:
-                pass
+        pass
 
     def __del__(self):
         self.kill()
