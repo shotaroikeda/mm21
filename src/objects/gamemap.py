@@ -123,6 +123,11 @@ class GameMap(object):
             n.targeterId = None
             n.supplierIds = []
 
+            # Zero-clamp infiltration levels
+            # We do this here so that heals that come before attacks still count
+            for x in n.infiltration.iterkeys():
+                n.infiltration[x] = max(n.infiltration[x], 0)
+
             # Update owned-states
             # We do this here so that people can't conquer a node by being earlier in the turn order
             inf = max(n.infiltration.values())

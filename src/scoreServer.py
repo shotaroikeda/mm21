@@ -14,27 +14,23 @@ class mmVisRequstHandler(BaseHTTPServer.BaseHTTPRequestHandler, object):
     def do_POST(self):
         content_len = int(self.headers.getheader('content-length', 0))
         post_body = self.rfile.read(content_len)
-        if content_len < 5:
-            try:
+        try:
+            if content_len < 5:
                 my_scoreboard.change_turn(post_body)
-                self.send_response(200)
-                self.end_headers()
-            except ValueError, TypeError:
-                self.send_response(400)
-                self.end_headers()
-        else:
-            try:
+            else:
                 my_scoreboard.add_turn(json.loads(post_body))
-                self.send_response(200)
-                self.end_headers()
-            except ValueError, TypeError:
-                self.send_response(400)
-                self.end_headers()
+            self.send_response(200)
+            self.end_headers()
+        except ValueError, TypeError:
+            self.send_response(400)
+            self.end_headers()
 
-# blow here is basic web server stuff
+"""
+Basic web server stuff
+"""
 HandlerClass = mmVisRequstHandler
-ServerClass  = BaseHTTPServer.HTTPServer
-Protocol     = "HTTP/1.0"
+ServerClass = BaseHTTPServer.HTTPServer
+Protocol = "HTTP/1.0"
 
 
 def start_web_server():

@@ -718,11 +718,17 @@ def test_doControl_heal():
     assert _target.infiltration[1] == 4
 
     # Test overhealing a damaged node with multiplier
+    # (Should reduce initially, then reset)
     _target.doControl(5)
+    assert _target.infiltration[1] == -1
+    _map.resetAfterTurn()
     assert _target.infiltration[1] == 0
 
     # Test overhealing a fully-healed node without multiplier
+    _target.targeterId = 2
     _target.doControl()
+    assert _target.infiltration[1] == -1
+    _map.resetAfterTurn()
     assert _target.infiltration[1] == 0
 
 

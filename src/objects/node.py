@@ -262,7 +262,7 @@ class Node(object):
         # Heal your own nodes
         if self.targeterId == self.ownerId:
             for k in self.infiltration.iterkeys():
-                self.infiltration[k] = max(self.infiltration[k] - multiplier, 0)
+                self.infiltration[k] = self.infiltration[k] - multiplier  # Will be zero-clamped in resetAfterTurn() - doing it here causes problems
 
         # Attack others' nodes
         else:
