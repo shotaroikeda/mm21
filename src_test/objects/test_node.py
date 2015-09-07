@@ -704,7 +704,7 @@ def test_doControl_heal():
     _map.addPlayer(2)
     _node = _map.getPlayerNodes(1)[0]
 
-    _target = [x for x in _node.getAdjacentNodes() if x.nodetype == "Large City"][0]
+    _target = [x for x in _node.getAdjacentNodes() if "City" in x.nodetype][0]
     _target.isIPSed = False
     if _target.ownerId != 2:
         _target.own(2)
