@@ -50,6 +50,9 @@ public class ServerConnection {
 
         // Get server response
         String serverResponse = reader.readLine();
+        if (serverResponse == null) {
+            System.out.println("!!! SERVER DID NOT RESPOND, OR WAS TERMINATED !!!");
+        }
 
         // Get turn JSON
         JSONObject turnJson = (JSONObject) new JSONTokener(serverResponse).nextValue();

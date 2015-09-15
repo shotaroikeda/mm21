@@ -124,7 +124,7 @@ class Game(object):
                     actionResult["message"] = "Invalid playerID."
                 except ValueError:
                     actionResult["message"] = "Type mismatch in parameter(s)."
-                except MultiplierMustBePositiveException as e:
+                except (ActionOwnershipException, MultiplierMustBePositiveException) as e:
                     actionResult["message"] = str(e)
                 except Exception as e:
                     raise  # Uncomment me to raise unhandled exceptions
