@@ -13,14 +13,6 @@ class InvalidPlayerException(Exception):
     pass
 
 
-class AttemptToMultipleDDoSException(Exception):
-    pass
-
-
-class AttemptToMultipleRootkitException(Exception):
-    pass
-
-
 class Game(object):
 
     def __init__(self, mapPath, totalTurns):
@@ -114,17 +106,16 @@ class Game(object):
                             actionResult["message"] = "Invalid action type."
                     else:
                         actionResult["message"] = "Invalid node."
-                except AttemptToMultipleDDoSException:
-                    actionResult["message"] = "Node is already DDoSed."
-                except AttemptToMultipleRootkitException:
-                    actionResult["message"] = "Node is already rootkitted."
                 except InsufficientPowerException:
                     actionResult["message"] = "Insufficient networking and/or processing."
                 except IndexError:
                     actionResult["message"] = "Invalid playerID."
                 except ValueError:
                     actionResult["message"] = "Type mismatch in parameter(s)."
-                except (ActionOwnershipException, MultiplierMustBePositiveException) as e:
+                except (RepeatedActionException,
+                        InsufficientPowerException,
+                        ActionOwnershipException,
+                        MultiplierMustBePositiveException) as e:
                     actionResult["message"] = str(e)
                 except Exception as e:
                     raise  # Uncomment me to raise unhandled exceptions

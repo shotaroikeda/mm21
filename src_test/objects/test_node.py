@@ -815,7 +815,7 @@ def test_doUpgrade():
 
     # Test upgrading a node multiple times per turn
     _node.upgradePending = True
-    with pytest.raises(AttemptToMultipleUpgradeException):
+    with pytest.raises(RepeatedActionException):
         _node.targeterId = 1
         _node.doUpgrade()
 
@@ -910,5 +910,5 @@ def test_doPortScan_gameLogic():
     _node.targeterId = 1
     _node2.targeterId = 1
     _node.doPortScan()
-    with pytest.raises(AttemptToMultiplePortScanException):
+    with pytest.raises(RepeatedActionException):
         _node2.doPortScan()

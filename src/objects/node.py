@@ -7,15 +7,7 @@ from src.misc_constants import *
 import json as JSON
 
 
-class AttemptToMultipleRootkitException(Exception):
-    pass
-
-
-class AttemptToMultiplePortScanException(Exception):
-    pass
-
-
-class AttemptToMultipleUpgradeException(Exception):
+class RepeatedActionException(Exception):
     pass
 
 
@@ -244,7 +236,7 @@ class Node(object):
     # Throw an exception if a player has already port-scanned
     def requireNotPortScanned(self):
         if self.ownerId in self.map.portScans:
-            raise AttemptToMultiplePortScanException("You may not port scan more than once per turn.")
+            raise RepeatedActionException("You may not port scan more than once per turn.")
         return self
 
     """
@@ -283,7 +275,7 @@ class Node(object):
     def doUpgrade(self):
         self.requireOwned().requireNotDDoSed("upgraded")
         if self.upgradePending:
-            raise AttemptToMultipleUpgradeException("Each node can only be upgraded once per turn.")
+            raise RepeatedActionException("Each node can only be upgraded once per turn.")
         powerSources = self.requireResources(self.processing, self.networking)
         self.upgradePending = True
         return powerSources
@@ -304,7 +296,7 @@ class Node(object):
     def doRootkit(self):
         self.requireNotOwned().requireNotDDoSed("rootkitted").requireNotIPSed()
         if self.targeterId in self.rootkitIds:
-            raise AttemptToMultipleRootkitException("This player has a rootkit here already.")
+            raise RepeatedActionException("This player has a rootkit here already.")
         powerSources = self.requireResources(self.totalPower / 5)
         self.rootkitIds.append(self.targeterId)
         return powerSources
