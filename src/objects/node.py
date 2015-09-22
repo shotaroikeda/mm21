@@ -300,7 +300,7 @@ class Node(object):
 
     # Player action to add a rootkit to a node
     def doRootkit(self):
-        self.requireNotOwned().requireNotDDoSed("rootkitted").requireNotIPSed()
+        self.requireNotDDoSed("rootkitted").requireNotOwned().requireNotIPSed()
         if self.targeterId in self.rootkitIds:
             raise RepeatedActionException("This player has a rootkit here already.")
         powerSources = self.requireResources(self.totalPower / 5)
@@ -315,6 +315,6 @@ class Node(object):
 
     # Player action to do a port scan
     def doPortScan(self):
-        powerSources = self.requireOwned().requireNotPortScanned().requireResources(0, 500)
+        powerSources = self.requireOwned().requireNotPortScanned().requireNotDDoSed("port-scanned").requireResources(0, 500)
         self.map.portScans.append(self.ownerId)
         return powerSources

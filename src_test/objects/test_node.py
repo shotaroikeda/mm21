@@ -797,6 +797,61 @@ def test_doDDoS_controlInterrupt():
     assert _node.DDoSed is False
 
 
+# Test that actions conform to DDoSing restrictions (as described on the Wiki)
+def test_actionConformityToDDoS():
+
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _node = _map.getPlayerNodes(1)[0]
+    _node.isIPSed = False
+    _node2 = _node.getAdjacentNodes()[0]
+    _node2.own(1)
+
+    # Initialization pt 2
+    _node.targeterId = 1
+    _node.doDDoS()
+    _map.resetAfterTurn()
+    _node2.remainingProcessing = 9999
+    _node2.remainingNetworking = 9999
+    _node.targeterId = 1
+
+    # Clean
+    with pytest.raises(NodeIsDDoSedException):
+        _node.doClean()
+
+    # Control
+    with pytest.raises(NodeIsDDoSedException):
+        _node.doControl(1)
+
+    # Port scan
+    with pytest.raises(NodeIsDDoSedException):
+        _node.doPortScan()
+
+    # Rootkit
+    with pytest.raises(NodeIsDDoSedException):
+        _node.doRootkit()
+
+    # Scan
+    with pytest.raises(NodeIsDDoSedException):
+        _node.doScan()
+
+    # Upgrade
+    with pytest.raises(NodeIsDDoSedException):
+        _node.doUpgrade()
+
+    # Check that no resources were consumed
+    assert _node2.remainingNetworking == 9999
+    assert _node2.remainingProcessing == 9999
+
+    # IPS (should go through)
+    _node.doIPS()
+    assert _node.IPSPending is True
+
+    # DDoS (should go through)
+    _node.doDDoS()
+    assert _node.DDoSPending is True
+
+
 # Test doUpgrade
 def test_doUpgrade():
 
