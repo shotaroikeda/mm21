@@ -1065,3 +1065,63 @@ def test_doPortScan_gameLogic():
     _node.doPortScan()
     with pytest.raises(RepeatedActionException):
         _node2.doPortScan()
+
+
+# Test that actions conform to ownership restrictions (as described on the Wiki)
+def test_actionConformityToOwnership():
+
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _map.addPlayer(2)
+    _node = _map.getPlayerNodes(1)[0]
+    _oNode = _node.getAdjacentNodes()[0]
+
+    # Initialize nodes
+    if _oNode.ownerId != 2:
+        _oNode.own(2)
+    for x in [_node, _oNode]:
+        x.remainingNetworking = 99999
+        x.remainingProcessing = 99999
+        x.targeterId = 1
+        x.isIPSed = False
+
+    # Clean
+    _node.doClean()
+    with pytest.raises(ActionOwnershipException):
+        _oNode.doClean()
+
+    # Control
+    _node.doControl(1)
+    _oNode.doControl(1)
+
+    # DDoS
+    for x in [_node, _oNode]:
+        x.doDDoS()
+        assert x.DDoSPending is True
+
+    # IPS
+    _node.doIPS()
+    assert _node.IPSPending is True
+    with pytest.raises(ActionOwnershipException):
+        _oNode.doIPS()
+    assert _oNode.IPSPending is False
+
+    # Port scan
+    _node.doPortScan()
+    with pytest.raises(ActionOwnershipException):
+        _oNode.doPortScan()
+
+    # Rootkit
+    with pytest.raises(ActionOwnershipException):
+        _node.doRootkit()
+    _oNode.doRootkit()
+
+    # Scan
+    _node.doScan()
+    with pytest.raises(ActionOwnershipException):
+        _oNode.doScan()
+
+    # Upgrade
+    _node.doUpgrade()
+    with pytest.raises(ActionOwnershipException):
+        _oNode.doUpgrade()
