@@ -948,7 +948,7 @@ def test_doIPS():
     assert _node.isIPSed is True
 
 
-# Test doUpgrade interrupted by doControl
+# Test doIPS interrupted by doControl
 def test_doIPS_controlInterrupt():
 
     _map = GameMap(misc_constants.mapFile)
