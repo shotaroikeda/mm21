@@ -962,9 +962,10 @@ def test_doIPS_controlInterrupt():
     _node2.targeterId = 1
     _node2.doIPS()
     _map.resetAfterTurn()
+    assert _node.isIPSed is False
 
     # Super-charge attacker
-    _attacker = [x for x in _node2.getAdjacentNodes() if x.ownerId != 1][0]
+    _attacker = [x for x in _node.getAdjacentNodes() if x.ownerId != 1][0]
     if _attacker.ownerId != 2:
         _attacker.own(2)
     _attacker.remainingProcessing = 99999
@@ -972,7 +973,6 @@ def test_doIPS_controlInterrupt():
 
     # Attempt IPS
     _node.targeterId = 1
-    assert _node.isIPSed is False
     _node.doIPS()
 
     # Interrupt IPS with control

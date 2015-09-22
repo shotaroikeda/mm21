@@ -133,16 +133,17 @@ class GameMap(object):
             inf = max(n.infiltration.values())
             if inf > n.totalPower * 2:
                 maxPlayers = [x for x in n.infiltration if n.infiltration[x] == inf]
-                n.own(random.choice(maxPlayers))  # Don't favor lower/higher player IDs - TODO Update the wiki to say "ties will be broken RANDOMLY, not ARBITRARILY"
+                n.own(random.choice(maxPlayers))  # Don't favor lower/higher player IDs
 
         # IPS status updates
         ipsChangedNodes = [x for x in self.nodes.values() if x.IPSPending]
         ipsChangedPlayers = set([x.ownerId for x in ipsChangedNodes])
         for pId in ipsChangedPlayers:
             pNodes = self.getPlayerNodes(pId)
-            for n in pNodes:
-                self.isIPSed = False
-            ipsedNodes = [x for x in pNodes if x.IPSPending]
-            for n in ipsedNodes:
-                n.IPSPending = False
-            ipsedNodes[-1].isIPSed = True  # Use the last-IPSed node
+            ipsedNodes = [x for x in pNodes if x.ownerId == pId and x.IPSPending]
+            if len(ipsedNodes) != 0:
+                for n in pNodes:
+                    n.isIPSed = False
+                for n in ipsedNodes:
+                    n.IPSPending = False
+                ipsedNodes[-1].isIPSed = True  # Use the last-IPSed node

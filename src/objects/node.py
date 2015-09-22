@@ -190,6 +190,8 @@ class Node(object):
         self.isIPSed = False
         self.ownerId = playerId
         self.rootkitIds = []
+        self.DDoSed = False
+        self.IPSPending = False
         for k in self.infiltration:
             self.infiltration[k] = 0
         return
