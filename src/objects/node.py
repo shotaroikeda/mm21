@@ -31,6 +31,10 @@ class IpsPreventsActionException(Exception):
     pass
 
 
+class DeveloperErrorException(Exception):
+    pass
+
+
 class Node(object):
     def __init__(self, id, adjacent, nodetype, gamemap):
         # int
@@ -230,7 +234,7 @@ class Node(object):
     # Throw an exception if a node has an invalid targeter ID
     def requireTargeterID(self):
         if self.targeterId is None:
-            raise NodeIsntTargetedException
+            raise DeveloperErrorException("Node isn't targeted.")
         return self
 
     # Throw an exception if a player has already port-scanned

@@ -768,6 +768,35 @@ def test_doDDoS():
     _node.doDDoS()
 
 
+# Test doDDoS interrupted by doControl
+def test_doDDoS_controlInterrupt():
+
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _map.addPlayer(2)
+    _node = _map.getPlayerNodes(1)[0]
+    _node.isIPSed = False
+
+    # Initialize _attacker
+    _attacker = _node.getAdjacentNodes()[0]
+    _attacker.remainingProcessing = 99999
+    _attacker.remainingNetworking = 99999
+    if _attacker.ownerId != 2:
+        _attacker.own(2)
+
+    # Attempt DDoS
+    _node.targeterId = 2
+    _node.doDDoS()
+    assert _node.DDoSPending is True
+
+    # Interrupt DDoS with control
+    _node.doControl(9999)
+    _map.resetAfterTurn()
+    assert _node.ownerId == 2
+    assert _node.DDoSPending is False
+    assert _node.DDoSed is False
+
+
 # Test doUpgrade
 def test_doUpgrade():
 
@@ -818,6 +847,37 @@ def test_doUpgrade():
     with pytest.raises(RepeatedActionException):
         _node.targeterId = 1
         _node.doUpgrade()
+
+
+# Test doUpgrade interrupted by doControl
+def test_doUpgrade_controlInterrupt():
+
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _map.addPlayer(2)
+    _node = _map.getPlayerNodes(1)[0]
+    _node.isIPSed = False
+
+    # Init _attacker
+    _attacker = _node.getAdjacentNodes()[0]
+    if _attacker.ownerId != 2:
+        _attacker.own(2)
+    _attacker.remainingProcessing = 99999
+    _attacker.remainingNetworking = 99999
+
+    # Do upgrade on initial node, then interrupt it
+    # The upgrade should go through
+    _node.targeterId = 1
+    _node.doUpgrade()
+    assert _node.upgradePending is True
+    _node.targeterId = 2
+    _node.doControl(9999)
+    _map.resetAfterTurn()
+
+    # Check values
+    assert _node.upgradeLevel == 1
+    assert _node.ownerId == 2
+    assert _node.upgradePending is False
 
 
 # Test doClean
@@ -886,6 +946,44 @@ def test_doIPS():
     assert _node.isIPSed is True
     _map.resetAfterTurn()
     assert _node.isIPSed is True
+
+
+# Test doUpgrade interrupted by doControl
+def test_doIPS_controlInterrupt():
+
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _map.addPlayer(2)
+    _node = _map.getPlayerNodes(1)[0]
+
+    # Move IPS
+    _node2 = [x for x in _map.nodes.values() if x.ownerId == -1][0]
+    _node2.own(1)
+    _node2.targeterId = 1
+    _node2.doIPS()
+    _map.resetAfterTurn()
+
+    # Super-charge attacker
+    _attacker = [x for x in _node2.getAdjacentNodes() if x.ownerId != 1][0]
+    if _attacker.ownerId != 2:
+        _attacker.own(2)
+    _attacker.remainingProcessing = 99999
+    _attacker.remainingNetworking = 99999
+
+    # Attempt IPS
+    _node.targeterId = 1
+    assert _node.isIPSed is False
+    _node.doIPS()
+
+    # Interrupt IPS with control
+    _node.targeterId = 2
+    _node.doControl(9999)
+    _map.resetAfterTurn()
+
+    # IPS should fail, and control should go through
+    assert _node.isIPSed is False
+    assert _node.IPSPending is False
+    assert _node.ownerId == 2
 
 
 # Test doPortScan
