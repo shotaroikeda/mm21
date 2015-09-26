@@ -33,6 +33,11 @@ class Node(object):
             for y in range(0, self.sprite_rect[3]):
                 selfColor = const.WHITE if self.owner_id == -1 else const.TEAM_COLORS[self.owner_id]
                 if self.sprite.get_at([x, y]) == selfColor:
+
+                    # Fail on too many teams
+                    if (_owner_id >= len(const.TEAM_COLORS)):
+                        raise Exception("There are more teams than colors. Please add more colors to vis_constants.TEAM_COLORS.")
+                    
                     self.sprite.set_at([x, y], const.TEAM_COLORS[_owner_id])
         self.owner_id = _owner_id
 
