@@ -29,16 +29,11 @@ class Node(object):
                 self.animations.remove(animation)
 
     def change_owner(self, _owner_id):
-        if self.owner_id != -1: 
-            for x in range(0, self.sprite_rect[2]):
-                for y in range(0, self.sprite_rect[3]):
-                    if self.sprite.get_at([x, y]) == const.TEAM_COLORS[self.owner_id]:
-                        self.sprite.set_at([x, y], const.TEAM_COLORS[_owner_id])
-        else: 
-            for x in range(0, self.sprite_rect[2]):
-                for y in range(0, self.sprite_rect[3]):
-                    if self.sprite.get_at([x, y]) == const.WHITE:
-                        self.sprite.set_at([x, y], const.TEAM_COLORS[_owner_id])
+        for x in range(0, self.sprite_rect[2]):
+            for y in range(0, self.sprite_rect[3]):
+                selfColor = const.WHITE if self.owner_id == -1 else const.TEAM_COLORS[self.owner_id]
+                if self.sprite.get_at([x, y]) == selfColor:
+                    self.sprite.set_at([x, y], const.TEAM_COLORS[_owner_id])
         self.owner_id = _owner_id
 
     def draw(self, screen):
