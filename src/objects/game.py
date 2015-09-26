@@ -134,8 +134,16 @@ class Game(object):
         # Determine winner if appropriate
         done = self.totalTurns > 0 and self.totalTurns <= self.turnsExecuted
         if done:
+
+            # Determine total power amounts
+            totalPowerAmounts = {}
+            for playerId in self.playerInfos:
+                totalPowerAmounts[playerId] = sum([x.totalPower() for x in self.map.getPlayerNodes(playerId)])
+
+            # Send results to players
             for result in self.turnResults.values():
-                result.append({"winnerId": 0})  # TODO determine winner + document "turnResults" format
+                result["totalPowerAmounts"] = totalPowerAmounts
+                result["gameOver"] = True
 
         # Done!
         self.queuedTurns = {}
