@@ -98,7 +98,7 @@ class Game(object):
                             powerSources = target.doScan()
                         elif action == "rootkit":
                             powerSources = target.doRootkit()
-                        elif action == "portScan":
+                        elif action == "portscan":
                             powerSources = target.doPortScan()
                         elif action == "ips":
                             target.doIPS()
