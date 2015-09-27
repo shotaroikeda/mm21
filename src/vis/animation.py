@@ -34,18 +34,10 @@ class Upgrade(Animation):
 
     def setup_animation(self):
         # Add the images to the images
-        for i in range(1, 6):
+        for i in range(1, 1):
             self.images.append(pygame.image.load("src/vis/sprites/upgrade_" + str(i) + ".png"))
-        for i in range(12):
+        for i in range(60):
             self.image_tick.append(0)
-        for i in range(12):
-            self.image_tick.append(1)
-        for i in range(12):
-            self.image_tick.append(2)
-        for i in range(12):
-            self.image_tick.append(3)
-        for i in range(12):
-            self.image_tick.append(4)
         for i in range(len(self.images)):
             self.image_rects.append(self.images[i].get_rect())
 
@@ -140,10 +132,18 @@ class Heal(Animation):
 
     def setup_animation(self):
         # Add the images to the images
-        for i in range(1, 2):
+        for i in range(1, 6):
             self.images.append(pygame.image.load("src/vis/sprites/heal_" + str(i) + ".png"))
-        for i in range(60):
+        for i in range(12):
             self.image_tick.append(0)
+        for i in range(12):
+            self.image_tick.append(1)
+        for i in range(12):
+            self.image_tick.append(2)
+        for i in range(12):
+            self.image_tick.append(3)
+        for i in range(12):
+            self.image_tick.append(4)
         for i in range(len(self.images)):
             self.image_rects.append(self.images[i].get_rect())
 
@@ -156,10 +156,13 @@ class DDOS(Animation):
 
     def setup_animation(self):
         # Add the images to the images
-        for i in range(1, 2):
+        for i in range(1, 3):
             self.images.append(pygame.image.load("src/vis/sprites/ddos_" + str(i) + ".png"))
-        for i in range(60):
+            self.images.append(pygame.image.load("src/vis/sprites/ddos_" + str(i) + ".png"))
+        for i in range(30):
             self.image_tick.append(0)
+        for i in range(30):
+            self.image_tick.append(1)
         for i in range(len(self.images)):
             self.image_rects.append(self.images[i].get_rect())
 
@@ -172,10 +175,20 @@ class Scan(Animation):
 
     def setup_animation(self):
         # Add the images to the images
-        for i in range(1, 2):
+        for i in range(1, 7):
             self.images.append(pygame.image.load("src/vis/sprites/scan_" + str(i) + ".png"))
-        for i in range(60):
+        for i in range(10):
             self.image_tick.append(0)
+        for i in range(10):
+            self.image_tick.append(1)
+        for i in range(10):
+            self.image_tick.append(2)
+        for i in range(10):
+            self.image_tick.append(3)
+        for i in range(10):
+            self.image_tick.append(4)
+        for i in range(10):
+            self.image_tick.append(5)
         for i in range(len(self.images)):
             self.image_rects.append(self.images[i].get_rect())
 
@@ -185,16 +198,16 @@ class Scan(Animation):
 class PortScan(object):
 
     def __init__(self):
-        self.x = 0
-        self.speed += 1
+        self.x = const.screenWidth
+        self.speed = -const.screenWidth / const.ticksPerTurn
 
     def update(self):
         self.x += self.speed
-        if (self.x > const.screenWidth):
+        if (self.x < 0):
             return True
 
     def draw(self, screen):
-        pygame.draw.line(screen, (0, 255, 0), (self.x, 0), (self.x, const.screenHeight), 3)
+        pygame.draw.line(screen, (0, 255, 0), (self.x, 0), (self.x, const.screenHeight), 10)
 
 
 class InfiltrationLines(object):

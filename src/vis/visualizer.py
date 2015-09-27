@@ -4,7 +4,7 @@ import sys
 import math
 import random
 from node import Node
-from animation import Upgrade, ChangeOwner, AddRootkit, CleanRootkit, IPS, Infiltration, InfiltrationLines, Heal, DDOS, PortScan
+from animation import Upgrade, ChangeOwner, AddRootkit, CleanRootkit, IPS, Infiltration, InfiltrationLines, Heal, DDOS, PortScan, Scan
 import vis_constants as const
 # import animate as ani
 
@@ -26,7 +26,9 @@ class Visualizer(object):
         self.turn_json = []
         self.game_animations = []  # Used to for global animations like portscan
 
-        self.backgroundImage = pygame.image.load("src/vis/sprites/grass.png")
+        self.waterImage = pygame.image.load("src/vis/sprites/water.png")
+
+        self.landImage = pygame.image.load("src/vis/sprites/grass.png")
 
         # If a log file is given, add all turns first
         if (_log_json_data is not None):
@@ -59,21 +61,23 @@ class Visualizer(object):
         # Calculate number of blocks needed for the given map json. Blocks are organized into a square
         cont_blocks = len(self.json_data['continents'])
         blocks = math.ceil(math.sqrt(cont_blocks))  # We just need the amount of blocks on one side of the square
-        cont_blocks_taken = [0] * (int(blocks) ** 2)
+        self.cont_blocks_taken = [0] * (int(blocks) ** 2)
+
+        x_blockSize = math.floor(self.screenWidth / blocks)
+        y_blockSize = math.floor(self.screenHeight / blocks)
+        self.landImage = pygame.transform.scale(self.landImage, (int(x_blockSize * 1.1), int(y_blockSize * 1.1)))
 
         j = random.randint(0, int(blocks) ** 2 - 1)  # Randomly chose a non taken block
         for cont in self.json_data['continents']:
 
             # This section finds the center of the randomly chosen block, with a given offset
-            while(cont_blocks_taken[j] == 1):
+            while(self.cont_blocks_taken[j] != 0):
                 j = random.randint(0, int(blocks) ** 2 - 1)
-            cont_blocks_taken[j] = 1
-            x_blockSize = math.floor(self.screenWidth / blocks)
-            y_blockSize = math.floor(self.screenHeight / blocks)
             x_rand = random.randint(-math.floor(x_blockSize * const.center_offset), math.floor(x_blockSize * const.center_offset))
             y_rand = random.randint(-math.floor(y_blockSize * const.center_offset), math.floor(y_blockSize * const.center_offset))
             center_x = (x_blockSize) * ((j % blocks) + 1 - 0.5) + x_rand
             center_y = (y_blockSize) * (math.floor(j / blocks) + 1 - 0.5) + y_rand
+            self.cont_blocks_taken[j] = (int(center_x) - x_blockSize / 2, int(center_y) - y_blockSize / 2)
 
             # For each isp, place it in a circle
             i = 0
@@ -153,7 +157,17 @@ class Visualizer(object):
 
     def draw(self):
         self.screen.fill(const.WHITE)  # Background color
-        self.screen.blit(self.backgroundImage, (0, 0))
+
+        #Draw background water
+        for x in range(0, const.screenWidth/100):
+            for y in range(0, const.screenHeight/100):
+                self.screen.blit(self.waterImage, (x * 100, y * 100))
+
+        #Draw continents
+        for cont in range(len(self.cont_blocks_taken)):
+            if self.cont_blocks_taken[cont] is not 0:
+                self.screen.blit(self.landImage, self.cont_blocks_taken[cont])
+
         if self.debug:
             for edge in self.json_data['edges']:
                 v1, v2 = edge
@@ -186,7 +200,7 @@ class Visualizer(object):
                     if node['id'] == prev_node['id']:
                         self.add_node_animations(node, prev_node)
             for actions in self.turn_json[turn]['turnResults']:
-                self.add_player_animations(actions)
+                self.add_player_animations(actions, turn)
         else:
             print("Next turn does not exist")
             self.running = False
@@ -244,12 +258,13 @@ class Visualizer(object):
             if (not self.found_anim(node, DDOS)):
                 self.draw_json[node['id']].animations.append(DDOS())
 
-    def add_player_animations(self, actions):
+    def add_player_animations(self, actions, turn):
         for action in actions:
             if action['status'] != 'fail':
-                if action['action'] == 'portScanned':  # TODO IS THIS RIGHT?
-                    self.game_animations.append(PortScan())
-                    continue
+                if action['action'] == 'portscan':  # TODO IS THIS RIGHT?
+                    if (not self.found_game_anim(PortScan)):
+                        self.game_animations.append(PortScan())
+                        continue
 
                 if action['action'] == 'control':
                     sourceNodes = []
@@ -257,6 +272,12 @@ class Visualizer(object):
                         sourceNodes.append(self.draw_json[nodeId])
                     self.game_animations.append(InfiltrationLines(self.draw_json[action['target']], sourceNodes))
                     continue
+
+                if action['action'] == 'scan':
+                    for node in self.turn_json[turn]['map']:
+                        if node['id'] == action['target']:
+                            self.draw_json[node['id']].animations.append(Scan())
+                    
 
     def found_anim(self, node, animation_type):
         for animation in self.draw_json[node['id']].animations:
