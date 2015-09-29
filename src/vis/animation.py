@@ -1,6 +1,6 @@
 import pygame
 import vis_constants as const
-
+import math
 
 class Animation(object):
 
@@ -158,7 +158,6 @@ class DDOS(Animation):
         # Add the images to the images
         for i in range(1, 3):
             self.images.append(pygame.image.load("src/vis/sprites/ddos_" + str(i) + ".png"))
-            self.images.append(pygame.image.load("src/vis/sprites/ddos_" + str(i) + ".png"))
         for i in range(30):
             self.image_tick.append(0)
         for i in range(30):
@@ -175,20 +174,10 @@ class Scan(Animation):
 
     def setup_animation(self):
         # Add the images to the images
-        for i in range(1, 7):
+        for i in range(1, 17):
             self.images.append(pygame.image.load("src/vis/sprites/scan_" + str(i) + ".png"))
-        for i in range(10):
-            self.image_tick.append(0)
-        for i in range(10):
-            self.image_tick.append(1)
-        for i in range(10):
-            self.image_tick.append(2)
-        for i in range(10):
-            self.image_tick.append(3)
-        for i in range(10):
-            self.image_tick.append(4)
-        for i in range(10):
-            self.image_tick.append(5)
+            for _ in range(4):
+                self.image_tick.append(i - 1)
         for i in range(len(self.images)):
             self.image_rects.append(self.images[i].get_rect())
 
@@ -223,6 +212,9 @@ class InfiltrationLines(object):
             return True
 
     def draw(self, screen):
-        if(self.ticks % 20 > 3):
-            for node in self.source_nodes:
-                pygame.draw.line(screen, const.TEAM_COLORS[node.owner_id], (node.x, node.y), (self.target_node.x, self.target_node.y), 1)
+        for node in self.source_nodes:
+            pygame.draw.line(screen, const.TEAM_COLORS[node.owner_id], (node.x, node.y), (self.target_node.x, self.target_node.y), 1)
+            vector = (self.target_node.x - node.x, self.target_node.y - node.y)
+            circle_pos_x = int(node.x + vector[0] * (self.ticks / 60.0))
+            circle_pos_y = int(node.y + vector[1] * (self.ticks / 60.0))
+            pygame.draw.circle(screen, const.TEAM_COLORS[node.owner_id], (circle_pos_x, circle_pos_y), 3)

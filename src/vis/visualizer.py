@@ -59,8 +59,9 @@ class Visualizer(object):
         self.draw_json = {}
 
         # Calculate number of blocks needed for the given map json. Blocks are organized into a square
-        cont_blocks = len(self.json_data['continents'])
-        blocks = math.ceil(math.sqrt(cont_blocks))  # We just need the amount of blocks on one side of the square
+        #cont_blocks = len(self.json_data['continents'])
+        # blocks = math.ceil(math.sqrt(cont_blocks))  # We just need the amount of blocks on one side of the square
+        blocks = 4
         self.cont_blocks_taken = [0] * (int(blocks) ** 2)
 
         x_blockSize = math.floor(self.screenWidth / blocks)
@@ -261,7 +262,7 @@ class Visualizer(object):
     def add_player_animations(self, actions, turn):
         for action in actions:
             if action['status'] != 'fail':
-                if action['action'] == 'portscan':  # TODO IS THIS RIGHT?
+                if action['action'] == 'portscan':
                     if (not self.found_game_anim(PortScan)):
                         self.game_animations.append(PortScan())
                         continue
