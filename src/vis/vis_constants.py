@@ -8,16 +8,16 @@ ticksPerTurn = 60
 
 # BUILDING CONSTANTS
 
-center_offset = 0 #.05
+center_offset = 0  # .05
 isp_radius = .7
 isp_size = 10
-isp_offset = 0 #.07
+isp_offset = 0  # .07
 datacenter_radius = .20
 datacenter_size = 10
-datacenter_offset = 0 # .02
+datacenter_offset = 0  # .02
 city_radius = .2
 city_size = 5
-city_offset = 0 # .01
+city_offset = 0  # .01
 
 # COLORS
 WHITE = (255, 255, 255)

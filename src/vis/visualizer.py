@@ -59,7 +59,7 @@ class Visualizer(object):
         self.draw_json = {}
 
         # Calculate number of blocks needed for the given map json. Blocks are organized into a square
-        #cont_blocks = len(self.json_data['continents'])
+        # cont_blocks = len(self.json_data['continents'])
         # blocks = math.ceil(math.sqrt(cont_blocks))  # We just need the amount of blocks on one side of the square
         blocks = 4
         self.cont_blocks_taken = [0] * (int(blocks) ** 2)
@@ -159,14 +159,14 @@ class Visualizer(object):
     def draw(self):
         self.screen.fill(const.WHITE)  # Background color
 
-        #Draw background water
-        for x in range(0, const.screenWidth/100):
-            for y in range(0, const.screenHeight/100):
+        # Draw background water
+        for x in range(0, const.screenWidth / 100):
+            for y in range(0, const.screenHeight / 100):
                 self.screen.blit(self.waterImage, (x * 100, y * 100))
 
-        #Draw continents
+        # Draw continents
         for cont in range(len(self.cont_blocks_taken)):
-            if self.cont_blocks_taken[cont] is not 0:
+            if self.cont_blocks_taken[cont] != 0:
                 self.screen.blit(self.landImage, self.cont_blocks_taken[cont])
 
         # If debug mode, draw line between connected nodes and draw its id
@@ -237,7 +237,6 @@ class Visualizer(object):
                 if (not self.found_anim(node, CleanRootkit)):
                     self.draw_json[node['id']].animations.append(CleanRootkit())
 
-
         # infiltration protection activated
         if node['isIPSed'] is True:
             if (not self.found_anim(node, IPS)):
@@ -288,7 +287,6 @@ class Visualizer(object):
                         if node['id'] == action['target']:
                             self.draw_json[node['id']].animations.append(Scan())
                     
-
     def found_anim(self, node, animation_type):
         for animation in self.draw_json[node['id']].animations:
             if(type(animation) is animation_type):

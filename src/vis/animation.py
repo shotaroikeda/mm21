@@ -2,6 +2,7 @@ import pygame
 import vis_constants as const
 import math
 
+
 class Animation(object):
 
     def __init__(self):
@@ -158,7 +159,7 @@ class DDOS(Animation):
     def setup_animation(self):
         # Add the images to the images
         for i in range(1, 10):
-            self.images.append(pygame.image.load("src/vis/sprites/ddos_" + str(i*2) + ".png"))
+            self.images.append(pygame.image.load("src/vis/sprites/ddos_" + str(i * 2) + ".png"))
             for _ in range(3):
                 self.image_tick.append(i - 1)
         for _ in range(33):
