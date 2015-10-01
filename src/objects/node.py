@@ -105,7 +105,7 @@ class Node(object):
         # Get connected nodes
         connectedNodes = [self] if self.ownerId == self.targeterId else []
         for n in self.getAdjacentNodes():
-            n.getClusteredNodes(connectedNodes, self.targeterId)
+            n.getClusteredNodesPlusRootKit(connectedNodes, self.targeterId)
 
         # Filter specified-supplier nodes
         for x in supplierIds:
@@ -152,9 +152,22 @@ class Node(object):
     # @param ownerId (Optional) Restrict nodes to those owned by this person; if not specified, the owner of the original node will be used
     def getClusteredNodes(self, clusteredNodes, ownerId=None):
         if ownerId is None:
-            ownerId = self.ownerId or 0
+            ownerId = self.ownerId
         if self.ownerId == ownerId and self not in clusteredNodes:
             clusteredNodes.append(self)
+            for adjacent in self.getAdjacentNodes():
+                adjacent.getClusteredNodes(clusteredNodes, ownerId)
+    
+    # Get all nodes that are clustered with (connected to via rootkit or adjacency and of the same player as) another node
+    # @param clusteredNodes (Output) The list of clustered nodes
+    # @param ownerId (Optional) Restrict nodes to those owned by this person; if not specified, the owner of the original node will be used
+    
+    def getClusteredNodesPlusRootKit(self, clusteredNodes, ownerId=None):
+        if ownerId is None:
+            ownerId = self.ownerId
+        if (self.ownerId == ownerId or ownerId in self.rootkitIds) and self not in clusteredNodes:
+            if self.ownerId == ownerId:
+                clusteredNodes.append(self)
             for adjacent in self.getAdjacentNodes():
                 adjacent.getClusteredNodes(clusteredNodes, ownerId)
 
@@ -164,7 +177,7 @@ class Node(object):
     # @param start (Internal) True if an initial call, False otherwise
     def getVisibleNodes(self, visibleNodes, ownerId=None, start=True):
         if ownerId is None:
-            ownerId = self.ownerId or 0
+            ownerId = self.ownerId
         if self in visibleNodes:
             return
 

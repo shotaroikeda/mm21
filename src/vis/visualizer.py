@@ -219,15 +219,17 @@ class Visualizer(object):
                 self.draw_json[node['id']].animations.append(ChangeOwner())
 
         # Rootkit has been cleaned or rooted
-        if node['rootkits'] != prev_node['rootkits']:
-            if prev_node is None:
-                if (not self.found_anim(node, AddRootkit)):
-                    self.draw_json[node['id']].animations.append(AddRootkit())
-            else:
-                if (self.found_anim(node, AddRootkit)):
-                    self.draw_json[node['id']].animations.remove(AddRootkit())
+        if len(node['rootkits']) is not 0:
+            if (not self.found_anim(node, AddRootkit)):
+                self.draw_json[node['id']].animations.append(AddRootkit())
+
+        if len(node['rootkits']) is 0:
+            if (self.found_anim(node, AddRootkit)):
+                anim = self.found_anim(node, AddRootkit)
+                self.draw_json[node['id']].animations.remove(anim)
                 if (not self.found_anim(node, CleanRootkit)):
                     self.draw_json[node['id']].animations.append(CleanRootkit())
+
 
         # infiltration protection activated
         if node['isIPSed'] is True:
@@ -283,7 +285,7 @@ class Visualizer(object):
     def found_anim(self, node, animation_type):
         for animation in self.draw_json[node['id']].animations:
             if(type(animation) is animation_type):
-                return True
+                return animation
         return False
 
     def found_game_anim(self, animation_type):

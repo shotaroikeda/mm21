@@ -82,11 +82,33 @@ def processTurn(serverResponse):
                 bestScore = score
                 action = "control"
 
-    actions.append({
-        "action": action,
-        "target": target["id"],
-        "multiplier": min(myP, myN)
-    })
+    rand = random.randint(0, 1)
+    if rand == 0:
+        actions.append({
+            "action": action,
+            "target": target["id"],
+            "multiplier": min(myP, myN)
+        })
+    elif rand == 2:
+        actions.append({
+            "action": "portScan",
+            "target": myNodes[0]['id'] 
+        })
+    elif rand == 3:
+        actions.append({
+            "action": "scan",
+            "target": myNodes[0]['id'] 
+        })
+    elif rand == 4:
+        actions.append({
+            "action": "ddos",
+            "target": target["id"]
+        })
+    elif rand == 1:
+        actions.append({
+            "action": "rootkit",
+            "target": target["id"]
+        })
 
     # Send actions to the server
     return {

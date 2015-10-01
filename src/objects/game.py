@@ -106,7 +106,9 @@ class Game(object):
                             actionResult["message"] = "Invalid action type."
                     else:
                         actionResult["message"] = "Invalid node."
-                except InsufficientPowerException:
+                except InsufficientPowerException as e:
+                    print(targetId)
+                    print(str(e))
                     actionResult["message"] = "Insufficient networking and/or processing."
                 except IndexError:
                     actionResult["message"] = "Invalid playerID."

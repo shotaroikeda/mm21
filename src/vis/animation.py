@@ -64,6 +64,7 @@ class AddRootkit(Animation):
         Animation.__init__(self)
         self.setup_animation()
         self.remove_after_complete = False
+        self.repeat = True
 
     def setup_animation(self):
         # Add the images to the images
