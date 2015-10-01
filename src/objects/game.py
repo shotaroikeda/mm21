@@ -115,7 +115,9 @@ class Game(object):
                 except (RepeatedActionException,
                         InsufficientPowerException,
                         ActionOwnershipException,
-                        MultiplierMustBePositiveException) as e:
+                        MultiplierMustBePositiveException,
+                        NodeIsDDoSedException,
+                        IpsPreventsActionException) as e:
                     actionResult["message"] = str(e)
                 except Exception as e:
                     raise  # Uncomment me to raise unhandled exceptions

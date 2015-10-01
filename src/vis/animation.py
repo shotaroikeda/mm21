@@ -156,12 +156,12 @@ class DDOS(Animation):
 
     def setup_animation(self):
         # Add the images to the images
-        for i in range(1, 3):
-            self.images.append(pygame.image.load("src/vis/sprites/ddos_" + str(i) + ".png"))
-        for i in range(30):
-            self.image_tick.append(0)
-        for i in range(30):
-            self.image_tick.append(1)
+        for i in range(1, 10):
+            self.images.append(pygame.image.load("src/vis/sprites/ddos_" + str(i*2) + ".png"))
+            for _ in range(3):
+                self.image_tick.append(i - 1)
+        for _ in range(33):
+            self.image_tick.append(8)
         for i in range(len(self.images)):
             self.image_rects.append(self.images[i].get_rect())
 

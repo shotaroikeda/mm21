@@ -1,5 +1,6 @@
 import pygame
 import vis_constants as const
+from animation import IPS
 
 
 class Node(object):
@@ -39,6 +40,10 @@ class Node(object):
     def draw(self, screen):
         # if (self.owner_id != -1):
         #    pygame.draw.circle(screen, const.TEAM_COLORS[self.owner_id], (self.x, self.y), int(self.sprite_rect[2] / 2.0) + 4, 0)
+        for animation in self.animations:
+            if isinstance(animation, IPS):
+                animation.draw(screen, self.sprite_rect[0], self.sprite_rect[1])
         screen.blit(self.sprite, self.sprite_rect)
         for animation in self.animations:
-            animation.draw(screen, self.sprite_rect[0], self.sprite_rect[1])
+            if not isinstance(animation, IPS):
+                animation.draw(screen, self.sprite_rect[0], self.sprite_rect[1])
