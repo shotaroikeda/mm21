@@ -12,6 +12,7 @@ class Node(object):
         self.animations = []
         self.update_city_sprite()
         self.owner_id = -1
+        self.level = 0
 
     def update_city_sprite(self):
         try:
@@ -37,13 +38,21 @@ class Node(object):
                     self.sprite.set_at([x, y], const.TEAM_COLORS[_owner_id])
         self.owner_id = _owner_id
 
-    def draw(self, screen):
-        # if (self.owner_id != -1):
-        #    pygame.draw.circle(screen, const.TEAM_COLORS[self.owner_id], (self.x, self.y), int(self.sprite_rect[2] / 2.0) + 4, 0)
+    def draw(self, screen, font):
+        # Draw IPS if it has one
         for animation in self.animations:
             if isinstance(animation, IPS):
                 animation.draw(screen, self.sprite_rect[0], self.sprite_rect[1])
+
+        # Draw node image
         screen.blit(self.sprite, self.sprite_rect)
+
+        # Draw animations
         for animation in self.animations:
             if not isinstance(animation, IPS):
                 animation.draw(screen, self.sprite_rect[0], self.sprite_rect[1])
+
+        # Draw node level
+        if(self.level != 0):
+            level = font.render(str(self.level), 1, (0, 0, 0))
+            screen.blit(level, (self.x - 3, self.y + 7))

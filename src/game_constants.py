@@ -2,8 +2,6 @@
 Holds constants used by the core game logic
 """
 
-
-# NodeType enum (NodeType.Small = 1)
 class NodeType:
 
     processing = {

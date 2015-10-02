@@ -47,7 +47,7 @@ class Game(object):
         self.map.addPlayer(playerId)
 
         # Return response (as a JSON object)
-        return (True, {"id": playerId})
+        return (True, {"id": playerId, "teamName": jsonObject["teamName"]})
 
     # Add a player's actions to the turn queue
     def queue_turn(self, turnJson, playerId):
@@ -107,8 +107,6 @@ class Game(object):
                     else:
                         actionResult["message"] = "Invalid node."
                 except InsufficientPowerException as e:
-                    print(targetId)
-                    print(str(e))
                     actionResult["message"] = "Insufficient networking and/or processing."
                 except IndexError:
                     actionResult["message"] = "Invalid playerID."

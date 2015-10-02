@@ -54,7 +54,6 @@ if (args.logFile is not None):
         raise
         exit(1)
 
-print "Starting Visualizer"
 # Initialize Visualizer
 if (args.logFile is not None):
     visualizer = vis.Visualizer(mapJsonObject, args.debug, logJsonObject, alone=True)

@@ -18,7 +18,7 @@ class Scoreboard(object):
         self.scores = None
         self.turns = []
         self.CATEGORY = ['Team', 'Processing', 'Networking', 'Total', 'S. City', 'M. City', 'L. City', 'ISP', 'DC']
-        self.SPACING = [100, 100, 100, 60, 75, 75, 75, 50, 0]
+        self.SPACING = [100, 100, 100, 100, 75, 75, 75, 50, 0]
 
         pygame.init()
         self.setup_pygame()
@@ -58,7 +58,6 @@ class Scoreboard(object):
         if self.scores is not None:
             for j in range(len(self.scores)):
                 for i in range(len(self.CATEGORY)):
-                    print self.scores[j]
                     num = self.myfont.render(str(self.scores[j][i]), 1, vis_const.TEAM_COLORS[j])
                     self.screen.blit(num, (x, y))
                     x += self.SPACING[i]
@@ -74,8 +73,8 @@ class Scoreboard(object):
     def add_turn(self, json):  # TODO FIX IT
         if self.scores is None:
             self.scores = {}
-            for player in range(0, len(json)):
-                self.add_new_player(player, None)
+            for player in json:
+                self.add_new_player(player["id"], player["teamName"])
         else:
             self.turns.append(json)
 
@@ -111,11 +110,9 @@ class Scoreboard(object):
                     self.scores[node['owner']][7] += 1
                 if node['nodetype'] == "Data Center":
                     self.scores[node['owner']][8] += 1
-        print self.scores
 
     def add_new_player(self, player_id, player_name):
-        self.scores[player_id] = [0, 0, 0, 0, 0, 0, 0, 0, 0]
-
+        self.scores[player_id] = [player_name, 0, 0, 0, 0, 0, 0, 0, 0]
 
 if __name__ == '__main__':
     score = Scoreboard(True)

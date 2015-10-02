@@ -1,6 +1,6 @@
 from node import Node
 import random
-# from . import game_constants as const
+import game_constants
 
 
 class Continent():
@@ -8,7 +8,7 @@ class Continent():
     # Generates a continent
     # ARGS - Graph Object, Number of ISPs per continent, Number of cities per ISP
 
-    def __init__(self, graph, num_ISPs, cities_per_ISP, total_power_per_ISP):
+    def __init__(self, graph, num_ISPs, max_cities_per_ISP, total_power_per_ISP):
         # Init object lists
         self.isp_list = []  # Contains ISP objects
         self.datacenter_list = []  # Contains DC objects
@@ -18,7 +18,7 @@ class Continent():
         # It maintains a circular connection, (For easy of visualization)
         # For example, ISP 1 connects to ISP 2 and DC 1, so on and so on
         for _ in range(num_ISPs):
-            isp = self.generate_ISP(graph, cities_per_ISP, total_power_per_ISP)  # Generate ISP
+            isp = self.generate_ISP(graph, max_cities_per_ISP, total_power_per_ISP)  # Generate ISP
             datacenter = self.generate_datacenter(graph)  # Generate DC
 
             self.isp_list.append(isp)  # Add ISP to list
@@ -34,16 +34,39 @@ class Continent():
 
     # Generates a ISP and its cities
     # ARGS - Graph Object, Number of cities per ISP
-    def generate_ISP(self, graph, cities_per_ISP, total_power_per_ISP):
+    def generate_ISP(self, graph, max_cities_per_ISP, total_power_per_ISP):
         isp = Node.get_ISP_node(graph)  # Create a ISP
         isp_city_list = []  # Init city list for ISPs
-        for _ in range(cities_per_ISP):
+        temp_city_list = []
+        aprox_total_power_per_ISP = total_power_per_ISP - total_power_per_ISP % 100
+        current_power = 0
+        while(aprox_total_power_per_ISP != current_power):
             rand = random.randrange(0, 3)
+            node_type = ""
             if (rand == 0):
+                node_type = "Large City"
+            elif (rand == 1):
+                node_type = "Medium City"
+            else:
+                node_type = "Small City"
+
+            temp_city_list.append(node_type)
+            current_power += game_constants.NodeType.processing[node_type]
+
+            if aprox_total_power_per_ISP < current_power:
+                removed_node = temp_city_list.pop(len(isp_city_list) - 1)
+                current_power -= game_constants.NodeType.processing[removed_node]
+
+            if len(temp_city_list) > max_cities_per_ISP:
+                temp_city_list = []
+                current_power = 0
+
+        for node_type in temp_city_list:
+            if node_type == "Large City": 
                 isp_city_list.append(Node.get_large_city_node(graph))  # Generate city for the ISP
-            if (rand == 1):
+            elif node_type == "Medium City":
                 isp_city_list.append(Node.get_medium_city_node(graph))  # Generate city for the ISP
-            if (rand == 2):
+            elif node_type == "Small City":
                 isp_city_list.append(Node.get_small_city_node(graph))  # Generate city for the ISP
 
         # Make the ISPs and cities of the ISP a fully connected graph

@@ -126,9 +126,9 @@ class Visualizer(object):
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:  # Space pauses the game
-                    self.running = False if self.running else True
                 if (self.debug):  # If debugging, then allow going back in time!
+                    if event.key == pygame.K_SPACE:  # Space pauses the game
+                        self.running = False if self.running else True
                     if event.key == pygame.K_LEFT:
                         self.ticks -= self.ticks_per_turn + self.ticks % self.ticks_per_turn
                         if (self.ticks < 0):
@@ -169,12 +169,13 @@ class Visualizer(object):
             if self.cont_blocks_taken[cont] is not 0:
                 self.screen.blit(self.landImage, self.cont_blocks_taken[cont])
 
+        # If debug mode, draw line between connected nodes and draw its id
         if self.debug:
             for edge in self.json_data['edges']:
                 v1, v2 = edge
                 pygame.draw.line(self.screen, const.BLACK, (self.draw_json[v1].x, self.draw_json[v1].y), (self.draw_json[v2].x, self.draw_json[v2].y), 1)
         for key, value in self.draw_json.iteritems():
-            value.draw(self.screen)
+            value.draw(self.screen, self.myfont)
             if self.debug:
                 node_id = self.myfont.render(str(key), 1, (0, 0, 0))
                 self.screen.blit(node_id, (value.x - 7, value.y - 7))
@@ -195,8 +196,14 @@ class Visualizer(object):
             if (self.debug):
                 print("Processing turn " + str(turn))
             for node in self.turn_json[turn]['map']:
+                # Change owner?
                 if node['owner'] != self.draw_json[node['id']].owner_id:
                     self.draw_json[node['id']].change_owner(node['owner'])
+
+                # Maintain node level?
+                self.draw_json[node['id']].level = node['upgradeLevel']
+
+                # Add animations
                 for prev_node in self.turn_json[(turn) - 1]['map']:
                     if node['id'] == prev_node['id']:
                         self.add_node_animations(node, prev_node)
