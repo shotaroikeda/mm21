@@ -182,7 +182,6 @@ class FileLogger(object):
                 with open(self.file, 'a') as f:
                     f.write(line + '\n')
 
-
 def main():
     global parameters
     parameters = parse_args()
