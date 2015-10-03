@@ -56,9 +56,12 @@ class Scoreboard(object):
         pygame.draw.line(self.screen, const.lineColor, (x, y), (self.screenWidth - x, y))
         y += 5
         if self.scores is not None:
-            for j in range(len(self.scores)):
+            sorted_scores = self.sort_scores()
+            print("Scores")
+            print(sorted_scores)
+            for team_id in sorted_scores:
                 for i in range(len(self.CATEGORY)):
-                    num = self.myfont.render(str(self.scores[j][i]), 1, vis_const.TEAM_COLORS[j])
+                    num = self.myfont.render(str(self.scores[team_id][i]), 1, vis_const.TEAM_COLORS[team_id])
                     self.screen.blit(num, (x, y))
                     x += self.SPACING[i]
                 x = 10
@@ -69,6 +72,24 @@ class Scoreboard(object):
 
         pygame.display.update()
         pygame.display.flip()
+
+    def sort_scores(self):
+        sorted_scores = []
+        score_ids = [team_id for team_id, _ in self.scores.iteritems()]
+
+        while len(score_ids) != 0:
+            max_score_id = self.get_max_score(score_ids)
+            score_ids.remove(max_score_id)
+            sorted_scores.append(max_score_id)
+
+        return sorted_scores
+
+    def get_max_score(self, score_ids):
+        max_score_id = 0
+        for score_id in score_ids:
+            if self.scores[score_id] >= self.scores[max_score_id]:
+                max_score_id = score_id
+        return max_score_id
 
     def add_turn(self, json):  # TODO FIX IT
         if self.scores is None:

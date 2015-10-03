@@ -165,22 +165,6 @@ class FileLogger(object):
             if self.vis.scoreboard:
                 self.vis.scoreboard.add_turn(stuff)
 
-
-''' def test_game(team, team_dir, port):
-    client_list = list()
-    global parameters
-    parameters = parse_args()
-    fileLog = FileLogger(team + parameters.log)
-    with open(team + parameters.log, 'w'):
-        pass
-    my_game = game.Game(parameters.map, 2, rooms)
-    serv = MMServer(parameters.teams,
-                    my_game,
-                    logger=fileLog) 
-    serv.run(port, partial(launch_client_test_game, team_dir, port), time_out=60)
-    return True '''
-
-
 def main():
     global parameters
     parameters = parse_args()
@@ -193,7 +177,7 @@ def main():
         pass
     fileLog = FileLogger(parameters.log)
     if parameters.show:
-        fileLog.vis = VisualizerThread("src/gamerunner/map.json", parameters.debug_view, parameters.scoreboard)
+        fileLog.vis = VisualizerThread(parameters.map, parameters.debug_view, parameters.scoreboard)
         fileLog.vis.start()
     print "Starting Game"
     my_game = game.Game(parameters.map, parameters.turnsinhour)
