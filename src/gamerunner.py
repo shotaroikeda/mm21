@@ -135,7 +135,7 @@ def parse_args():
     parser.add_argument(
         "-th", "--turnsinhour",
         help="Set the game's length.",
-        default=600,
+        default=400,
         type=int)
 
     args = parser.parse_args()
