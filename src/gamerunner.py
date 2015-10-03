@@ -165,8 +165,8 @@ class FileLogger(object):
     # @param stuff
     #   The stuff to be printed
     def print_stuff(self, stuff):
-        # self.file_lines.append(stuff)
-        # print("Turn " + str(len(self.file_lines)))
+        self.file_lines.append(stuff)
+        print("Turn " + str(len(self.file_lines)))
         if self.file is not None:
             with open(self.file, 'a') as f:
                 f.write(stuff + '\n')
