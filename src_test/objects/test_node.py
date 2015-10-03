@@ -947,7 +947,44 @@ def test_doClean():
     assert len(_node.rootkitIds) == 1
     _node.targeterId = 1
     _node.doClean()
-    assert len(_node.rootkitIds) == 0
+    assert len(_node.rootkitIds) == 1
+    assert _node.cleanPending is True
+
+    _map.resetAfterTurn()
+    assert _node.rootkitIds == []
+    assert _node.cleanPending is False
+
+
+# Test doClean colliding with doRootkit
+# The rootkit should ultimately be removed
+def test_doClean_collideWithRootkit():
+
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _map.addPlayer(2)
+    _node = _map.getPlayerNodes(1)[0] 
+
+    _node.isIPSed = False
+
+    # Give player 2 an attacking node
+    _node2 = _node.getAdjacentNodes()[0]
+    if _node2.ownerId != 2:
+        _node2.own(2)
+    _node2.remainingProcessing = 999
+    _node2.remainingNetworking = 999
+
+    assert _node.rootkitIds == []
+    assert _node.cleanPending is False
+    _node.targeterId = 1
+    _node.doClean()
+    _node.targeterId = 2
+    _node.doRootkit()
+    assert _node.rootkitIds == [2]
+    assert _node.cleanPending is True
+
+    _map.resetAfterTurn()
+    assert _node.rootkitIds == []
+    assert _node.cleanPending is False
 
 
 # Test doScan
