@@ -159,18 +159,23 @@ class FileLogger(object):
         self.file = fileName
         self.vis = False
         self.scoreboard = False
+        self.file_lines = []
 
     # The function that logs will be sent to
     # @param stuff
     #   The stuff to be printed
     def print_stuff(self, stuff):
-        if self.file is not None:
-            with open(self.file, 'a') as f:
-                f.write(stuff + '\n')
+        self.file_lines.append(stuff)
         if self.vis:
             self.vis.add_turn(json.loads(stuff))
             if self.vis.scoreboard:
                 self.vis.scoreboard.add_turn(stuff)
+
+    def write_to_file(self):
+        for line in self.file_lines:
+            if self.file is not None:
+                with open(self.file, 'a') as f:
+                    f.write(line + '\n')
 
 
 def main():
@@ -215,6 +220,7 @@ def main():
                         my_game,
                         logger=fileLog)
         serv.run(parameters.port, launch_clients)
+    fileLog.write_to_file()
     if parameters.show:
         fileLog.vis.join()
     if parameters.scoreboard:
