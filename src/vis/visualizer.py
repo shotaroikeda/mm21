@@ -242,8 +242,9 @@ class Visualizer(object):
             if (not self.found_anim(node, IPS)):
                 self.draw_json[node['id']].animations.append(IPS())
         else:
-            if (self.found_anim(node, IPS)):
-                self.draw_json[node['id']].animations.remove(IPS())
+            anim = self.found_anim(node, IPS)
+            if anim:
+                self.draw_json[node['id']].animations.remove(anim)
 
         # infiltration
         for i in range(5):
