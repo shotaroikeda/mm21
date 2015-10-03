@@ -296,7 +296,7 @@ class Node(object):
         self.requireOwned().requireNotDDoSed("upgraded")
         if self.upgradePending:
             raise RepeatedActionException("Each node can only be upgraded once per turn.")
-        powerSources = self.requireResources(self.processing, self.networking)
+        powerSources = self.requireResources(self.totalPower, self.totalPower)
         self.upgradePending = True
         return powerSources
 
