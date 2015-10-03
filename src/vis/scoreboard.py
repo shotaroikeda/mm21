@@ -79,6 +79,9 @@ class Scoreboard(object):
             max_score_id = self.get_max_score(score_ids)
             score_ids.remove(max_score_id)
             sorted_scores.append(max_score_id)
+            print(len(score_ids))
+            print(score_ids)
+            print(sorted_scores)
 
         return sorted_scores
 
