@@ -70,6 +70,9 @@ class Game(object):
                 self.turnResults[playerId] = [{"status": "fail", "messages": "'Actions' parameter must be a list."}]
                 continue  # Skip invalid turn
 
+            # Sort actions by priority
+            actions = sorted(actions, key=lambda x: x.get("id", -99999), reverse=True)
+
             # Execute actions
             self.turnResults[playerId] = []
             for actionJson in actions:
