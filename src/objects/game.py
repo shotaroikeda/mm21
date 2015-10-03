@@ -168,8 +168,9 @@ class Game(object):
                 buff = []
                 n.getVisibleNodes(buff)
                 visibleNodes.update(buff)
+        else:
+            visibleNodes = self.map.nodes.values()
 
-        # TODO document my format!
         return {
             "playerInfo": self.playerInfos[playerId],
             "turnResult": self.turnResults.get(playerId, [{"status": "fail", "message": "No turn executed."}]),
