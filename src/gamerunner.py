@@ -165,13 +165,18 @@ class FileLogger(object):
     # @param stuff
     #   The stuff to be printed
     def print_stuff(self, stuff):
-        self.file_lines.append(stuff)
+        # self.file_lines.append(stuff)
+        # print("Turn " + str(len(self.file_lines)))
+        if self.file is not None:
+            with open(self.file, 'a') as f:
+                f.write(stuff + '\n')
         if self.vis:
             self.vis.add_turn(json.loads(stuff))
             if self.vis.scoreboard:
                 self.vis.scoreboard.add_turn(stuff)
 
     def write_to_file(self):
+        return
         for line in self.file_lines:
             if self.file is not None:
                 with open(self.file, 'a') as f:
@@ -201,15 +206,12 @@ def main():
             print("Failed to parse log json data")
             raise
             exit(1)
-
     else:
         sys.stdout.write("Creating server with {0} players, ".format(
             parameters.teams))
         print "and {0} as the map\n".format(parameters.map)
         print "Running server on port {0}\n".format(parameters.port)
         print "Writing log to {0}".format(parameters.log)
-        with open(parameters.log, 'w'):
-            pass
         fileLog = FileLogger(parameters.log)
         if parameters.show:
             fileLog.vis = VisualizerThread(parameters.map, parameters.debug_view, parameters.scoreboard)
@@ -220,7 +222,9 @@ def main():
                         my_game,
                         logger=fileLog)
         serv.run(parameters.port, launch_clients)
-    fileLog.write_to_file()
+        with open(parameters.log, 'w'):
+            pass
+        fileLog.write_to_file()
     if parameters.show:
         fileLog.vis.join()
     if parameters.scoreboard:

@@ -35,7 +35,7 @@ class Upgrade(Animation):
 
     def setup_animation(self):
         # Add the images to the images
-        for i in range(1, 1):
+        for i in range(1, 2):
             self.images.append(pygame.image.load("src/vis/sprites/upgrade_" + str(i) + ".png"))
         for i in range(60):
             self.image_tick.append(0)
