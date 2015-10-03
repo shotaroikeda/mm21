@@ -225,6 +225,7 @@ def main():
         with open(parameters.log, 'w'):
             pass
         fileLog.write_to_file()
+
     if parameters.show:
         fileLog.vis.join()
     if parameters.scoreboard:
