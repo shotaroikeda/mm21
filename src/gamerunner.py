@@ -176,7 +176,7 @@ class FileLogger(object):
                 self.vis.scoreboard.add_turn(stuff)
 
     def write_to_file(self):
-        return
+        return #  Temporary no-op
         for line in self.file_lines:
             if self.file is not None:
                 with open(self.file, 'a') as f:
