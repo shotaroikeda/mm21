@@ -935,6 +935,34 @@ def test_doUpgrade_controlInterrupt():
     assert _node.upgradePending is False
 
 
+# Test that doUpgrade() increases the maximum infiltration of a node
+
+    _map = GameMap(misc_constants.mapFile)
+    _map.addPlayer(1)
+    _map.addPlayer(2)
+    _node = _map.getPlayerNodes(1)[0]
+    _node.isIPSed = False
+
+    # Upgrade _node several times
+    for i in range(500):
+        _node.targeterId = 1
+        _node.doUpgrade()
+        _map.resetAfterTurn()
+
+    # Init _attacker
+    _attacker = _node.getAdjacentNodes()[0]
+    if _attacker.ownerId != 2:
+        _attacker.own(2)
+    _attacker.remainingProcessing = 99999
+    _attacker.remainingNetworking = 99999
+
+    # Attempt to take over _node
+    _node.targeterId = 2
+    _node.doControl(5000)  # Will control any un-upgraded node
+    _map.resetAfterTurn()
+    assert _node.ownerId == 1  # Node should not change hands
+
+
 # Test doClean
 def test_doClean():
 
