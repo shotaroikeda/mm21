@@ -175,12 +175,8 @@ class FileLogger(object):
 def main():
     global parameters
     parameters = parse_args()
-    sys.stdout.write("Creating server with {0} players, ".format(
-        parameters.teams))
-    print "and {0} as the map\n".format(parameters.map)
-    print "Running server on port {0}\n".format(parameters.port)
-    print "Writing log to {0}".format(parameters.log)
     if parameters.only_log:
+        print "Running Visualizer only"
         fileLog = FileLogger(None)
         fileLog.vis = VisualizerThread(parameters.map, parameters.debug_view, parameters.scoreboard)
         fileLog.vis.start()
@@ -201,6 +197,11 @@ def main():
             exit(1)
 
     else:
+        sys.stdout.write("Creating server with {0} players, ".format(
+            parameters.teams))
+        print "and {0} as the map\n".format(parameters.map)
+        print "Running server on port {0}\n".format(parameters.port)
+        print "Writing log to {0}".format(parameters.log)
         with open(parameters.log, 'w'):
             pass
         fileLog = FileLogger(parameters.log)
