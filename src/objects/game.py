@@ -143,12 +143,11 @@ class Game(object):
             # Determine total power amounts
             totalPowerAmounts = {}
             for playerId in self.playerInfos:
-                totalPowerAmounts[playerId] = sum([x.totalPower() for x in self.map.getPlayerNodes(playerId)])
+                totalPowerAmounts[playerId] = sum([x.totalPower for x in self.map.getPlayerNodes(playerId)])
 
             # Send results to players
             for result in self.turnResults.values():
-                result["totalPowerAmounts"] = totalPowerAmounts
-                result["gameOver"] = True
+                result.append({"totalPowerAmounts": totalPowerAmounts, "status": "gameOver"})
 
         # Done!
         self.queuedTurns = {}
