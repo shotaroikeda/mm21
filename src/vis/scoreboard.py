@@ -57,8 +57,6 @@ class Scoreboard(object):
         y += 5
         if self.scores is not None:
             sorted_scores = self.sort_scores()
-            print("Scores")
-            print(sorted_scores)
             for team_id in sorted_scores:
                 for i in range(len(self.CATEGORY)):
                     num = self.myfont.render(str(self.scores[team_id][i]), 1, vis_const.TEAM_COLORS[team_id])
@@ -81,11 +79,14 @@ class Scoreboard(object):
             max_score_id = self.get_max_score(score_ids)
             score_ids.remove(max_score_id)
             sorted_scores.append(max_score_id)
+            print(len(score_ids))
+            print(score_ids)
+            print(sorted_scores)
 
         return sorted_scores
 
     def get_max_score(self, score_ids):
-        max_score_id = 0
+        max_score_id = score_ids[0]
         for score_id in score_ids:
             if self.scores[score_id] >= self.scores[max_score_id]:
                 max_score_id = score_id
@@ -100,6 +101,7 @@ class Scoreboard(object):
             self.turns.append(json)
 
     def change_turn(self, turnNum):
+        print("Change Turn")
         self.update_scores(int(turnNum))
         self.run()
 
