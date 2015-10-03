@@ -302,9 +302,9 @@ class Node(object):
 
     # Player action to clean a node of rootkits
     def doClean(self):
-	self.requireOwned().requireNotDDoSed("cleaned")
-	if self.cleanPending:
-		raise RepeatedActionException("Each node can only be scanned once per turn.")
+        self.requireOwned().requireNotDDoSed("cleaned")
+        if self.cleanPending:
+            raise RepeatedActionException("Each node can only be scanned once per turn.")
         powerSources = self.requireResources(100, 0)
         self.cleanPending = True
         return powerSources

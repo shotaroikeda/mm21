@@ -2,6 +2,7 @@
 Holds constants used by the core game logic
 """
 
+
 class NodeType:
 
     processing = {

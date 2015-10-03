@@ -172,6 +172,7 @@ class FileLogger(object):
             if self.vis.scoreboard:
                 self.vis.scoreboard.add_turn(stuff)
 
+
 def main():
     global parameters
     parameters = parse_args()

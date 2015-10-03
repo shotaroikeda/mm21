@@ -4,6 +4,60 @@ from load_json import load_map_from_file as loadJson
 import json
 import argparse
 
+
+class Scoreboard(object):
+
+    def __init__(self, url=None):
+        self.lunched = False
+        self.url = url
+        if url is None:
+            self.url = "http://localhost:7000"
+            self.lunched = True
+            self.board = self.bot = Popen([sys.executable, "scoreServer.py"],
+                                          stdout=FNULL, stderr=FNULL)
+            time.sleep(1)
+        
+    def add_turn(self, turn):
+        try:
+            r = urlopen(self.url, turn)
+            if(r.getcode() != 200):
+                raise Exception("Scoreboard update failed!")
+
+        except URLError:
+            if not self.lunched:
+                self.stop()
+                raise  # Exception("Scoreboard update failed!")
+
+    def change_turn(self, _turnNum):
+        try:
+            r = urlopen(self.url, str(_turnNum))
+            if(r.getcode() != 200):
+                raise Exception("Scoreboard update failed!")
+
+        except URLError:
+            if not self.lunched:
+                self.stop()
+                raise  # Exception("Scoreboard update failed!")
+
+    def kill(self):
+        if (self.lunched and not self.board.poll()):
+            try:
+                self.board.kill()
+            except OSError:
+                pass
+
+    def stop(self):
+        """
+        """
+        if self.lunched:
+            try:
+                self.board.terminate()
+            except OSError:
+                pass
+                
+    def __del__(self):
+        self.kill()
+
 # Define arguements
 parser = argparse.ArgumentParser(
     description="Launches the visualizer")
