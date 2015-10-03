@@ -61,6 +61,7 @@ class Node(object):
         self.DDoSPending = False
         self.isIPSed = False
         self.IPSPending = False
+        self.cleanPending = False
         # dict<int, int>
         self.infiltration = dict()
         # object
@@ -301,8 +302,11 @@ class Node(object):
 
     # Player action to clean a node of rootkits
     def doClean(self):
-        powerSources = self.requireOwned().requireNotDDoSed("cleaned").requireResources(100, 0)
-        self.rootkitIds = []
+	self.requireOwned().requireNotDDoSed("cleaned")
+	if self.cleanPending:
+		raise RepeatedActionException("Each node can only be scanned once per turn.")
+        powerSources = self.requireResources(100, 0)
+        self.cleanPending = True
         return powerSources
 
     # Player action to scan a node for rootkits

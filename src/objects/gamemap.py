@@ -103,6 +103,11 @@ class GameMap(object):
             n.DDoSed = n.DDoSPending
             n.DDoSPending = False
 
+            # Remove rootkits
+            if n.cleanPending:
+                n.rootkitIds = []
+                n.cleanPending = False
+
             # Update scan status
             n.scanPending = False
 
