@@ -127,9 +127,15 @@ def parse_args():
         default=False,
         action="store_const")
     parser.add_argument(
+        "-o", "--only_log",
+        help="Don't run the game, just use the log file for turns",
+        const=True,
+        default=False,
+        action="store_const")
+    parser.add_argument(
         "-th", "--turnsinhour",
         help="Set the game's length.",
-        default=0,
+        default=600,
         type=int)
 
     args = parser.parse_args()
@@ -158,8 +164,9 @@ class FileLogger(object):
     # @param stuff
     #   The stuff to be printed
     def print_stuff(self, stuff):
-        with open(self.file, 'a') as f:
-            f.write(stuff + '\n')
+        if self.file is not None:
+            with open(self.file, 'a') as f:
+                f.write(stuff + '\n')
         if self.vis:
             self.vis.add_turn(json.loads(stuff))
             if self.vis.scoreboard:
@@ -173,18 +180,39 @@ def main():
     print "and {0} as the map\n".format(parameters.map)
     print "Running server on port {0}\n".format(parameters.port)
     print "Writing log to {0}".format(parameters.log)
-    with open(parameters.log, 'w'):
-        pass
-    fileLog = FileLogger(parameters.log)
-    if parameters.show:
+    if parameters.only_log:
+        fileLog = FileLogger(None)
         fileLog.vis = VisualizerThread(parameters.map, parameters.debug_view, parameters.scoreboard)
         fileLog.vis.start()
-    print "Starting Game"
-    my_game = game.Game(parameters.map, parameters.turnsinhour)
-    serv = MMServer(parameters.teams,
-                    my_game,
-                    logger=fileLog)
-    serv.run(parameters.port, launch_clients)
+        try:
+            logJsonObject = []
+            with open(parameters.log) as json_file:
+                for line in json_file:
+                    fileLog.print_stuff(line)
+            if(logJsonObject is None):
+                raise Exception
+        except IOError:
+            print("File " + args.logJson + " does not exist")
+            raise
+            exit(1)
+        except Exception:
+            print("Failed to parse log json data")
+            raise
+            exit(1)
+
+    else:
+        with open(parameters.log, 'w'):
+            pass
+        fileLog = FileLogger(parameters.log)
+        if parameters.show:
+            fileLog.vis = VisualizerThread(parameters.map, parameters.debug_view, parameters.scoreboard)
+            fileLog.vis.start()
+        print "Starting Game"
+        my_game = game.Game(parameters.map, parameters.turnsinhour)
+        serv = MMServer(parameters.teams,
+                        my_game,
+                        logger=fileLog)
+        serv.run(parameters.port, launch_clients)
     if parameters.show:
         fileLog.vis.join()
     if parameters.scoreboard:
