@@ -41,7 +41,7 @@ def processTurn(serverResponse):
     bestScore = 0
     target = None
     action = "control"
-
+    
     # Node lists
     attackedNodes = [x for x in myNodes if max(x["infiltration"]) != 0]
     otherNodes = [x for x in serverResponse["map"] if x["owner"] != myId and x["isIPSed"] == False]
@@ -49,66 +49,31 @@ def processTurn(serverResponse):
     #log("MINE " + str([x["id"] for x in myNodes]))
     #log("VIS  " + str([x["id"] for x in otherNodes]))
 
-    # 1) Defend our nodes under attack
-    if len(attackedNodes) != 0:
-        for n in attackedNodes:
-            score = max(n["infiltration"])*4
-            if score > bestScore:
-                target = n
-                bestScore = score
+    # 1) greedy: look at connected otherNodes and take them if you have resources
 
-                # Last stand of the DDoS
-                if max(n["infiltration"]) > 0.5*(n["processingPower"] + n["networkingPower"]):
-                    action = "ddos"
+    otherNodes.sort(key = lambda x: 2 * (x["totalPower"]) - x["infiltration"][str(myId)])
+    
+    for x in otherNodes:
+        if myP > 0 and myN > 0:
+            reqRes = 2 * (x["totalPower"]) - x["infiltration"][str(myId)] + 1
+            # number of resources to take, if more than resources then sets it lower
+            if reqRes > myP:
+                reqRes = myP
+            elif reqRes > myN: 
+                reqRes = myN
+            target = x
 
-    # 2) Capture most powerful nearby node (with free ones being slightly worse than taken ones)
-    if len(otherNodes) != 0:
-        target = otherNodes[0]
-        bestScore = 0
-        for n in otherNodes:
-            maxI = max(int(x) for x in n["infiltration"])
-            iBoost = 0
-            if not maxI:
-                iBoost = (0 if int(n["infiltration"][str(myId)]) == maxI else maxI)
-            score = n["processingPower"] + n["networkingPower"] - iBoost
-            if myP < myN:
-                score = n["networkingPower"]
-            if myP > myN:
-                score = n["processingPower"]
+            # your turn is allocating resources to control
+            actions.append({
+                "action": "control",
+                "target": target["id"],
+                "multiplier": reqRes
+            })
 
-            score = score * 1.5 if n["owner"] != None else score
-            if score > bestScore:
-                target = n
-                bestScore = score
-                action = "control"
-
-    rand = random.randint(0, 1)
-    if rand == 0:
-        actions.append({
-            "action": action,
-            "target": target["id"],
-            "multiplier": min(myP, myN)
-        })
-    elif rand == 2:
-        actions.append({
-            "action": "portScan",
-            "target": myNodes[0]['id'] 
-        })
-    elif rand == 3:
-        actions.append({
-            "action": "scan",
-            "target": myNodes[0]['id'] 
-        })
-    elif rand == 4:
-        actions.append({
-            "action": "ddos",
-            "target": target["id"]
-        })
-    elif rand == 1:
-        actions.append({
-            "action": "rootkit",
-            "target": target["id"]
-        })
+            # reduce resources
+            myN = myN - reqRes
+            myP = myP - reqRes
+            
 
     # Send actions to the server
     return {
