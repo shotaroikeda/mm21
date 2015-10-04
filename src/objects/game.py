@@ -71,7 +71,7 @@ class Game(object):
                 continue  # Skip invalid turn
 
             # Sort actions by priority
-            actions = sorted(actions, key=lambda x: x.get("id", -99999), reverse=True)
+            actions = sorted(actions, key=lambda x: x.get("id", 99999), reverse=True)
 
             # Execute actions
             self.turnResults[playerId] = []
